@@ -89,7 +89,8 @@ def allegroLinkArgs : Array String := Id.run do
     "-lallegro_color",
     "-lallegro_dialog",
     "-lallegro_video",
-    "-lallegro_memfile"
+    "-lallegro_memfile",
+    "-lm"
   ]
   return args
 
