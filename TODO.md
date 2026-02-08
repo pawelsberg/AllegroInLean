@@ -10,7 +10,7 @@ Lean 4 FFI bindings to Allegro 5.
 - [x] **Update CI `HEADLESS_DEMOS`** — added 6 console-only extras (SystemExtras, PathExtras, ColorExtras, ConfigExtras, FileIO, EventExtras)
 - [x] **Remove stale vendored-tree probe in `lakefile.lean`** — `localPkgConfigPath` cleaned
 - [x] **Gitignore `docbuild/.lake/`** — 374 MB of build artifacts
-- [ ] **Add `version`/`description` to `lakefile.lean` package declaration** — used by Reservoir (Lean package index)
+- [x] **Add `version`/`description` to `lakefile.lean` package declaration** — used by Reservoir (Lean package index)
 
 ## Known Issues & Notes
 

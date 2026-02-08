@@ -93,9 +93,33 @@ def allegroLinkArgs : Array String := Id.run do
   ]
   return args
 
+-- ── Version from git branch ──
+
+/-- Get the current git branch name (`main`, `0.1.0`, etc.). -/
+private def gitBranch : String :=
+  (runCmd "git" #["rev-parse", "--abbrev-ref", "HEAD"]).getD "unknown"
+
+/-- Try to parse a string as `major.minor.patch`.  Returns `none` on failure. -/
+private def parseSemVer (s : String) : Option StdVer := do
+  let parts := s.splitOn "."
+  guard (parts.length == 3)
+  let major ← parts[0]!.toNat?
+  let minor ← parts[1]!.toNat?
+  let patch ← parts[2]!.toNat?
+  pure { major, minor, patch, specialDescr := "" }
+
+/-- Derive the package version from the git branch name.
+    - Branch `0.1.0` → version `0.1.0` (clean release)
+    - Branch `main`  → version `0.0.0-main` (prerelease) -/
+def packageVersion : StdVer :=
+  let branch := gitBranch
+  (parseSemVer branch).getD { major := 0, minor := 0, patch := 0, specialDescr := branch }
+
 -- ── Package & library ──
 
 package AllegroInLean where
+  version := packageVersion
+  description := "Lean 4 FFI bindings to Allegro 5"
 
 @[default_target]
 lean_lib Allegro where
