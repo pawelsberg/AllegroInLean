@@ -1,0 +1,151 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - main
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      # ── Setup ──────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential pkg-config \
+            libgl-dev libasound2-dev libpulse-dev \
+            libx11-dev libxcursor-dev libxrandr-dev libxi-dev libxinerama-dev \
+            libgtk-3-dev libglib2.0-dev libwebp-dev
+
+      - name: Cache Allegro build
+        uses: actions/cache@v4
+        with:
+          path: allegro-local
+          key: allegro-5.2.11-${{ runner.os }}
+
+      - name: Build Allegro 5.2.11 from source
+        run: |
+          if [ ! -f allegro-local/lib/pkgconfig/allegro-5.pc ]; then
+            ./scripts/build-allegro.sh
+          fi
+
+      - name: Install Lean (elan)
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: .
+
+      - name: Cache Lake build
+        uses: actions/cache@v4
+        with:
+          path: |
+            .lake
+            docbuild/.lake/packages
+          key: docs-lake-${{ hashFiles('lean-toolchain', 'lakefile.lean', 'lake-manifest.json') }}
+          restore-keys: docs-lake-
+
+      # ── Build ──────────────────────────────────────────────────────
+      - name: Build library
+        run: lake build
+
+      - name: Build documentation
+        run: |
+          cd docbuild
+          lake update doc-gen4
+          DOCGEN_SRC=github lake build Allegro:docs
+
+      # ── Deploy to gh-pages ─────────────────────────────────────────
+      - name: Deploy to gh-pages
+        env:
+          REF: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+          TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          DOC_DIR="docbuild/.lake/build/doc"
+          WORK_DIR=$(mktemp -d)
+
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Clone existing gh-pages or create it fresh
+          REMOTE="https://x-access-token:${TOKEN}@github.com/${REPO}.git"
+          if git ls-remote --exit-code "$REMOTE" gh-pages >/dev/null 2>&1; then
+            git clone --branch gh-pages --single-branch "$REMOTE" "$WORK_DIR"
+          else
+            git init "$WORK_DIR"
+            cd "$WORK_DIR"
+            git checkout -b gh-pages
+            git remote add origin "$REMOTE"
+            cd -
+          fi
+
+          # Update this branch's docs folder
+          rm -rf "${WORK_DIR:?}/${REF}"
+          cp -r "$DOC_DIR" "$WORK_DIR/$REF"
+
+          # Prevent Jekyll processing (doc-gen4 uses underscored dirs)
+          touch "$WORK_DIR/.nojekyll"
+
+          # Rebuild versions.json from existing directories
+          cd "$WORK_DIR"
+          printf '[\n' > versions.json
+          first=true
+          for d in */; do
+            [ -f "${d}index.html" ] || continue
+            v="${d%/}"
+            $first || printf ',\n' >> versions.json
+            printf '  "%s"' "$v" >> versions.json
+            first=false
+          done
+          printf '\n]\n' >> versions.json
+
+          # Root index.html — version picker
+          cat > index.html <<'EOHTML'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AllegroInLean — API Documentation</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif;
+           max-width: 600px; margin: 4rem auto; padding: 0 1rem; }
+    h1 { margin-bottom: .25rem; }
+    p  { color: #555; }
+    a  { display: block; margin: .4rem 0; font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+  <h1>📖 AllegroInLean</h1>
+  <p>Lean 4 FFI bindings to Allegro 5 — select a version:</p>
+  <div id="versions"><noscript>Enable JavaScript to see version list.</noscript></div>
+  <script>
+    fetch('versions.json').then(r => r.json()).then(vs => {
+      const el = document.getElementById('versions');
+      vs.sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+      vs.forEach(v => {
+        const a = document.createElement('a');
+        a.href = v + '/';
+        a.textContent = v + (v === 'main' ? ' (dev)' : '');
+        el.appendChild(a);
+      });
+    });
+  </script>
+</body>
+</html>
+EOHTML
+
+          # Commit and push
+          git add -A
+          git diff --cached --quiet || {
+            git commit -m "docs: update ${REF}"
+            git push origin gh-pages
+          }

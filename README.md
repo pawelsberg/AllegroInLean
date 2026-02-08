@@ -4,6 +4,8 @@ Lean 4 FFI bindings for [Allegro 5](https://liballeg.org/), providing
 type-safe, idiomatic Lean wrappers around Allegro's C API via a thin C shim
 layer.
 
+📖 **[API Documentation](https://pawelsberg.github.io/AllegroInLean/)**
+
 **31 Lean modules** · **27 C shim files** · **37 demo programs** · **3 test
 suites (838 assertions)**
 
