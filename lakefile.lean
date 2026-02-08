@@ -92,6 +92,12 @@ def allegroLinkArgs : Array String := Id.run do
     "-lallegro_memfile",
     "-lm"
   ]
+  -- Lean's bundled ld.lld defaults to --no-allow-shlib-undefined which rejects
+  -- versioned GLIBC math symbols (fmodf@GLIBC_2.38, etc.) referenced by the
+  -- Allegro shared libraries.  Override on Linux so the dynamic linker resolves
+  -- them at runtime.
+  if !System.Platform.isWindows && !System.Platform.isOSX then
+    args := args.push "-Wl,--allow-shlib-undefined"
   return args
 
 -- ── Version from git branch ──
