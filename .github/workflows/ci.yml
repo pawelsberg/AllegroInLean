@@ -53,7 +53,8 @@ jobs:
           msystem: MINGW64
           update: false
           install: >-
-            mingw-w64-x86_64-allegro
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
             mingw-w64-x86_64-pkg-config
             make
 
@@ -73,58 +74,42 @@ jobs:
           restore-keys: |
             lake-${{ matrix.os }}-
 
-      # ── Platform-specific Allegro install ──────────────────────────
-      - name: Install Allegro (Linux)
+      # ── Build Allegro 5.2.11 from source ───────────────────────────
+      - name: Install Allegro build deps (Linux)
         if: runner.os == 'Linux'
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y \
-            liballegro5-dev \
-            liballegro-image5-dev \
-            liballegro-ttf5-dev \
-            liballegro-font5-dev \
-            liballegro-primitives5-dev \
-            liballegro-audio5-dev \
-            liballegro-acodec5-dev \
-            liballegro-dialog5-dev \
-            liballegro-video5-dev \
-            libgtk-3-dev
+          sudo apt-get install -y cmake build-essential pkg-config \
+            libgl-dev libasound2-dev libpulse-dev \
+            libx11-dev libxcursor-dev libxrandr-dev libxi-dev libxinerama-dev \
+            libgtk-3-dev libglib2.0-dev libwebp-dev
 
-      - name: Install Allegro (macOS)
-        if: runner.os == 'macOS'
-        run: brew install allegro
+      - name: Cache Allegro build
+        uses: actions/cache@v4
+        with:
+          path: allegro-local
+          key: allegro-5.2.11-${{ runner.os }}
 
-      # ── Detect prefix ──────────────────────────────────────────────
-      - name: Detect Allegro prefix
-        id: allegro
+      - name: Build Allegro from source
         run: |
-          set -euo pipefail
-          if [ "$RUNNER_OS" = "Linux" ]; then
-            PREFIX=/usr
-          elif [ "$RUNNER_OS" = "macOS" ]; then
-            PREFIX=$(brew --prefix)
+          if [ ! -f allegro-local/lib/pkgconfig/allegro-5.pc ] && \
+             [ ! -f allegro-local/lib64/pkgconfig/allegro-5.pc ]; then
+            ./scripts/build-allegro.sh
+            rm -rf allegro-src   # save disk space
           else
-            PREFIX=$(pkg-config --variable=prefix allegro-5 2>/dev/null || echo "/mingw64")
+            echo "Using cached Allegro build"
           fi
-          echo "prefix=$PREFIX" >> "$GITHUB_OUTPUT"
-          echo "Allegro prefix: $PREFIX"
 
       # ── Build ──────────────────────────────────────────────────────
       - name: Build library
-        run: |
-          set -euo pipefail
-          lake build -K allegroPrefix=${{ steps.allegro.outputs.prefix }}
+        run: lake build
 
       - name: Build examples
-        run: |
-          set -euo pipefail
-          lake build -K allegroPrefix=${{ steps.allegro.outputs.prefix }} $EXAMPLE_TARGETS
+        run: lake build $EXAMPLE_TARGETS
 
       - name: Build tests
-        run: |
-          set -euo pipefail
-          lake build -K allegroPrefix=${{ steps.allegro.outputs.prefix }} $TEST_TARGETS
+        run: lake build $TEST_TARGETS
 
       # ── Run tests ──────────────────────────────────────────────────
       - name: Run tests
