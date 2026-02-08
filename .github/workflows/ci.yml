@@ -85,13 +85,14 @@ jobs:
             libgl-dev libasound2-dev libpulse-dev \
             libx11-dev libxcursor-dev libxrandr-dev libxi-dev libxinerama-dev \
             libgtk-3-dev libglib2.0-dev libwebp-dev \
-            libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
+            libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
+            libtheora-dev libvorbis-dev libogg-dev
 
       - name: Cache Allegro build
         uses: actions/cache@v4
         with:
           path: allegro-local
-          key: allegro-5.2.11-v2-${{ runner.os }}
+          key: allegro-5.2.11-v3-${{ runner.os }}
 
       - name: Build Allegro from source
         run: |
