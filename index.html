@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AllegroInLean API Documentation</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif;
+           max-width: 600px; margin: 4rem auto; padding: 0 1rem; }
+    h1 { margin-bottom: .25rem; }
+    p  { color: #555; }
+    a  { display: block; margin: .4rem 0; font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+  <h1>AllegroInLean</h1>
+  <p>Lean 4 FFI bindings to Allegro 5. Select a version:</p>
+  <div id="versions"><noscript>Enable JavaScript to see version list.</noscript></div>
+  <script>
+    fetch('versions.json').then(r => r.json()).then(vs => {
+      const el = document.getElementById('versions');
+      vs.sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+      vs.forEach(v => {
+        const a = document.createElement('a');
+        a.href = v + '/';
+        a.textContent = v + (v === 'main' ? ' (dev)' : '');
+        el.appendChild(a);
+      });
+    });
+  </script>
+</body>
+</html>
