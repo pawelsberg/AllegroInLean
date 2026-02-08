@@ -34,8 +34,12 @@ jobs:
 
       - name: Build Allegro 5.2.11 from source
         run: |
-          if [ ! -f allegro-local/lib/pkgconfig/allegro-5.pc ]; then
+          if [ ! -f allegro-local/include/allegro5/allegro_video.h ]; then
+            rm -rf allegro-local
             ./scripts/build-allegro.sh
+            rm -rf allegro-src
+          else
+            echo "Using cached Allegro build"
           fi
 
       - name: Install Lean (elan)
