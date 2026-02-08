@@ -24,13 +24,14 @@ def main : IO Unit := do
 
   let okAudio <- Allegro.installAudio
   if okAudio == 0 then
-    IO.eprintln "al_install_audio failed"
+    IO.eprintln "al_install_audio failed (non-fatal in headless CI)"
 
-  let okAcodec <- Allegro.initAcodecAddon
-  if okAcodec == 0 then
-    IO.eprintln "al_init_acodec_addon failed"
-
-  let _ <- Allegro.reserveSamples 1
+  if okAudio != 0 then
+    let okAcodec <- Allegro.initAcodecAddon
+    if okAcodec == 0 then
+      IO.eprintln "al_init_acodec_addon failed"
+    let _ <- Allegro.reserveSamples 1
+    pure ()
 
   let okKb <- Allegro.installKeyboard
   if okKb == 0 then
@@ -59,6 +60,7 @@ def main : IO Unit := do
   Allegro.shutdownTtfAddon
   Allegro.shutdownFontAddon
   Allegro.shutdownImageAddon
-  Allegro.uninstallAudio
+  if okAudio != 0 then
+    Allegro.uninstallAudio
   Allegro.uninstallSystem
   IO.println "ok"

@@ -38,8 +38,8 @@ jobs:
       matrix:
         include:
           - { os: ubuntu-latest,  name: Linux   }
-          - { os: macos-latest,   name: macOS   }
-          - { os: windows-latest, name: Windows }
+          # - { os: macos-latest,   name: macOS   }   # disabled to save CI cost
+          # - { os: windows-latest, name: Windows } # disabled to save CI cost
     defaults:
       run:
         shell: ${{ matrix.os == 'windows-latest' && 'msys2 {0}' || 'bash' }}

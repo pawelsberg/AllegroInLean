@@ -716,9 +716,13 @@ def main : IO UInt32 := do
   Allegro.initFontAddon
   let _ ← Allegro.initTtfAddon
   let _ ← Allegro.initPrimitivesAddon
-  let _ ← Allegro.installAudio
-  let _ ← Allegro.initAcodecAddon
-  let _ ← Allegro.reserveSamples 1
+  let audioOk ← Allegro.installAudio
+  if audioOk != 0 then
+    let _ ← Allegro.initAcodecAddon
+    let _ ← Allegro.reserveSamples 1
+    pure ()
+  else
+    IO.eprintln "WARNING: al_install_audio failed – audio error-path tests still run (null-handle)"
   let _ ← Allegro.installJoystick
 
   IO.println "═══════════════════════════════"
@@ -742,7 +746,8 @@ def main : IO UInt32 := do
   let _ ← testOptionErrorPaths
 
   -- Shutdown
-  Allegro.uninstallAudio
+  if audioOk != 0 then
+    Allegro.uninstallAudio
   Allegro.shutdownFontAddon
   Allegro.shutdownTtfAddon
   Allegro.shutdownImageAddon

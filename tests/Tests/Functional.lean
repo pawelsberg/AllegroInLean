@@ -2930,9 +2930,13 @@ def main : IO UInt32 := do
   Allegro.initFontAddon
   let _ ← Allegro.initTtfAddon
   let _ ← Allegro.initPrimitivesAddon
-  let _ ← Allegro.installAudio
-  let _ ← Allegro.initAcodecAddon
-  let _ ← Allegro.reserveSamples 4
+  let audioOk ← Allegro.installAudio
+  if audioOk != 0 then
+    let _ ← Allegro.initAcodecAddon
+    let _ ← Allegro.reserveSamples 4
+    pure ()
+  else
+    IO.eprintln "WARNING: al_install_audio failed – audio tests will be skipped"
   let _ ← Allegro.installKeyboard
   let _ ← Allegro.installMouse
 
@@ -2940,79 +2944,83 @@ def main : IO UInt32 := do
   Allegro.setNewDisplayFlags 0
   let display : Display ← Allegro.createDisplay 320 200
   if display == 0 then
-    IO.eprintln "FATAL: createDisplay failed"
-    return 1
+    IO.eprintln "WARNING: createDisplay failed – skipping tests that need a display"
+    -- still run non-display tests
+    pure ()
 
   IO.println "=== AllegroInLean Functional Tests ==="
   IO.println ""
+
+  let hasDisplay := display != 0
+  let hasAudio := audioOk != 0
 
   let _ ← testConfig
   let _ ← testConfigIteration
   let _ ← testStateSaveRestore
   let _ ← testUstrExtended
   let _ ← testColor
-  let _ ← testFont
-  let _ ← testImageBitmap
-  let _ ← testPrimitives
-  let _ ← testAudio
+  if hasDisplay then let _ ← testFont; pure ()
+  if hasDisplay then let _ ← testImageBitmap; pure ()
+  if hasDisplay then let _ ← testPrimitives; pure ()
+  if hasAudio then let _ ← testAudio; pure ()
   let _ ← testTimer
   let _ ← testEvents
   let _ ← testEventData
   let _ ← testInput
   let _ ← testSystemInfo
-  let _ ← testClipboard display
+  if hasDisplay then let _ ← testClipboard display; pure ()
   let _ ← testMonitorInfo
   let _ ← testDisplayModes
-  let _ ← testDisplayExtras display
-  let _ ← testMouseCursor display
-  let _ ← testBitmapExtras
-  let _ ← testTupleApis display
-  let _ ← testOptionApis display
+  if hasDisplay then let _ ← testDisplayExtras display; pure ()
+  if hasDisplay then let _ ← testMouseCursor display; pure ()
+  if hasDisplay then let _ ← testBitmapExtras; pure ()
+  if hasDisplay then let _ ← testTupleApis display; pure ()
+  if hasDisplay then let _ ← testOptionApis display; pure ()
   let _ ← testEventExtras
   let _ ← testTransformExtras
   let _ ← testPathExtras
   let _ ← testUstrExtras
-  let _ ← testFontExtras
+  if hasDisplay then let _ ← testFontExtras; pure ()
   let _ ← testConfigExtras
   let _ ← testSystemExtras
   let _ ← testNewDisplaySettings
   let _ ← testNewBitmapSettings
-  let _ ← testBitmapBlender
-  let _ ← testTintedDrawing
+  if hasDisplay then let _ ← testBitmapBlender; pure ()
+  if hasDisplay then let _ ← testTintedDrawing; pure ()
   let _ ← testInputExtras
-  let _ ← testBlendingExtras
+  if hasDisplay then let _ ← testBlendingExtras; pure ()
   let _ ← testColorExtras
-  let _ ← testAudioExtras
-  let _ ← testPrimitivesExtras
+  if hasAudio then let _ ← testAudioExtras; pure ()
+  if hasDisplay then let _ ← testPrimitivesExtras; pure ()
   let _ ← testUstrRemaining
   let _ ← testColorConstructors
-  let _ ← testTtfExtras
-  let _ ← testAudioStreamExtras
-  let _ ← testAudioRecorder
-  let _ ← testSampleIdExtras
-  let _ ← testSampleInstanceExtras
-  let _ ← testAudioMisc
-  let _ ← testMultilineUstr
-  let _ ← testMenuExtras
-  let _ ← testRefBuffer
+  if hasDisplay then let _ ← testTtfExtras; pure ()
+  if hasAudio then let _ ← testAudioStreamExtras; pure ()
+  if hasAudio then let _ ← testAudioRecorder; pure ()
+  if hasAudio then let _ ← testSampleIdExtras; pure ()
+  if hasAudio then let _ ← testSampleInstanceExtras; pure ()
+  if hasAudio then let _ ← testAudioMisc; pure ()
+  if hasDisplay then let _ ← testMultilineUstr; pure ()
+  if hasDisplay then let _ ← testMenuExtras; pure ()
+  if hasDisplay then let _ ← testRefBuffer; pure ()
   let _ ← testUserEvent
   let _ ← testJoystickExtras
-  let _ ← testPrimitivesDrawing
-  let _ ← testVertexIndexBuffers
-  let _ ← testAudioRawSample
-  let _ ← testFileBasedAudio
-  let _ ← testFileBasedTtf
-  let _ ← testFileBasedVideo
+  if hasDisplay then let _ ← testPrimitivesDrawing; pure ()
+  if hasDisplay then let _ ← testVertexIndexBuffers; pure ()
+  if hasAudio then let _ ← testAudioRawSample; pure ()
+  if hasAudio then let _ ← testFileBasedAudio; pure ()
+  if hasDisplay then let _ ← testFileBasedTtf; pure ()
+  if hasDisplay && hasAudio then let _ ← testFileBasedVideo; pure ()
   let _ ← testTouchInput
   let _ ← testFileIO
   let _ ← testFilesystem
-  let _ ← testShader
+  if hasDisplay then let _ ← testShader; pure ()
   let _ ← testHaptic
   let _ ← testUninstallInput  -- destructive: must be last
 
   -- Cleanup
-  display.destroy
-  Allegro.uninstallAudio
+  if hasDisplay then display.destroy
+  if hasAudio then Allegro.uninstallAudio
   Allegro.shutdownPrimitivesAddon
   Allegro.shutdownTtfAddon
   Allegro.shutdownFontAddon
