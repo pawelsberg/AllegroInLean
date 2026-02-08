@@ -41,20 +41,22 @@ def main : IO Unit := do
   if okMouse == 0 then
     IO.eprintln "al_install_mouse failed"
 
-  let _ <- Allegro.createDisplay 320 200
-  let display : Display <- Allegro.getCurrentDisplay
-  let timer : Timer <- Allegro.createTimer (1.0 / 60.0)
-  let queue : EventQueue <- Allegro.createEventQueue
-  let displaySource <- display.eventSource
-  let timerSource <- timer.eventSource
-  queue.registerSource displaySource
-  queue.registerSource timerSource
-  let event : Event <- Allegro.createEvent
+  let display : Display <- Allegro.createDisplay 320 200
+  if display != 0 then
+    let timer : Timer <- Allegro.createTimer (1.0 / 60.0)
+    let queue : EventQueue <- Allegro.createEventQueue
+    let displaySource <- display.eventSource
+    let timerSource <- timer.eventSource
+    queue.registerSource displaySource
+    queue.registerSource timerSource
+    let event : Event <- Allegro.createEvent
 
-  event.destroy
-  queue.destroy
-  timer.destroy
-  display.destroy
+    event.destroy
+    queue.destroy
+    timer.destroy
+    display.destroy
+  else
+    IO.eprintln "createDisplay failed (non-fatal in headless CI)"
 
   Allegro.shutdownPrimitivesAddon
   Allegro.shutdownTtfAddon

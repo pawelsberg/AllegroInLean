@@ -2966,11 +2966,11 @@ def main : IO UInt32 := do
   let _ ← testTimer
   let _ ← testEvents
   let _ ← testEventData
-  let _ ← testInput
+  if hasDisplay then let _ ← testInput; pure ()
   let _ ← testSystemInfo
   if hasDisplay then let _ ← testClipboard display; pure ()
-  let _ ← testMonitorInfo
-  let _ ← testDisplayModes
+  if hasDisplay then let _ ← testMonitorInfo; pure ()
+  if hasDisplay then let _ ← testDisplayModes; pure ()
   if hasDisplay then let _ ← testDisplayExtras display; pure ()
   if hasDisplay then let _ ← testMouseCursor display; pure ()
   if hasDisplay then let _ ← testBitmapExtras; pure ()
@@ -2987,7 +2987,7 @@ def main : IO UInt32 := do
   let _ ← testNewBitmapSettings
   if hasDisplay then let _ ← testBitmapBlender; pure ()
   if hasDisplay then let _ ← testTintedDrawing; pure ()
-  let _ ← testInputExtras
+  if hasDisplay then let _ ← testInputExtras; pure ()
   if hasDisplay then let _ ← testBlendingExtras; pure ()
   let _ ← testColorExtras
   if hasAudio then let _ ← testAudioExtras; pure ()
@@ -3016,7 +3016,7 @@ def main : IO UInt32 := do
   let _ ← testFilesystem
   if hasDisplay then let _ ← testShader; pure ()
   let _ ← testHaptic
-  let _ ← testUninstallInput  -- destructive: must be last
+  if hasDisplay then let _ ← testUninstallInput; pure ()  -- destructive: must be last
 
   -- Cleanup
   if hasDisplay then display.destroy
