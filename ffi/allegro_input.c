@@ -176,10 +176,14 @@ lean_object* allegro_al_uninstall_keyboard(void) {
 }
 
 lean_object* allegro_al_can_set_keyboard_leds(void) {
+    /* On X11 the LED query touches the display connection — guard. */
+    if (!al_get_current_display()) return io_ok_uint32(0);
     return io_ok_uint32(al_can_set_keyboard_leds() ? 1u : 0u);
 }
 
 lean_object* allegro_al_set_keyboard_leds(uint32_t leds) {
+    /* On X11 this calls XChangeKeyboardControl which segfaults headless. */
+    if (!al_get_current_display()) return io_ok_uint32(0);
     return io_ok_uint32(al_set_keyboard_leds((int)leds) ? 1u : 0u);
 }
 
@@ -200,25 +204,31 @@ lean_object* allegro_al_uninstall_mouse(void) {
 }
 
 lean_object* allegro_al_get_mouse_num_axes(void) {
+    if (!al_is_mouse_installed()) return io_ok_uint32(0);
     return io_ok_uint32((uint32_t)al_get_mouse_num_axes());
 }
 
 lean_object* allegro_al_set_mouse_z(uint32_t z) {
+    if (!al_is_mouse_installed()) return io_ok_uint32(0);
     return io_ok_uint32(al_set_mouse_z((int)z) ? 1u : 0u);
 }
 
 lean_object* allegro_al_set_mouse_w(uint32_t w) {
+    if (!al_is_mouse_installed()) return io_ok_uint32(0);
     return io_ok_uint32(al_set_mouse_w((int)w) ? 1u : 0u);
 }
 
 lean_object* allegro_al_set_mouse_axis(uint32_t axis, uint32_t value) {
+    if (!al_is_mouse_installed()) return io_ok_uint32(0);
     return io_ok_uint32(al_set_mouse_axis((int)axis, (int)value) ? 1u : 0u);
 }
 
 lean_object* allegro_al_can_get_mouse_cursor_position(void) {
+    if (!al_is_mouse_installed()) return io_ok_uint32(0);
     return io_ok_uint32(al_can_get_mouse_cursor_position() ? 1u : 0u);
 }
 
 lean_object* allegro_al_get_mouse_wheel_precision(void) {
+    if (!al_is_mouse_installed()) return io_ok_uint32(0);
     return io_ok_uint32((uint32_t)al_get_mouse_wheel_precision());
 }

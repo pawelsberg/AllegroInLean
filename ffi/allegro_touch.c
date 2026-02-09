@@ -5,6 +5,10 @@
 /* ── Touch input installation ── */
 
 lean_object* allegro_al_install_touch_input(void) {
+    /* On X11 the touch driver calls XQueryExtension which segfaults when
+       there is no X connection (headless / DISPLAY unset).  Guard here so
+       callers always get a safe 0-return instead of a crash. */
+    if (!al_get_current_display()) return io_ok_uint32(0);
     return io_ok_uint32(al_install_touch_input() ? 1u : 0u);
 }
 
