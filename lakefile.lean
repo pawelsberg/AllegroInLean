@@ -84,8 +84,8 @@ def allegroPrefixCandidates : Array System.FilePath :=
 def allegroLibDirs : Array System.FilePath := Id.run do
   let mut dirs := #[]
   for pfx in allegroPrefixCandidates do
-    -- lib64 exists on Linux but not macOS
-    if !System.Platform.isOSX then
+    -- lib64 exists on Linux but not macOS / Windows
+    if !System.Platform.isOSX && !System.Platform.isWindows then
       dirs := dirs.push (pfx / "lib64")
     dirs := dirs.push (pfx / "lib")
   return dirs
@@ -100,7 +100,9 @@ def allegroLinkArgs : Array String := Id.run do
   let mut args := #[]
   for dir in allegroLibDirs do
     args := args.push s!"-L{dir.toString}"
-    args := args.push s!"-Wl,-rpath,{dir.toString}"
+    -- rpath is a Unix concept; PE/COFF (Windows) does not support it
+    if !System.Platform.isWindows then
+      args := args.push s!"-Wl,-rpath,{dir.toString}"
   args := args ++ #[
     "-lallegro",
     "-lallegro_image",
