@@ -37,8 +37,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest,  name: Linux   }
-          # - { os: macos-latest,   name: macOS   }   # disabled to save CI cost
+          # - { os: ubuntu-latest,  name: Linux   }  # disabled to save CI cost
+          - { os: macos-latest,   name: macOS   }
           # - { os: windows-latest, name: Windows } # disabled to save CI cost
     defaults:
       run:
@@ -88,11 +88,15 @@ jobs:
             libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
             libtheora-dev libvorbis-dev libogg-dev
 
+      - name: Install Allegro build deps (macOS)
+        if: runner.os == 'macOS'
+        run: brew install theora libvorbis libogg
+
       - name: Cache Allegro build
         uses: actions/cache@v4
         with:
           path: allegro-local
-          key: allegro-5.2.11-v3-${{ runner.os }}
+          key: allegro-5.2.11-v4-${{ runner.os }}
 
       - name: Build Allegro from source
         run: |
