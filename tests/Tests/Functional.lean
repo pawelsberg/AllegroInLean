@@ -2937,16 +2937,18 @@ def main : IO UInt32 := do
     pure ()
   else
     IO.eprintln "WARNING: al_install_audio failed – audio tests will be skipped"
-  let _ ← Allegro.installKeyboard
-  let _ ← Allegro.installMouse
 
-  -- Need a display for some bitmap operations
+  -- On macOS / Cocoa, keyboard and mouse installation may require a display
+  -- to be created first, so create the display before installing input.
   Allegro.setNewDisplayFlags 0
   let display : Display ← Allegro.createDisplay 320 200
   if display == 0 then
     IO.eprintln "WARNING: createDisplay failed – skipping tests that need a display"
     -- still run non-display tests
     pure ()
+
+  let _ ← Allegro.installKeyboard
+  let _ ← Allegro.installMouse
 
   IO.println "=== AllegroInLean Functional Tests ==="
   IO.println ""

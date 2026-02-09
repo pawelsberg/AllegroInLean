@@ -33,6 +33,12 @@ def main : IO Unit := do
     let _ <- Allegro.reserveSamples 1
     pure ()
 
+  -- On macOS / Cocoa, keyboard and mouse installation may require a display
+  -- to be created first.  Create the display early, then install input.
+  let display : Display <- Allegro.createDisplay 320 200
+  if display == 0 then
+    IO.eprintln "createDisplay failed (non-fatal in headless CI)"
+
   let okKb <- Allegro.installKeyboard
   if okKb == 0 then
     IO.eprintln "al_install_keyboard failed"
@@ -41,7 +47,6 @@ def main : IO Unit := do
   if okMouse == 0 then
     IO.eprintln "al_install_mouse failed"
 
-  let display : Display <- Allegro.createDisplay 320 200
   if display != 0 then
     let timer : Timer <- Allegro.createTimer (1.0 / 60.0)
     let queue : EventQueue <- Allegro.createEventQueue

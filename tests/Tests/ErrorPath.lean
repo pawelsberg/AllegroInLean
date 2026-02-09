@@ -710,8 +710,6 @@ def main : IO UInt32 := do
   if ok == 0 then
     IO.eprintln "FATAL: al_init failed"
     return 1
-  let _ ← Allegro.installKeyboard
-  let _ ← Allegro.installMouse
   let _ ← Allegro.initImageAddon
   Allegro.initFontAddon
   let _ ← Allegro.initTtfAddon
@@ -723,6 +721,15 @@ def main : IO UInt32 := do
     pure ()
   else
     IO.eprintln "WARNING: al_install_audio failed – audio error-path tests still run (null-handle)"
+
+  -- On macOS / Cocoa, keyboard and mouse installation may require a display
+  -- to be created first.
+  let display : Display ← Allegro.createDisplay 320 200
+  if display == 0 then
+    IO.eprintln "WARNING: createDisplay failed (non-fatal)"
+
+  let _ ← Allegro.installKeyboard
+  let _ ← Allegro.installMouse
   let _ ← Allegro.installJoystick
 
   IO.println "═══════════════════════════════"
@@ -746,6 +753,7 @@ def main : IO UInt32 := do
   let _ ← testOptionErrorPaths
 
   -- Shutdown
+  if display != 0 then display.destroy
   if audioOk != 0 then
     Allegro.uninstallAudio
   Allegro.shutdownFontAddon
