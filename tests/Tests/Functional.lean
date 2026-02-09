@@ -3011,7 +3011,7 @@ def main : IO UInt32 := do
   if hasAudio then let _ ← testFileBasedAudio; pure ()
   if hasDisplay then let _ ← testFileBasedTtf; pure ()
   if hasDisplay && hasAudio then let _ ← testFileBasedVideo; pure ()
-  let _ ← testTouchInput
+  if hasDisplay then let _ ← testTouchInput; pure ()
   let _ ← testFileIO
   let _ ← testFilesystem
   if hasDisplay then let _ ← testShader; pure ()

@@ -318,6 +318,8 @@ lean_object* allegro_al_is_compatible_bitmap(uint64_t bitmap) {
 }
 
 lean_object* allegro_al_wait_for_vsync(void) {
+    ALLEGRO_DISPLAY *d = al_get_current_display();
+    if (!d) return io_ok_uint32(0);
     return io_ok_uint32(al_wait_for_vsync() ? 1u : 0u);
 }
 
