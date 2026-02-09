@@ -3,59 +3,53 @@ import Allegro
 open Allegro
 
 def main : IO Unit := do
-  IO.eprintln "[smoke:1] init"
   let okInit <- Allegro.init
   if okInit == 0 then
     IO.eprintln "al_init failed"
     return
 
-  IO.eprintln "[smoke:2] initImageAddon"
   let okImage <- Allegro.initImageAddon
   if okImage == 0 then
     IO.eprintln "al_init_image_addon failed"
 
-  IO.eprintln "[smoke:3] initFontAddon"
   Allegro.initFontAddon
 
-  IO.eprintln "[smoke:4] initTtfAddon"
   let okTtf <- Allegro.initTtfAddon
   if okTtf == 0 then
     IO.eprintln "al_init_ttf_addon failed"
 
-  IO.eprintln "[smoke:5] initPrimitivesAddon"
   let okPrim <- Allegro.initPrimitivesAddon
   if okPrim == 0 then
     IO.eprintln "al_init_primitives_addon failed"
 
-  IO.eprintln "[smoke:6] installAudio"
   let okAudio <- Allegro.installAudio
   if okAudio == 0 then
     IO.eprintln "al_install_audio failed (non-fatal in headless CI)"
 
   if okAudio != 0 then
-    IO.eprintln "[smoke:7] initAcodecAddon"
     let okAcodec <- Allegro.initAcodecAddon
     if okAcodec == 0 then
       IO.eprintln "al_init_acodec_addon failed"
     let _ <- Allegro.reserveSamples 1
     pure ()
 
-  IO.eprintln "[smoke:8] createDisplay"
+  -- On macOS / Cocoa the display and mouse driver use
+  -- dispatch_sync(dispatch_get_main_queue()) which deadlocks when
+  -- called from the main thread without a Cocoa run loop.
+  -- On Windows CI the WGL/D3D driver can segfault without a GPU.
+  -- The C shims return 0 in those cases; we handle it gracefully.
   let display : Display <- Allegro.createDisplay 320 200
   if display == 0 then
     IO.eprintln "createDisplay failed (non-fatal in headless CI)"
 
-  IO.eprintln "[smoke:9] installKeyboard"
   let okKb <- Allegro.installKeyboard
   if okKb == 0 then
     IO.eprintln "al_install_keyboard failed"
 
-  IO.eprintln "[smoke:10] installMouse"
   let okMouse <- Allegro.installMouse
   if okMouse == 0 then
     IO.eprintln "al_install_mouse failed (non-fatal in headless CI)"
 
-  IO.eprintln "[smoke:11] event loop"
   if display != 0 then
     let timer : Timer <- Allegro.createTimer (1.0 / 60.0)
     let queue : EventQueue <- Allegro.createEventQueue
@@ -70,7 +64,6 @@ def main : IO Unit := do
     timer.destroy
     display.destroy
 
-  IO.eprintln "[smoke:12] shutdown"
   Allegro.shutdownPrimitivesAddon
   Allegro.shutdownTtfAddon
   Allegro.shutdownFontAddon

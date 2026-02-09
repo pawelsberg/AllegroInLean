@@ -1,5 +1,7 @@
 #include "allegro_ffi.h"
 #include <allegro5/allegro.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef __APPLE__
 #include <pthread.h>
@@ -28,6 +30,17 @@ lean_object* allegro_al_create_display(uint32_t width, uint32_t height) {
      * Return NULL (0) to signal failure; all callers handle this gracefully. */
     if (pthread_main_np()) {
         return io_ok_uint64(0);
+    }
+#endif
+#ifdef _WIN32
+    /* On Windows CI runners the WGL / D3D display driver can segfault
+     * when no real GPU / desktop session is available.
+     * When the CI environment variable is set, skip display creation. */
+    {
+        const char *ci = getenv("CI");
+        if (ci && (strcmp(ci, "true") == 0 || strcmp(ci, "1") == 0)) {
+            return io_ok_uint64(0);
+        }
     }
 #endif
     ALLEGRO_DISPLAY *display = al_create_display((int)width, (int)height);
