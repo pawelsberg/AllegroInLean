@@ -149,10 +149,9 @@ lean_object* allegro_al_get_joystick_type(uint64_t joy) {
         (ALLEGRO_JOYSTICK *)u64_to_ptr(joy)));
 }
 
-lean_object* allegro_al_set_joystick_mappings(lean_object* pathObj) {
+lean_object* allegro_al_set_joystick_mappings(b_lean_obj_arg pathObj) {
     const char *path = lean_string_cstr(pathObj);
     bool ok = al_set_joystick_mappings(path);
-    lean_dec_ref(pathObj);
     return io_ok_uint32(ok ? 1u : 0u);
 }
 

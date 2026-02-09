@@ -11,7 +11,10 @@ lean_object* allegro_al_ustr_new(lean_object* textObj) {
 
 lean_object* allegro_al_ustr_new_from_buffer(lean_object* textObj, uint32_t size) {
     const char *text = lean_string_cstr(textObj);
-    ALLEGRO_USTR *ustr = al_ustr_new_from_buffer(text, (size_t)size);
+    /* Clamp size to actual string length to prevent over-read */
+    size_t actual = strlen(text);
+    size_t clamped = (size_t)size > actual ? actual : (size_t)size;
+    ALLEGRO_USTR *ustr = al_ustr_new_from_buffer(text, clamped);
     return io_ok_uint64(ptr_to_u64(ustr));
 }
 
@@ -405,7 +408,7 @@ lean_object* allegro_al_utf8_width(uint32_t codepoint) {
 }
 
 lean_object* allegro_al_utf8_encode(uint32_t codepoint) {
-    char buf[4];
+    char buf[5];  /* up to 4 UTF-8 bytes + NUL terminator */
     size_t n = al_utf8_encode(buf, (int32_t)codepoint);
     /* Return as a Lean String (up to 4 UTF-8 bytes). */
     buf[n] = '\0';
@@ -461,10 +464,12 @@ lean_object* allegro_al_utf16_encode(uint32_t codepoint) {
 /* ── Read-only USTR references (heap-allocated info structs) ── */
 
 lean_object* allegro_al_ref_cstr(lean_object* strObj) {
+    /* NOTE: al_ref_cstr creates a non-owning reference into the source string.
+     * Since lean_dec_ref may free strObj, we must copy the string instead
+     * to avoid a use-after-free.  We use al_ustr_new which makes an owned copy.
+     * The ALLEGRO_USTR_INFO is not needed for al_ustr_new. */
     const char *s = lean_string_cstr(strObj);
-    ALLEGRO_USTR_INFO *info = (ALLEGRO_USTR_INFO *)malloc(sizeof(ALLEGRO_USTR_INFO));
-    if (!info) { lean_dec_ref(strObj); return io_ok_uint64(0); }
-    const ALLEGRO_USTR *u = al_ref_cstr(info, s);
+    const ALLEGRO_USTR *u = al_ustr_new(s);
     lean_dec_ref(strObj);
     return io_ok_uint64(ptr_to_u64((void *)u));
 }

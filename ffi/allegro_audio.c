@@ -640,18 +640,16 @@ lean_object* allegro_al_set_default_voice(uint64_t voice) {
 
 /* ── Sample save / identify ── */
 
-lean_object* allegro_al_save_sample(lean_object* pathObj, uint64_t sample) {
+lean_object* allegro_al_save_sample(b_lean_obj_arg pathObj, uint64_t sample) {
     if (sample == 0) return io_ok_uint32(0);
     const char *path = lean_string_cstr(pathObj);
     bool ok = al_save_sample(path, (ALLEGRO_SAMPLE *)u64_to_ptr(sample));
-    lean_dec_ref(pathObj);
     return io_ok_uint32(ok ? 1u : 0u);
 }
 
-lean_object* allegro_al_identify_sample(lean_object* pathObj) {
+lean_object* allegro_al_identify_sample(b_lean_obj_arg pathObj) {
     const char *path = lean_string_cstr(pathObj);
     const char *type = al_identify_sample(path);
-    lean_dec_ref(pathObj);
     return io_ok_string(type);
 }
 
