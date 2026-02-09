@@ -1,6 +1,10 @@
 #include "allegro_ffi.h"
 #include <allegro5/allegro.h>
 
+#ifdef __APPLE__
+#include <pthread.h>
+#endif
+
 lean_object* allegro_al_set_new_display_flags(uint32_t flags) {
     al_set_new_display_flags(flags);
     return io_ok_unit();
@@ -15,6 +19,17 @@ lean_object* allegro_al_set_window_title(uint64_t display, lean_object* titleObj
 }
 
 lean_object* allegro_al_create_display(uint32_t width, uint32_t height) {
+#ifdef __APPLE__
+    /* On macOS the Cocoa backend creates the NSWindow via
+     *   dispatch_sync(dispatch_get_main_queue(), ^{ ... })
+     * which deadlocks / traps (SIGTRAP) when the caller IS the main thread
+     * and no Cocoa run loop is active.  Lean runs user code on the main
+     * thread, so we cannot safely call al_create_display().
+     * Return NULL (0) to signal failure; all callers handle this gracefully. */
+    if (pthread_main_np()) {
+        return io_ok_uint64(0);
+    }
+#endif
     ALLEGRO_DISPLAY *display = al_create_display((int)width, (int)height);
     return io_ok_uint64(ptr_to_u64(display));
 }
