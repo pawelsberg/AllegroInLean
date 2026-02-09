@@ -63,7 +63,9 @@ def allegroPrefixCandidates : Array System.FilePath :=
 def allegroLibDirs : Array System.FilePath := Id.run do
   let mut dirs := #[]
   for pfx in allegroPrefixCandidates do
-    dirs := dirs.push (pfx / "lib64")
+    -- lib64 exists on Linux but not macOS
+    if !System.Platform.isOSX then
+      dirs := dirs.push (pfx / "lib64")
     dirs := dirs.push (pfx / "lib")
   return dirs
 
@@ -89,9 +91,12 @@ def allegroLinkArgs : Array String := Id.run do
     "-lallegro_color",
     "-lallegro_dialog",
     "-lallegro_video",
-    "-lallegro_memfile",
-    "-lm"
+    "-lallegro_memfile"
   ]
+  -- macOS bundles math in libSystem (no separate libm).
+  -- Linux needs explicit -lm.
+  if !System.Platform.isWindows && !System.Platform.isOSX then
+    args := args.push "-lm"
   -- Lean's bundled ld.lld defaults to --no-allow-shlib-undefined which rejects
   -- versioned GLIBC math symbols (fmodf@GLIBC_2.38, etc.) referenced by the
   -- Allegro shared libraries.  Override on Linux so the dynamic linker resolves
