@@ -37,8 +37,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # - { os: ubuntu-latest,  name: Linux   }  # disabled to save CI cost
-          # - { os: macos-latest,   name: macOS   }  # disabled to save CI cost
+          - { os: ubuntu-latest,  name: Linux   }
+          - { os: macos-latest,   name: macOS   }
           - { os: windows-latest, name: Windows }
     defaults:
       run:

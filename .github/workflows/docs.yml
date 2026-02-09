@@ -1,11 +1,11 @@
 name: Docs
 
 on:
-  workflow_dispatch:  # docs succeeded – disabled automatic trigger to save CI cost
-  # push:
-  #   branches:
-  #     - main
-  #     - '[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - '[0-9]+.[0-9]+.[0-9]+'
 
 permissions:
   contents: write
