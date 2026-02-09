@@ -36,7 +36,12 @@ def testConfigInvalidHandle : IO Bool := do
   let r2 ← nullCfg.removeKey "" "key"
   check "removeConfigKey on null cfg returns 0" (r2 == 0)
   -- saveConfigFile with null config → 0
-  let r3 ← nullCfg.save "/tmp/null_cfg_test.cfg"
+  let tmp ← IO.getEnv "TEMP" >>= fun
+    | some t => pure t
+    | none => IO.getEnv "TMP" >>= fun
+      | some t => pure t
+      | none => pure "/tmp"
+  let r3 ← nullCfg.save s!"{tmp}/null_cfg_test.cfg"
   check "saveConfigFile with null cfg returns 0" (r3 == 0)
   -- destroyConfig 0 → no crash
   nullCfg.destroy
@@ -489,7 +494,12 @@ def testBadFilePaths : IO Bool := do
   let stream ← Allegro.loadAudioStream "/nonexistent/music.ogg" 4 2048
   check "loadAudioStream bad path returns 0" (stream == 0)
   -- saveBitmap with null bitmap → 0
-  let sv ← Allegro.saveBitmap "/tmp/test_null.png" 0
+  let tmp ← IO.getEnv "TEMP" >>= fun
+    | some t => pure t
+    | none => IO.getEnv "TMP" >>= fun
+      | some t => pure t
+      | none => pure "/tmp"
+  let sv ← Allegro.saveBitmap s!"{tmp}/test_null.png" 0
   check "saveBitmap null bitmap returns 0" (sv == 0)
   -- saveBitmap to unwritable path (with valid bitmap)
   let memFlag := Allegro.bitmapFlagMemory

@@ -15,6 +15,15 @@ open Allegro Harness
 
 set_option maxRecDepth 1024
 
+/-- Cross-platform temp directory. Uses TEMP/TMP on Windows, /tmp elsewhere. -/
+def getTmpDir : IO String := do
+  -- Try TEMP first (Windows), then TMP, then fall back to /tmp
+  let temp ← IO.getEnv "TEMP"
+  if let some t := temp then return t
+  let tmp ← IO.getEnv "TMP"
+  if let some t := tmp then return t
+  return "/tmp"
+
 -- ── Config tests ──
 
 def testConfig : IO Bool := do
@@ -49,8 +58,9 @@ def testConfig : IO Bool := do
   check "merge adds new section key" (vAudio == "80")
 
   -- Save and reload
-  let _ ← cfg.save "/tmp/allegro_lean_test.cfg"
-  let cfg3 : Config ← Allegro.loadConfigFile "/tmp/allegro_lean_test.cfg"
+  let tmp ← getTmpDir
+  let _ ← cfg.save s!"{tmp}/allegro_lean_test.cfg"
+  let cfg3 : Config ← Allegro.loadConfigFile s!"{tmp}/allegro_lean_test.cfg"
   let ok3 := cfg3 != 0
   check "save + reload" ok3
   if ok3 then
@@ -498,9 +508,10 @@ def testImageBitmap : IO Bool := do
       sub.destroy
 
     -- Save and reload (image addon)
-    let saved ← bmp.save "/tmp/allegro_lean_test.png"
+    let tmp ← getTmpDir
+    let saved ← bmp.save s!"{tmp}/allegro_lean_test.png"
     check "saveBitmap → 1" (saved == 1)
-    let loaded : Bitmap ← Allegro.loadBitmap "/tmp/allegro_lean_test.png"
+    let loaded : Bitmap ← Allegro.loadBitmap s!"{tmp}/allegro_lean_test.png"
     check "loadBitmap roundtrip" (loaded != 0)
     if loaded != 0 then
       let lw ← loaded.width
@@ -1353,13 +1364,14 @@ def testConfigExtras : IO Bool := do
   printSection "Config File Extras (gap-fill)"
 
   -- Create and save a config, then reload via _f variant
+  let tmp ← getTmpDir
   let cfg : Config ← Allegro.createConfig
   cfg.setValue "" "key" "value123"
-  let _ ← cfg.save "/tmp/allegro_lean_cfg_f_test.cfg"
+  let _ ← cfg.save s!"{tmp}/allegro_lean_cfg_f_test.cfg"
   cfg.destroy
 
   -- loadConfigFileF: open file, load config from it
-  let fp : AllegroFile ← Allegro.fopen "/tmp/allegro_lean_cfg_f_test.cfg" "r"
+  let fp : AllegroFile ← Allegro.fopen s!"{tmp}/allegro_lean_cfg_f_test.cfg" "r"
   check "fopen for config succeeds" (fp != 0)
   if fp != 0 then
     let cfg2 : Config ← Allegro.loadConfigFileF fp
@@ -1373,7 +1385,7 @@ def testConfigExtras : IO Bool := do
   -- saveConfigFileF: save to a file handle
   let cfg3 : Config ← Allegro.createConfig
   cfg3.setValue "" "saved" "via_f"
-  let fp2 : AllegroFile ← Allegro.fopen "/tmp/allegro_lean_cfg_f_test2.cfg" "w"
+  let fp2 : AllegroFile ← Allegro.fopen s!"{tmp}/allegro_lean_cfg_f_test2.cfg" "w"
   check "fopen for save succeeds" (fp2 != 0)
   if fp2 != 0 then
     let ok ← Allegro.saveConfigFileF fp2 cfg3
@@ -1382,7 +1394,7 @@ def testConfigExtras : IO Bool := do
   cfg3.destroy
 
   -- Verify round-trip
-  let cfg4 : Config ← Allegro.loadConfigFile "/tmp/allegro_lean_cfg_f_test2.cfg"
+  let cfg4 : Config ← Allegro.loadConfigFile s!"{tmp}/allegro_lean_cfg_f_test2.cfg"
   if cfg4 != 0 then
     let v2 ← cfg4.getValue "" "saved"
     check "saveConfigFileF round-trip" (v2 == "via_f")
@@ -1747,7 +1759,8 @@ def testPrimitivesExtras : IO Bool := do
   check "calculateRibbon returns non-empty ByteArray" (ribbon.size > 0)
 
   -- createPathForDirectory
-  let dp : Path ← Allegro.createPathForDirectory "/tmp/test/"
+  let tmp ← getTmpDir
+  let dp : Path ← Allegro.createPathForDirectory s!"{tmp}/test/"
   check "createPathForDirectory non-zero" (dp != 0)
   if dp != 0 then
     let fn ← dp.filename
@@ -2074,8 +2087,9 @@ def testAudioMisc : IO Bool := do
     let fmt ← Allegro.identifySample "data/beep.wav"
     check "identifySample non-empty" (fmt.length > 0)
 
-    -- saveSample to /tmp
-    let okSave ← Allegro.saveSample "/tmp/test_save_beep.wav" spl
+    -- saveSample to temp dir
+    let tmp ← getTmpDir
+    let okSave ← Allegro.saveSample s!"{tmp}/test_save_beep.wav" spl
     check "saveSample returns 1" (okSave == 1)
 
     -- fillSilence on sample data
@@ -2246,11 +2260,12 @@ def testJoystickExtras : IO Bool := do
     -- Write a dummy mapping file, then open it with fopen and pass the handle.
     -- The content isn't valid SDL_GameControllerDB, so the function reads it
     -- and returns 0 (failure), but it proves the binding works end-to-end.
-    let fw : AllegroFile ← Allegro.fopen "/tmp/allegro_test_jmap.txt" "w"
+    let tmp ← getTmpDir
+    let fw : AllegroFile ← Allegro.fopen s!"{tmp}/allegro_test_jmap.txt" "w"
     if fw != 0 then
       let _ ← fw.puts "not a valid mapping\n"
       let _ ← fw.close
-      let fr : AllegroFile ← Allegro.fopen "/tmp/allegro_test_jmap.txt" "r"
+      let fr : AllegroFile ← Allegro.fopen s!"{tmp}/allegro_test_jmap.txt" "r"
       if fr != 0 then
         let mapResult ← Allegro.setJoystickMappingsF fr
         -- The file is not valid mapping data, so the result doesn't matter;
@@ -2454,8 +2469,9 @@ def testFileBasedAudio : IO Bool := do
     let spl : Sample ← Allegro.loadSampleF fp2 ".wav"
     check "loadSampleF non-zero" (spl != 0)
     if spl != 0 then
-      -- saveSampleF to /tmp
-      let fp3 : AllegroFile ← Allegro.fopen "/tmp/test_save_f.wav" "wb"
+      -- saveSampleF to temp dir
+      let tmp ← getTmpDir
+      let fp3 : AllegroFile ← Allegro.fopen s!"{tmp}/test_save_f.wav" "wb"
       if fp3 != 0 then
         let okSave ← Allegro.saveSampleF fp3 ".wav" spl
         check "saveSampleF returns 1" (okSave == 1)
@@ -2596,8 +2612,9 @@ def testTouchInput : IO Bool := do
 def testFileIO : IO Bool := do
   printSection "File I/O (full)"
 
+  let tmp ← getTmpDir
   -- Write a temp file, then read it back
-  let f : AllegroFile ← Allegro.fopen "/tmp/allegro_lean_test.bin" "wb"
+  let f : AllegroFile ← Allegro.fopen s!"{tmp}/allegro_lean_test.bin" "wb"
   check "fopen for writing returns non-zero" (f != 0)
 
   -- Write raw bytes
@@ -2622,7 +2639,7 @@ def testFileIO : IO Bool := do
   check "fclose succeeds" (closeOk == 1)
 
   -- Re-open for reading
-  let f2 : AllegroFile ← Allegro.fopen "/tmp/allegro_lean_test.bin" "rb"
+  let f2 : AllegroFile ← Allegro.fopen s!"{tmp}/allegro_lean_test.bin" "rb"
   check "fopen for reading returns non-zero" (f2 != 0)
 
   -- File size
@@ -2680,18 +2697,18 @@ def testFileIO : IO Bool := do
   let _ ← f2.close
 
   -- String I/O
-  let sf : AllegroFile ← Allegro.fopen "/tmp/allegro_lean_str.txt" "w"
+  let sf : AllegroFile ← Allegro.fopen s!"{tmp}/allegro_lean_str.txt" "w"
   let pn ← sf.puts "Hello Allegro\n"
   check "fputs returns non-negative" (pn != 0xFFFFFFFF)
   let _ ← sf.close
 
-  let sf2 : AllegroFile ← Allegro.fopen "/tmp/allegro_lean_str.txt" "r"
+  let sf2 : AllegroFile ← Allegro.fopen s!"{tmp}/allegro_lean_str.txt" "r"
   let line ← sf2.gets 256
   check "fgets reads line" (line.length > 0)
   let _ ← sf2.close
 
   -- fopen? returns none for missing file
-  let missing ← Allegro.fopen? "/tmp/no_such_file_xyz.bin" "rb"
+  let missing ← Allegro.fopen? s!"{tmp}/no_such_file_xyz.bin" "rb"
   check "fopen? returns none for missing" missing.isNone
 
   -- Standard file interface
@@ -2717,25 +2734,26 @@ def testFilesystem : IO Bool := do
   let cwd ← Allegro.getCurrentDirectory
   check "getCurrentDirectory non-empty" (cwd.length > 0)
 
-  -- filenameExists — the test binary itself should exist, or /tmp
-  let exists1 ← Allegro.filenameExists "/tmp"
-  check "filenameExists /tmp" (exists1 == 1)
+  -- filenameExists — the temp dir should always exist
+  let tmp ← getTmpDir
+  let exists1 ← Allegro.filenameExists tmp
+  check "filenameExists tmpDir" (exists1 == 1)
 
   let exists2 ← Allegro.filenameExists "/no/such/path/zzzz"
   check "filenameExists non-existent = 0" (exists2 == 0)
 
   -- makeDirectory / removeFilename
-  let mkOk ← Allegro.makeDirectory "/tmp/allegro_lean_dir_test"
+  let mkOk ← Allegro.makeDirectory s!"{tmp}/allegro_lean_dir_test"
   check "makeDirectory succeeds" (mkOk == 1)
-  let rmOk ← Allegro.removeFilename "/tmp/allegro_lean_dir_test"
+  let rmOk ← Allegro.removeFilename s!"{tmp}/allegro_lean_dir_test"
   check "removeFilename removes dir" (rmOk == 1)
 
-  -- Create an FsEntry for /tmp
-  let e : FsEntry ← Allegro.createFsEntry "/tmp"
+  -- Create an FsEntry for the temp dir
+  let e : FsEntry ← Allegro.createFsEntry tmp
   check "createFsEntry returns non-zero" (e != 0)
 
   let name ← e.name
-  check "getFsEntryName contains tmp" ((name.splitOn "tmp").length > 1)
+  check "getFsEntryName non-empty" (name.length > 0)
 
   let upd ← e.update
   check "updateFsEntry succeeds" (upd == 1)
@@ -2756,11 +2774,11 @@ def testFilesystem : IO Bool := do
   check "getFsEntrySize no crash" true
 
   let ex ← e.exists_
-  check "fsEntryExists /tmp = 1" (ex == 1)
+  check "fsEntryExists tmpDir = 1" (ex == 1)
 
   -- Directory traversal
   let dirOk ← e.openDir
-  check "openDirectory /tmp succeeds" (dirOk == 1)
+  check "openDirectory tmpDir succeeds" (dirOk == 1)
 
   -- Read at least one child
   let child : FsEntry ← e.readDir
@@ -2779,11 +2797,11 @@ def testFilesystem : IO Bool := do
 
   -- openFsEntry as file
   -- Create a temp file, then open it via FsEntry
-  let tf : AllegroFile ← Allegro.fopen "/tmp/allegro_fs_test.txt" "w"
+  let tf : AllegroFile ← Allegro.fopen s!"{tmp}/allegro_fs_test.txt" "w"
   let _ ← tf.puts "test"
   let _ ← tf.close
 
-  let fe : FsEntry ← Allegro.createFsEntry "/tmp/allegro_fs_test.txt"
+  let fe : FsEntry ← Allegro.createFsEntry s!"{tmp}/allegro_fs_test.txt"
   let af : AllegroFile ← fe.openAsFile "r"
   check "openFsEntry returns non-zero" (af != 0)
   let _ ← af.close
@@ -2792,12 +2810,12 @@ def testFilesystem : IO Bool := do
   check "removeFsEntry + destroyFsEntry no crash" true
 
   -- Option variants
-  let eOpt ← Allegro.createFsEntry? "/tmp"
+  let eOpt ← Allegro.createFsEntry? tmp
   check "createFsEntry? returns some" eOpt.isSome
   if let some (e2 : FsEntry) := eOpt then e2.destroy
 
   -- readDirectory? on non-open dir
-  let e3 : FsEntry ← Allegro.createFsEntry "/tmp"
+  let e3 : FsEntry ← Allegro.createFsEntry tmp
   let _ ← e3.openDir
   -- Read until done
   let doneOpt ← Allegro.readDirectory? e3
@@ -2807,7 +2825,7 @@ def testFilesystem : IO Bool := do
   check "readDirectory? no crash" true
 
   -- listDirectory helper
-  let children ← Allegro.listDirectory "/tmp"
+  let children ← Allegro.listDirectory tmp
   check "listDirectory returns array" (children.size >= 0)
   -- Destroy the entries
   for child in children do
