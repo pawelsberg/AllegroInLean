@@ -672,7 +672,7 @@ def testEventData : IO Bool := do
     let tsrc ← t.eventSource
     q.registerSource tsrc
     t.start
-    Allegro.rest 0.05  -- let a few ticks accumulate
+    Allegro.rest 0.15  -- let a few ticks accumulate (generous for slow CI)
 
     -- getNextEventData (non-blocking)
     let (gotEd, ed) ← q.getNextData
