@@ -1,11 +1,26 @@
 #include "allegro_ffi.h"
 #include <allegro5/allegro.h>
 
+#ifdef __APPLE__
+#include <pthread.h>
+#endif
+
 lean_object* allegro_al_install_keyboard(void) {
     return io_ok_uint32(al_install_keyboard() ? 1u : 0u);
 }
 
 lean_object* allegro_al_install_mouse(void) {
+#ifdef __APPLE__
+    /* On macOS the mouse driver init calls _al_osx_mouse_was_installed()
+     * which uses dispatch_sync(dispatch_get_main_queue()) to notify
+     * existing display windows.  When the caller IS the main thread and
+     * no Cocoa run loop is active (the case for Lean), this deadlocks
+     * and triggers SIGTRAP.  Return 0 (false) to signal failure;
+     * all callers handle mouse-not-installed gracefully. */
+    if (pthread_main_np()) {
+        return io_ok_uint32(0);
+    }
+#endif
     return io_ok_uint32(al_install_mouse() ? 1u : 0u);
 }
 
