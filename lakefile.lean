@@ -29,6 +29,19 @@ private def pkgConfigWithPath (extraPath : String) (args : Array String) : Optio
   let pkgArgs := " ".intercalate args.toList
   runCmd "sh" #["-c", s!"PKG_CONFIG_PATH={extraPath} pkg-config {pkgArgs}"]
 
+/-- Check whether a file path exists (build-time only).
+    Used as a fallback on Windows where `pkg-config` / `sh` may be
+    unavailable to native (non-MSYS2) processes like Lake. -/
+private unsafe def fileExistsUnsafe (path : System.FilePath) : Bool :=
+  let action : IO Bool := System.FilePath.pathExists path
+  let result := unsafeBaseIO action.toBaseIO
+  match result with
+  | Except.ok b => b
+  | Except.error _ => false
+
+@[implemented_by fileExistsUnsafe]
+private opaque fileExistsBuildTime : System.FilePath → Bool
+
 -- ── Allegro prefix detection ──
 
 /-- Candidate pkg-config directories from a local Allegro build (produced by `scripts/build-allegro.sh`). -/
@@ -58,7 +71,15 @@ def allegroPrefixCandidates : Array System.FilePath :=
         -- Try common system prefixes (/usr/local, Homebrew, etc.)
         match pkgConfigWithPath commonPkgConfigPath #["--variable=prefix", "allegro-5"] with
         | some p => #[System.FilePath.mk p]
-        | none => #[]
+        | none =>
+          -- Direct fallback: check for allegro-local/ build tree directly.
+          -- On Windows, pkg-config / sh are MSYS2 tools that are not visible
+          -- to native processes (Lake, Lean).  Bypass pkg-config entirely.
+          let localPrefix : System.FilePath := "allegro-local"
+          if fileExistsBuildTime (localPrefix / "include" / "allegro5" / "allegro.h") then
+            #[localPrefix]
+          else
+            #[]
 
 def allegroLibDirs : Array System.FilePath := Id.run do
   let mut dirs := #[]
