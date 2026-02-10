@@ -596,6 +596,11 @@ private opaque lockBitmapRegionBlockedRaw : UInt64 → Int32 → Int32 → Int32
 @[inline] def lockBitmapRegionBlocked (bmp : UInt64) (xBlock yBlock wBlock hBlock : Int32) (mode : LockMode) : IO LockedRegion :=
   lockBitmapRegionBlockedRaw bmp xBlock yBlock wBlock hBlock mode.val
 
+/-- Back up the contents of a single dirty bitmap.
+    Useful before switching display contexts. -/
+@[extern "allegro_al_backup_dirty_bitmap"]
+opaque backupDirtyBitmap : Bitmap → IO Unit
+
 -- ── Option-returning variants ──
 
 /-- Create a bitmap, returning `none` on failure (OOM, invalid size, etc.). -/

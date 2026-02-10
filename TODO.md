@@ -37,6 +37,13 @@ Known exclusions (intentional):
 - Core `al_map_*/al_unmap_*` colour functions — by design (colours flow as float components through C shim wrappers)
 - Callback-based functions (`al_register_*`, `al_draw_soft_*`, `al_set_mixer_postprocess_callback`) — inherently difficult to bind from Lean FFI
 - `fixed.h` — contains only macros, no `AL_FUNC` declarations
+- Haptic effect struct functions (`al_upload_haptic_effect`, `al_play_haptic_effect`,
+  `al_upload_and_play_haptic_effect`, `al_is_haptic_effect_ok`,
+  `al_get_haptic_effect_duration`) — require complex `ALLEGRO_HAPTIC_EFFECT`
+  struct binding; rumble effect available via `uploadRumbleEffect`
+- `al_get_audio_output_device` — returns opaque `ALLEGRO_AUDIO_DEVICE*`; name
+  is accessible via `getAudioDeviceName`
+- `al_get_audio_recorder_event` — requires `ALLEGRO_AUDIO_RECORDER_EVENT` struct binding
 
 Known Allegro bugs (re-check after Allegro update):
 - **`al_play_audio_stream_f` double-free** (Allegro 5.2.11) — internal cleanup-order

@@ -24,7 +24,7 @@ namespace Allegro
     Returns a file handle (0 on failure).
     **Important:** the caller must ensure the buffer stays alive while the file is in use. -/
 @[extern "allegro_al_open_memfile"]
-opaque openMemfile : UInt64 → Int64 → String → IO UInt64
+opaque openMemfile : UInt64 → Int64 → @& String → IO UInt64
 
 /-- Return the version of the memfile addon (packed integer). -/
 @[extern "allegro_al_get_allegro_memfile_version"]

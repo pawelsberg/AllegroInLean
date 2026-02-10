@@ -18,13 +18,13 @@ lean_object* allegro_al_is_ttf_addon_initialized(void) {
 
 /* ── Font loading ── */
 
-lean_object* allegro_al_load_ttf_font(lean_object* pathObj, int32_t size, uint32_t flags) {
+lean_object* allegro_al_load_ttf_font(b_lean_obj_arg pathObj, int32_t size, uint32_t flags) {
     const char *path = lean_string_cstr(pathObj);
     ALLEGRO_FONT *font = al_load_ttf_font(path, size, (int)flags);
     return io_ok_uint64(ptr_to_u64(font));
 }
 
-lean_object* allegro_al_load_ttf_font_stretch(lean_object* pathObj, int32_t w, int32_t h, uint32_t flags) {
+lean_object* allegro_al_load_ttf_font_stretch(b_lean_obj_arg pathObj, int32_t w, int32_t h, uint32_t flags) {
     const char *path = lean_string_cstr(pathObj);
     ALLEGRO_FONT *font = al_load_ttf_font_stretch(path, w, h, (int)flags);
     return io_ok_uint64(ptr_to_u64(font));

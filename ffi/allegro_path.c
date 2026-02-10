@@ -5,7 +5,7 @@ lean_object* allegro_al_standard_path_resources(void) {
     return io_ok_uint32((uint32_t)ALLEGRO_RESOURCES_PATH);
 }
 
-lean_object* allegro_al_create_path(lean_object* pathObj) {
+lean_object* allegro_al_create_path(b_lean_obj_arg pathObj) {
     const char *path = lean_string_cstr(pathObj);
     ALLEGRO_PATH *p = al_create_path(path);
     return io_ok_uint64(ptr_to_u64(p));
@@ -31,7 +31,7 @@ lean_object* allegro_al_get_standard_path(uint32_t which) {
     return io_ok_uint64(ptr_to_u64(path));
 }
 
-lean_object* allegro_al_append_path_component(uint64_t pathPtr, lean_object* componentObj) {
+lean_object* allegro_al_append_path_component(uint64_t pathPtr, b_lean_obj_arg componentObj) {
     if (pathPtr != 0) {
         const char *component = lean_string_cstr(componentObj);
         al_append_path_component((ALLEGRO_PATH *)u64_to_ptr(pathPtr), component);
@@ -75,7 +75,7 @@ lean_object* allegro_al_get_path_component(uint64_t pathPtr, uint32_t index) {
     return io_ok_string(al_get_path_component((ALLEGRO_PATH *)u64_to_ptr(pathPtr), (int)index));
 }
 
-lean_object* allegro_al_change_directory(lean_object* pathObj) {
+lean_object* allegro_al_change_directory(b_lean_obj_arg pathObj) {
     const char *path = lean_string_cstr(pathObj);
     return io_ok_uint32(al_change_directory(path) ? 1u : 0u);
 }

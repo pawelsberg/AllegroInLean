@@ -93,7 +93,7 @@ lean_object* allegro_al_color_rgb_to_yuv(uint32_t r, uint32_t g, uint32_t b) {
 
 /* ── Named CSS colour → RGB tuple ── */
 
-lean_object* allegro_al_color_name_rgb(lean_object* nameObj) {
+lean_object* allegro_al_color_name_rgb(b_lean_obj_arg nameObj) {
     const char *name = lean_string_cstr(nameObj);
     ALLEGRO_COLOR c = al_color_name(name);
     unsigned char r, g, b;
@@ -103,7 +103,7 @@ lean_object* allegro_al_color_name_rgb(lean_object* nameObj) {
 
 /* ── HTML → RGB tuple ── */
 
-lean_object* allegro_al_color_html_rgb(lean_object* htmlObj) {
+lean_object* allegro_al_color_html_rgb(b_lean_obj_arg htmlObj) {
     const char *html = lean_string_cstr(htmlObj);
     ALLEGRO_COLOR c = al_color_html(html);
     unsigned char r, g, b;
@@ -271,7 +271,7 @@ lean_object* allegro_al_color_yuv(double y_, double u, double v) {
     return io_ok_u32_quad((uint32_t)r, (uint32_t)g, (uint32_t)b, (uint32_t)a);
 }
 
-lean_object* allegro_al_color_name_rgba(lean_object* nameObj) {
+lean_object* allegro_al_color_name_rgba(b_lean_obj_arg nameObj) {
     const char *name = lean_string_cstr(nameObj);
     ALLEGRO_COLOR c = al_color_name(name);
     unsigned char r, g, b, a;
@@ -279,7 +279,7 @@ lean_object* allegro_al_color_name_rgba(lean_object* nameObj) {
     return io_ok_u32_quad((uint32_t)r, (uint32_t)g, (uint32_t)b, (uint32_t)a);
 }
 
-lean_object* allegro_al_color_html_rgba(lean_object* htmlObj) {
+lean_object* allegro_al_color_html_rgba(b_lean_obj_arg htmlObj) {
     const char *html = lean_string_cstr(htmlObj);
     ALLEGRO_COLOR c = al_color_html(html);
     unsigned char r, g, b, a;

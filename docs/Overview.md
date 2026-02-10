@@ -63,7 +63,7 @@ Status key: implemented | partial | deferred
 | Path | Allegro.Core.Path | implemented | Create/clone, components, drive, filename, standard paths |
 | Ustr | Allegro.Core.Ustr | implemented | 60+ functions: creation, append/insert/remove, search (chr/cstr/set/cset), comparison, prefix/suffix, trim, ref (cstr/buffer/ustr), UTF-8/UTF-16 encode/decode, `cstrDup`, `ustrToBuffer` |
 | Thread | Allegro.Core.Thread | implemented | Mutex (create/lock/unlock/destroy), condition variables (create/wait/signal/broadcast/destroy), `withMutex` RAII helper. Thread *creation* intentionally skipped (incompatible with Lean runtime). |
-| Image addon | Allegro.Addons.Image | implemented | Init/shutdown, load/save bitmap, load with flags, identify bitmap, version query |
+| Image addon | Allegro.Addons.Image | implemented | Init/shutdown, load/save bitmap (incl. `ALLEGRO_FILE` variants), load with flags, identify bitmap (path and file), version query |
 | Font addon | Allegro.Addons.Font | implemented | Builtin/bitmap/file fonts, text drawing (incl. ustr variants), multiline, justified, glyph queries/dimensions, metrics, fallback, grab from bitmap, version query; tuple getTextDimensions, getUstrDimensions, getGlyphDimensions |
 | TTF addon | Allegro.Addons.Ttf | implemented | Init/shutdown, load, stretch, flag constants |
 | Primitives addon | Allegro.Addons.Primitives | implemented | Shapes (line, triangle, rect, rounded rect, circle, ellipse, arc, pieslice), splines, polylines, polygons, ribbons; vertex/index buffer management; `packFloats`/`packPoints` helpers; prim type/buffer/join/cap constants |

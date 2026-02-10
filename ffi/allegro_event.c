@@ -404,8 +404,8 @@ static lean_object* pack_event_data(const ALLEGRO_EVENT *ev) {
         fv1 = ev->timer.error;
         fv2 = ev->timer.timestamp;
         u64v = (uint64_t)ev->timer.count;
-    } else if (type >= 40 && type <= 61) {
-        /* Display event */
+    } else if ((type >= 40 && type <= 49) || (type >= 60 && type <= 61)) {
+        /* Display event (40-49: expose..resume_drawing, 60-61: connected/disconnected) */
         a = ev->display.x;
         b = ev->display.y;
         c = ev->display.width;
@@ -420,7 +420,7 @@ static lean_object* pack_event_data(const ALLEGRO_EVENT *ev) {
         fv1 = ev->joystick.pos;
         u64v = ptr_to_u64(ev->joystick.id);
     } else if (type >= 50 && type <= 53) {
-        /* Touch event */
+        /* Touch event (50-53: begin, end, move, cancel) */
         a = (int32_t)ev->touch.x;
         b = (int32_t)ev->touch.y;
         e = (int32_t)ev->touch.dx;

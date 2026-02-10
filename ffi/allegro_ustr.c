@@ -3,13 +3,13 @@
 
 /* ── Lifecycle ── */
 
-lean_object* allegro_al_ustr_new(lean_object* textObj) {
+lean_object* allegro_al_ustr_new(b_lean_obj_arg textObj) {
     const char *text = lean_string_cstr(textObj);
     ALLEGRO_USTR *ustr = al_ustr_new(text);
     return io_ok_uint64(ptr_to_u64(ustr));
 }
 
-lean_object* allegro_al_ustr_new_from_buffer(lean_object* textObj, uint32_t size) {
+lean_object* allegro_al_ustr_new_from_buffer(b_lean_obj_arg textObj, uint32_t size) {
     const char *text = lean_string_cstr(textObj);
     /* Clamp size to actual string length to prevent over-read */
     size_t actual = strlen(text);
@@ -60,7 +60,7 @@ lean_object* allegro_al_ustr_append(uint64_t ustr, uint64_t other) {
     return io_ok_unit();
 }
 
-lean_object* allegro_al_ustr_append_cstr(uint64_t ustr, lean_object* textObj) {
+lean_object* allegro_al_ustr_append_cstr(uint64_t ustr, b_lean_obj_arg textObj) {
     if (ustr != 0) {
         const char *text = lean_string_cstr(textObj);
         al_ustr_append_cstr((ALLEGRO_USTR *)u64_to_ptr(ustr), text);
@@ -68,7 +68,7 @@ lean_object* allegro_al_ustr_append_cstr(uint64_t ustr, lean_object* textObj) {
     return io_ok_unit();
 }
 
-lean_object* allegro_al_ustr_insert_cstr(uint64_t ustr, uint32_t offset, lean_object* textObj) {
+lean_object* allegro_al_ustr_insert_cstr(uint64_t ustr, uint32_t offset, b_lean_obj_arg textObj) {
     if (ustr != 0) {
         const char *text = lean_string_cstr(textObj);
         al_ustr_insert_cstr((ALLEGRO_USTR *)u64_to_ptr(ustr), (int)offset, text);
@@ -124,14 +124,14 @@ lean_object* allegro_al_ustr_ncompare(uint64_t us1, uint64_t us2, uint32_t n) {
     return io_ok_uint32((uint32_t)r);
 }
 
-lean_object* allegro_al_ustr_has_prefix_cstr(uint64_t ustr, lean_object *prefixObj) {
+lean_object* allegro_al_ustr_has_prefix_cstr(uint64_t ustr, b_lean_obj_arg prefixObj) {
     if (ustr == 0) return io_ok_uint32(0);
     const char *prefix = lean_string_cstr(prefixObj);
     return io_ok_uint32(
         al_ustr_has_prefix_cstr((const ALLEGRO_USTR *)u64_to_ptr(ustr), prefix) ? 1u : 0u);
 }
 
-lean_object* allegro_al_ustr_has_suffix_cstr(uint64_t ustr, lean_object *suffixObj) {
+lean_object* allegro_al_ustr_has_suffix_cstr(uint64_t ustr, b_lean_obj_arg suffixObj) {
     if (ustr == 0) return io_ok_uint32(0);
     const char *suffix = lean_string_cstr(suffixObj);
     return io_ok_uint32(
@@ -152,7 +152,7 @@ lean_object* allegro_al_ustr_rfind_chr(uint64_t ustr, uint32_t endPos, uint32_t 
     return io_ok_uint32((uint32_t)r);
 }
 
-lean_object* allegro_al_ustr_find_cstr(uint64_t ustr, uint32_t startPos, lean_object *needleObj) {
+lean_object* allegro_al_ustr_find_cstr(uint64_t ustr, uint32_t startPos, b_lean_obj_arg needleObj) {
     if (ustr == 0) return io_ok_uint32((uint32_t)-1);
     const char *needle = lean_string_cstr(needleObj);
     int r = al_ustr_find_cstr((const ALLEGRO_USTR *)u64_to_ptr(ustr), (int)startPos, needle);
@@ -161,7 +161,7 @@ lean_object* allegro_al_ustr_find_cstr(uint64_t ustr, uint32_t startPos, lean_ob
 
 /* ── Mutation ── */
 
-lean_object* allegro_al_ustr_assign_cstr(uint64_t ustr, lean_object *textObj) {
+lean_object* allegro_al_ustr_assign_cstr(uint64_t ustr, b_lean_obj_arg textObj) {
     if (ustr == 0) return io_ok_uint32(0);
     const char *text = lean_string_cstr(textObj);
     return io_ok_uint32(
@@ -290,21 +290,21 @@ lean_object* allegro_al_ustr_assign(uint64_t us1, uint64_t us2) {
 
 /* ── Search extended ── */
 
-lean_object* allegro_al_ustr_rfind_cstr(uint64_t ustr, uint32_t endPos, lean_object *needleObj) {
+lean_object* allegro_al_ustr_rfind_cstr(uint64_t ustr, uint32_t endPos, b_lean_obj_arg needleObj) {
     if (ustr == 0) return io_ok_uint32((uint32_t)-1);
     const char *needle = lean_string_cstr(needleObj);
     int r = al_ustr_rfind_cstr((const ALLEGRO_USTR *)u64_to_ptr(ustr), (int)endPos, needle);
     return io_ok_uint32((uint32_t)r);
 }
 
-lean_object* allegro_al_ustr_find_set_cstr(uint64_t ustr, uint32_t startPos, lean_object *acceptObj) {
+lean_object* allegro_al_ustr_find_set_cstr(uint64_t ustr, uint32_t startPos, b_lean_obj_arg acceptObj) {
     if (ustr == 0) return io_ok_uint32((uint32_t)-1);
     const char *accept = lean_string_cstr(acceptObj);
     int r = al_ustr_find_set_cstr((const ALLEGRO_USTR *)u64_to_ptr(ustr), (int)startPos, accept);
     return io_ok_uint32((uint32_t)r);
 }
 
-lean_object* allegro_al_ustr_find_cset_cstr(uint64_t ustr, uint32_t startPos, lean_object *rejectObj) {
+lean_object* allegro_al_ustr_find_cset_cstr(uint64_t ustr, uint32_t startPos, b_lean_obj_arg rejectObj) {
     if (ustr == 0) return io_ok_uint32((uint32_t)-1);
     const char *reject = lean_string_cstr(rejectObj);
     int r = al_ustr_find_cset_cstr((const ALLEGRO_USTR *)u64_to_ptr(ustr), (int)startPos, reject);
@@ -315,8 +315,8 @@ lean_object* allegro_al_ustr_find_cset_cstr(uint64_t ustr, uint32_t startPos, le
 
 lean_object* allegro_al_ustr_find_replace_cstr(uint64_t ustr,
                                                 uint32_t startPos,
-                                                lean_object *findObj,
-                                                lean_object *replaceObj) {
+                                                b_lean_obj_arg findObj,
+                                                b_lean_obj_arg replaceObj) {
     if (ustr == 0) return io_ok_uint32(0);
     const char *find_str = lean_string_cstr(findObj);
     const char *replace_str = lean_string_cstr(replaceObj);

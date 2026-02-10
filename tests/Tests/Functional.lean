@@ -1834,7 +1834,7 @@ def testColorConstructors : IO Bool := do
   check "getColorVersion > 0" (cv > 0)
 
   -- colorHsv: red = (0, 1, 1)
-  let (hr, hg, hb, ha) ← Allegro.colorHsv 0.0 1.0 1.0
+  let (hr, hg, _hb, ha) ← Allegro.colorHsv 0.0 1.0 1.0
   check "colorHsv red r ≈ 255" (hr > 240)
   check "colorHsv red g ≈ 0" (hg < 15)
   check "colorHsv red a = 255" (ha == 255)

@@ -12,7 +12,7 @@ lean_object* allegro_al_set_new_display_flags(uint32_t flags) {
     return io_ok_unit();
 }
 
-lean_object* allegro_al_set_window_title(uint64_t display, lean_object* titleObj) {
+lean_object* allegro_al_set_window_title(uint64_t display, b_lean_obj_arg titleObj) {
     if (display != 0) {
         const char *title = lean_string_cstr(titleObj);
         al_set_window_title((ALLEGRO_DISPLAY *)u64_to_ptr(display), title);

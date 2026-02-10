@@ -118,7 +118,7 @@ opaque reserveSamples : UInt32 → IO UInt32
 
 /-- Load an audio sample from a file. Returns null on failure. -/
 @[extern "allegro_al_load_sample"]
-opaque loadSample : String → IO Sample
+opaque loadSample : @& String → IO Sample
 
 /-- Destroy an audio sample and free its memory. -/
 @[extern "allegro_al_destroy_sample"]
@@ -335,11 +335,11 @@ opaque attachSampleInstanceToMixer : SampleInstance → Mixer → IO UInt32
 
 /-- Load a stream from file. `loadAudioStream path bufferCount samples` -/
 @[extern "allegro_al_load_audio_stream"]
-opaque loadAudioStream : String → UInt32 → UInt32 → IO AudioStream
+opaque loadAudioStream : @& String → UInt32 → UInt32 → IO AudioStream
 
 /-- Convenience: load and immediately start playing via the default mixer. -/
 @[extern "allegro_al_play_audio_stream"]
-opaque playAudioStream : String → IO AudioStream
+opaque playAudioStream : @& String → IO AudioStream
 
 /-- Destroy an audio stream and free its resources. -/
 @[extern "allegro_al_destroy_audio_stream"]

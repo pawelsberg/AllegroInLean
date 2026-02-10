@@ -4,7 +4,7 @@
 
 /* ── Memfile ── */
 
-lean_object* allegro_al_open_memfile(uint64_t mem, int64_t size, lean_object* modeObj) {
+lean_object* allegro_al_open_memfile(uint64_t mem, int64_t size, b_lean_obj_arg modeObj) {
     if (mem == 0) return io_ok_uint64(0);
     const char *mode = lean_string_cstr(modeObj);
     ALLEGRO_FILE *f = al_open_memfile((void *)u64_to_ptr(mem), size, mode);

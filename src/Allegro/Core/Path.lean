@@ -26,7 +26,7 @@ opaque standardPathResources : IO UInt32
 
 /-- Parse a path string into an Allegro path object. -/
 @[extern "allegro_al_create_path"]
-opaque createPath : String -> IO Path
+opaque createPath : @& String -> IO Path
 
 /-- Create an independent copy of a path. -/
 @[extern "allegro_al_clone_path"]
@@ -42,7 +42,7 @@ opaque getStandardPath : UInt32 -> IO Path
 
 /-- Append a directory component to the path. -/
 @[extern "allegro_al_append_path_component"]
-opaque appendPathComponent : Path -> String -> IO Unit
+opaque appendPathComponent : Path -> @& String -> IO Unit
 
 /-- Convert the path to a string using the given separator (e.g. `'/'`). -/
 @[extern "allegro_al_path_cstr"]
@@ -66,7 +66,7 @@ opaque getPathComponent : Path -> UInt32 -> IO String
 
 /-- Change the current working directory. Returns 1 on success. -/
 @[extern "allegro_al_change_directory"]
-opaque changeDirectory : String -> IO UInt32
+opaque changeDirectory : @& String -> IO UInt32
 
 /-- Destroy a path and free its resources. -/
 @[extern "allegro_al_destroy_path"]

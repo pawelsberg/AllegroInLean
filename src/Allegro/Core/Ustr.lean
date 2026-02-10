@@ -45,11 +45,11 @@ def Ustr.null : Ustr := (0 : UInt64)
 
 /-- Create a new Allegro ustr from a Lean string. Free with `ustrFree`. -/
 @[extern "allegro_al_ustr_new"]
-opaque ustrNew : String → IO Ustr
+opaque ustrNew : @& String → IO Ustr
 
 /-- Create a ustr from the first `size` bytes of the given string. -/
 @[extern "allegro_al_ustr_new_from_buffer"]
-opaque ustrNewFromBuffer : String → UInt32 → IO Ustr
+opaque ustrNewFromBuffer : @& String → UInt32 → IO Ustr
 
 /-- Free a ustr previously created with `ustrNew` or `ustrDup`. -/
 @[extern "allegro_al_ustr_free"]
@@ -83,11 +83,11 @@ opaque ustrAppend : Ustr → Ustr → IO Unit
 
 /-- Append a C string to a ustr. -/
 @[extern "allegro_al_ustr_append_cstr"]
-opaque ustrAppendCstr : Ustr → String → IO Unit
+opaque ustrAppendCstr : Ustr → @& String → IO Unit
 
 /-- Insert a C string at byte position `pos`. -/
 @[extern "allegro_al_ustr_insert_cstr"]
-opaque ustrInsertCstr : Ustr → UInt32 → String → IO Unit
+opaque ustrInsertCstr : Ustr → UInt32 → @& String → IO Unit
 
 /-- Insert ustr `us2` into `us1` at byte position `pos`. Returns 1 on success. -/
 @[extern "allegro_al_ustr_insert"]
@@ -115,7 +115,7 @@ opaque ustrSetChr : Ustr → UInt32 → UInt32 → IO UInt32
 
 /-- Replace the entire contents of a ustr with a C string. Returns 1 on success. -/
 @[extern "allegro_al_ustr_assign_cstr"]
-opaque ustrAssignCstr : Ustr → String → IO UInt32
+opaque ustrAssignCstr : Ustr → @& String → IO UInt32
 
 /-- Replace byte range [startPos, endPos) in `us1` with contents of `us2`. Returns 1 on success. -/
 @[extern "allegro_al_ustr_replace_range"]
@@ -141,11 +141,11 @@ opaque ustrNcompare : Ustr → Ustr → UInt32 → IO UInt32
 
 /-- Check if `ustr` starts with the given C string prefix. Returns 1 if yes. -/
 @[extern "allegro_al_ustr_has_prefix_cstr"]
-opaque ustrHasPrefixCstr : Ustr → String → IO UInt32
+opaque ustrHasPrefixCstr : Ustr → @& String → IO UInt32
 
 /-- Check if `ustr` ends with the given C string suffix. Returns 1 if yes. -/
 @[extern "allegro_al_ustr_has_suffix_cstr"]
-opaque ustrHasSuffixCstr : Ustr → String → IO UInt32
+opaque ustrHasSuffixCstr : Ustr → @& String → IO UInt32
 
 -- ── Search ──
 
@@ -162,7 +162,7 @@ opaque ustrRfindChr : Ustr → UInt32 → UInt32 → IO UInt32
 /-- Find C string `needle` starting from byte position `startPos`.
     Returns byte offset, or `UInt32.max` on failure. -/
 @[extern "allegro_al_ustr_find_cstr"]
-opaque ustrFindCstr : Ustr → UInt32 → String → IO UInt32
+opaque ustrFindCstr : Ustr → UInt32 → @& String → IO UInt32
 
 -- ── Trimming ──
 
@@ -248,24 +248,24 @@ opaque ustrAssignSubstr : Ustr → Ustr → UInt32 → UInt32 → IO UInt32
 /-- Reverse-find C string `needle` before byte position `endPos`.
     Returns byte offset, or `UInt32.max` on failure. -/
 @[extern "allegro_al_ustr_rfind_cstr"]
-opaque ustrRfindCstr : Ustr → UInt32 → String → IO UInt32
+opaque ustrRfindCstr : Ustr → UInt32 → @& String → IO UInt32
 
 /-- Find first occurrence of any character in `accept` set, starting from `startPos`.
     Returns byte offset, or `UInt32.max` on failure. -/
 @[extern "allegro_al_ustr_find_set_cstr"]
-opaque ustrFindSetCstr : Ustr → UInt32 → String → IO UInt32
+opaque ustrFindSetCstr : Ustr → UInt32 → @& String → IO UInt32
 
 /-- Find first character NOT in `reject` set, starting from `startPos`.
     Returns byte offset, or `UInt32.max` on failure. -/
 @[extern "allegro_al_ustr_find_cset_cstr"]
-opaque ustrFindCsetCstr : Ustr → UInt32 → String → IO UInt32
+opaque ustrFindCsetCstr : Ustr → UInt32 → @& String → IO UInt32
 
 -- ── Find & replace ──
 
 /-- Replace all occurrences of `find` with `replace` in the ustr, starting from `startPos`.
     Returns 1 on success. -/
 @[extern "allegro_al_ustr_find_replace_cstr"]
-opaque ustrFindReplaceCstr : Ustr → UInt32 → String → String → IO UInt32
+opaque ustrFindReplaceCstr : Ustr → UInt32 → @& String → @& String → IO UInt32
 
 -- ── Ustr-based search variants ──
 

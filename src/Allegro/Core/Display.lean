@@ -342,7 +342,7 @@ private opaque setDisplayOptionLiveRaw : Display → UInt32 → UInt32 → IO Un
 
 /-- Set the title of the display window. -/
 @[extern "allegro_al_set_window_title"]
-opaque setWindowTitle : Display → String → IO Unit
+opaque setWindowTitle : Display → @& String → IO Unit
 
 /-- Set the position of the display window on screen. -/
 @[extern "allegro_al_set_window_position"]

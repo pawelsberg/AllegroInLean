@@ -61,11 +61,11 @@ def ttfNoAutohint : UInt32 := 4
 
 /-- Load a TrueType font at the given pixel size. -/
 @[extern "allegro_al_load_ttf_font"]
-opaque loadTtfFont : String → Int32 → UInt32 → IO TtfFont
+opaque loadTtfFont : @& String → Int32 → UInt32 → IO TtfFont
 
 /-- Load a TrueType font stretched to width `w` and height `h` pixels. -/
 @[extern "allegro_al_load_ttf_font_stretch"]
-opaque loadTtfFontStretch : String → Int32 → Int32 → UInt32 → IO TtfFont
+opaque loadTtfFontStretch : @& String → Int32 → Int32 → UInt32 → IO TtfFont
 
 -- ── Version ──
 

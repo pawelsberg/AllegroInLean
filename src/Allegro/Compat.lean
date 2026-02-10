@@ -106,6 +106,7 @@ namespace Bitmap
 @[inline] def lockBlocked         (b : Bitmap) (fl : LockMode) := lockBitmapBlocked b fl
 @[inline] def lockRegionBlocked   (b : Bitmap) (x y w h : Int32) (fl : LockMode) := lockBitmapRegionBlocked b x y w h fl
 @[inline] def isCompatible        (b : Bitmap) := isCompatibleBitmap b
+@[inline] def backupDirty         (b : Bitmap) := backupDirtyBitmap b
 
 end Bitmap
 

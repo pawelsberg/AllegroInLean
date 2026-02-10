@@ -27,7 +27,7 @@ lean_object* allegro_al_reserve_samples(uint32_t count) {
 
 /* ── Sample ── */
 
-lean_object* allegro_al_load_sample(lean_object* pathObj) {
+lean_object* allegro_al_load_sample(b_lean_obj_arg pathObj) {
     const char *path = lean_string_cstr(pathObj);
     ALLEGRO_SAMPLE *sample = al_load_sample(path);
     return io_ok_uint64(ptr_to_u64(sample));
@@ -225,13 +225,13 @@ lean_object* allegro_al_attach_sample_instance_to_mixer(uint64_t inst, uint64_t 
 
 /* ── Audio stream ── */
 
-lean_object* allegro_al_load_audio_stream(lean_object* pathObj, uint32_t bufCount, uint32_t samples) {
+lean_object* allegro_al_load_audio_stream(b_lean_obj_arg pathObj, uint32_t bufCount, uint32_t samples) {
     const char *path = lean_string_cstr(pathObj);
     ALLEGRO_AUDIO_STREAM *stream = al_load_audio_stream(path, (size_t)bufCount, (unsigned int)samples);
     return io_ok_uint64(ptr_to_u64(stream));
 }
 
-lean_object* allegro_al_play_audio_stream(lean_object* pathObj) {
+lean_object* allegro_al_play_audio_stream(b_lean_obj_arg pathObj) {
     const char *path = lean_string_cstr(pathObj);
     ALLEGRO_AUDIO_STREAM *stream = al_play_audio_stream(path);
     return io_ok_uint64(ptr_to_u64(stream));

@@ -15,7 +15,7 @@ lean_object* allegro_al_is_image_addon_initialized(void) {
     return io_ok_uint32(al_is_image_addon_initialized() ? 1u : 0u);
 }
 
-lean_object* allegro_al_load_bitmap(lean_object* pathObj) {
+lean_object* allegro_al_load_bitmap(b_lean_obj_arg pathObj) {
     const char *path = lean_string_cstr(pathObj);
     ALLEGRO_BITMAP *bitmap = al_load_bitmap(path);
     return io_ok_uint64(ptr_to_u64(bitmap));
@@ -65,14 +65,14 @@ lean_object* allegro_al_draw_bitmap_region(
     return io_ok_unit();
 }
 
-lean_object* allegro_al_save_bitmap(lean_object* pathObj, uint64_t bitmap) {
+lean_object* allegro_al_save_bitmap(b_lean_obj_arg pathObj, uint64_t bitmap) {
     if (bitmap == 0) return io_ok_uint32(0);
     const char *path = lean_string_cstr(pathObj);
     bool ok = al_save_bitmap(path, (ALLEGRO_BITMAP *)u64_to_ptr(bitmap));
     return io_ok_uint32(ok ? 1u : 0u);
 }
 
-lean_object* allegro_al_load_bitmap_flags(lean_object* pathObj, uint32_t flags) {
+lean_object* allegro_al_load_bitmap_flags(b_lean_obj_arg pathObj, uint32_t flags) {
     const char *path = lean_string_cstr(pathObj);
     ALLEGRO_BITMAP *bitmap = al_load_bitmap_flags(path, (int)flags);
     return io_ok_uint64(ptr_to_u64(bitmap));
@@ -80,9 +80,39 @@ lean_object* allegro_al_load_bitmap_flags(lean_object* pathObj, uint32_t flags) 
 
 /* ── Identify ── */
 
-lean_object* allegro_al_identify_bitmap(lean_object* pathObj) {
+lean_object* allegro_al_identify_bitmap(b_lean_obj_arg pathObj) {
     const char *path = lean_string_cstr(pathObj);
     const char *ident = al_identify_bitmap(path);
+    return io_ok_string(ident);
+}
+
+/* ── File-handle variants ── */
+
+lean_object* allegro_al_load_bitmap_f(uint64_t fp, b_lean_obj_arg identObj) {
+    const char *ident = lean_string_cstr(identObj);
+    ALLEGRO_BITMAP *bitmap = al_load_bitmap_f(
+        (ALLEGRO_FILE *)u64_to_ptr(fp), ident);
+    return io_ok_uint64(ptr_to_u64(bitmap));
+}
+
+lean_object* allegro_al_load_bitmap_flags_f(uint64_t fp, b_lean_obj_arg identObj, uint32_t flags) {
+    const char *ident = lean_string_cstr(identObj);
+    ALLEGRO_BITMAP *bitmap = al_load_bitmap_flags_f(
+        (ALLEGRO_FILE *)u64_to_ptr(fp), ident, (int)flags);
+    return io_ok_uint64(ptr_to_u64(bitmap));
+}
+
+lean_object* allegro_al_save_bitmap_f(uint64_t fp, b_lean_obj_arg identObj, uint64_t bitmap) {
+    if (bitmap == 0) return io_ok_uint32(0);
+    const char *ident = lean_string_cstr(identObj);
+    bool ok = al_save_bitmap_f(
+        (ALLEGRO_FILE *)u64_to_ptr(fp), ident,
+        (ALLEGRO_BITMAP *)u64_to_ptr(bitmap));
+    return io_ok_uint32(ok ? 1u : 0u);
+}
+
+lean_object* allegro_al_identify_bitmap_f(uint64_t fp) {
+    const char *ident = al_identify_bitmap_f((ALLEGRO_FILE *)u64_to_ptr(fp));
     return io_ok_string(ident);
 }
 

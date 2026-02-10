@@ -1,4 +1,5 @@
 import Allegro.Core.Bitmap
+import Allegro.Core.File
 import Allegro.Core.System
 
 /-!
@@ -33,15 +34,15 @@ opaque isImageAddonInitialized : IO UInt32
 
 /-- Load a bitmap from an image file. Returns null on failure. -/
 @[extern "allegro_al_load_bitmap"]
-opaque loadBitmap : String → IO Bitmap
+opaque loadBitmap : @& String → IO Bitmap
 
 /-- Save a bitmap to a file. Returns 1 on success. -/
 @[extern "allegro_al_save_bitmap"]
-opaque saveBitmap : String → Bitmap → IO UInt32
+opaque saveBitmap : @& String → Bitmap → IO UInt32
 
 /-- Load a bitmap from file with flags (e.g. `memoryBitmapFlag`). Returns 0 on failure. -/
 @[extern "allegro_al_load_bitmap_flags"]
-opaque loadBitmapFlags : String → UInt32 → IO Bitmap
+opaque loadBitmapFlags : @& String → UInt32 → IO Bitmap
 
 -- ── Option-returning variants ──
 
@@ -57,7 +58,29 @@ def loadBitmapFlags? (filename : String) (flags : UInt32) : IO (Option Bitmap) :
 /-- Identify a bitmap file by its contents, returning a format string
     (e.g. ".png", ".bmp") or "" if unrecognised. -/
 @[extern "allegro_al_identify_bitmap"]
-opaque identifyBitmap : String → IO String
+opaque identifyBitmap : @& String → IO String
+
+-- ── File-handle variants ──
+
+/-- Load a bitmap from an open `AllegroFile`. The `ident` hint (e.g. ".png")
+    tells Allegro which loader to use. Returns null on failure. -/
+@[extern "allegro_al_load_bitmap_f"]
+opaque loadBitmapF : AllegroFile → @& String → IO Bitmap
+
+/-- Load a bitmap from an open `AllegroFile` with `flags`.
+    The `ident` hint (e.g. ".png") selects the loader. Returns null on failure. -/
+@[extern "allegro_al_load_bitmap_flags_f"]
+opaque loadBitmapFlagsF : AllegroFile → @& String → UInt32 → IO Bitmap
+
+/-- Save a bitmap to an open `AllegroFile`.
+    The `ident` hint (e.g. ".png") selects the saver. Returns 1 on success. -/
+@[extern "allegro_al_save_bitmap_f"]
+opaque saveBitmapF : AllegroFile → @& String → Bitmap → IO UInt32
+
+/-- Identify a bitmap type by reading from an open `AllegroFile`.
+    Returns a format string (e.g. ".png") or "" if unrecognised. -/
+@[extern "allegro_al_identify_bitmap_f"]
+opaque identifyBitmapF : AllegroFile → IO String
 
 -- ── Version ──
 

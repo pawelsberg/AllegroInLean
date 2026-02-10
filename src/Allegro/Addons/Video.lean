@@ -81,7 +81,7 @@ opaque getVideoVersion : IO UInt32
 
 /-- Open a video file for playback. Returns a handle (0 on failure). -/
 @[extern "allegro_al_open_video"]
-opaque openVideo : String → IO Video
+opaque openVideo : @& String → IO Video
 
 /-- Close a video and free its resources. -/
 @[extern "allegro_al_close_video"]
@@ -147,7 +147,7 @@ private opaque getVideoPositionRaw : Video → UInt32 → IO Float
 
 /-- Identify a video file by its contents, returning a format string (e.g. ".ogv"). -/
 @[extern "allegro_al_identify_video"]
-opaque identifyVideo : String → IO String
+opaque identifyVideo : @& String → IO String
 
 -- ── Option-returning variants ──
 

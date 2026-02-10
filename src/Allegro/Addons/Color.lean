@@ -89,13 +89,13 @@ opaque colorRgbToYuv : UInt32 → UInt32 → UInt32 → IO (Float × Float × Fl
 
 /-- Get RGB (0–255) of a named colour (e.g. "dodgerblue") in one call. -/
 @[extern "allegro_al_color_name_rgb"]
-opaque colorNameToRgb : String → IO (UInt32 × UInt32 × UInt32)
+opaque colorNameToRgb : @& String → IO (UInt32 × UInt32 × UInt32)
 
 -- ── HTML hex strings ──
 
 /-- Parse an HTML colour string (e.g. "#1e90ff") and return (r, g, b) 0–255. -/
 @[extern "allegro_al_color_html_rgb"]
-opaque colorHtmlToRgb : String → IO (UInt32 × UInt32 × UInt32)
+opaque colorHtmlToRgb : @& String → IO (UInt32 × UInt32 × UInt32)
 
 -- ── OkLab ↔ RGB ──
 
@@ -199,11 +199,11 @@ opaque colorYuv : Float → Float → Float → IO (UInt32 × UInt32 × UInt32 �
 
 /-- Construct an RGBA colour from a CSS colour name (e.g. "dodgerblue"). -/
 @[extern "allegro_al_color_name_rgba"]
-opaque colorName : String → IO (UInt32 × UInt32 × UInt32 × UInt32)
+opaque colorName : @& String → IO (UInt32 × UInt32 × UInt32 × UInt32)
 
 /-- Construct an RGBA colour from an HTML hex string (e.g. "#1e90ff"). -/
 @[extern "allegro_al_color_html_rgba"]
-opaque colorHtml : String → IO (UInt32 × UInt32 × UInt32 × UInt32)
+opaque colorHtml : @& String → IO (UInt32 × UInt32 × UInt32 × UInt32)
 
 /-- Construct an RGBA colour from CIE XYZ. -/
 @[extern "allegro_al_color_xyz"]

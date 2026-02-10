@@ -61,41 +61,41 @@ opaque destroyConfig : Config → IO Unit
 
 /-- Load a config from a file. Returns 0 on failure. -/
 @[extern "allegro_al_load_config_file"]
-opaque loadConfigFile : String → IO Config
+opaque loadConfigFile : @& String → IO Config
 
 /-- Save a config to a file. Returns 1 on success. -/
 @[extern "allegro_al_save_config_file"]
-opaque saveConfigFile : String → Config → IO UInt32
+opaque saveConfigFile : @& String → Config → IO UInt32
 
 -- ── Sections ──
 
 /-- Add a named section (does nothing if it already exists). -/
 @[extern "allegro_al_add_config_section"]
-opaque addConfigSection : Config → String → IO Unit
+opaque addConfigSection : Config → @& String → IO Unit
 
 /-- Remove a section and all its keys. Returns 1 on success. -/
 @[extern "allegro_al_remove_config_section"]
-opaque removeConfigSection : Config → String → IO UInt32
+opaque removeConfigSection : Config → @& String → IO UInt32
 
 -- ── Key / Value ──
 
 /-- Set a key's value. Section `""` = global section. Creates key if absent. -/
 @[extern "allegro_al_set_config_value"]
-opaque setConfigValue : Config → String → String → String → IO Unit
+opaque setConfigValue : Config → @& String → @& String → @& String → IO Unit
 
 /-- Get a key's value. Returns `""` if not found. Section `""` = global. -/
 @[extern "allegro_al_get_config_value"]
-opaque getConfigValue : Config → String → String → IO String
+opaque getConfigValue : Config → @& String → @& String → IO String
 
 /-- Remove a key. Returns 1 on success. -/
 @[extern "allegro_al_remove_config_key"]
-opaque removeConfigKey : Config → String → String → IO UInt32
+opaque removeConfigKey : Config → @& String → @& String → IO UInt32
 
 -- ── Comments ──
 
 /-- Add a comment line in the given section. -/
 @[extern "allegro_al_add_config_comment"]
-opaque addConfigComment : Config → String → String → IO Unit
+opaque addConfigComment : Config → @& String → @& String → IO Unit
 
 -- ── Merge ──
 
@@ -123,7 +123,7 @@ opaque getConfigSections : Config → IO (Array String)
 /-- Get all entry (key) names in a section as an array.
     Pass `""` for the global (unnamed) section. -/
 @[extern "allegro_al_get_config_entries"]
-opaque getConfigEntries : Config → String → IO (Array String)
+opaque getConfigEntries : Config → @& String → IO (Array String)
 
 -- ── Option-returning variants ──
 

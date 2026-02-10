@@ -498,3 +498,10 @@ lean_object* allegro_al_lock_bitmap_region_blocked(uint64_t bitmap,
         x_block, y_block, w_block, h_block, (int)flags);
     return io_ok_uint64(ptr_to_u64(lr));
 }
+
+lean_object* allegro_al_backup_dirty_bitmap(uint64_t bitmap) {
+    if (bitmap != 0) {
+        al_backup_dirty_bitmap((ALLEGRO_BITMAP *)u64_to_ptr(bitmap));
+    }
+    return io_ok_unit();
+}

@@ -24,7 +24,7 @@ lean_object* allegro_al_get_allegro_video_version(void) {
 
 /* ── Video open / close ── */
 
-lean_object* allegro_al_open_video(lean_object* pathObj) {
+lean_object* allegro_al_open_video(b_lean_obj_arg pathObj) {
     const char *path = lean_string_cstr(pathObj);
     ALLEGRO_VIDEO *v = al_open_video(path);
     return io_ok_uint64(ptr_to_u64(v));
@@ -118,7 +118,7 @@ lean_object* allegro_al_get_video_position(uint64_t video, uint32_t which) {
 
 /* ── Video identification ── */
 
-lean_object* allegro_al_identify_video(lean_object* pathObj) {
+lean_object* allegro_al_identify_video(b_lean_obj_arg pathObj) {
     const char *path = lean_string_cstr(pathObj);
     const char *ident = al_identify_video(path);
     return io_ok_string(ident);

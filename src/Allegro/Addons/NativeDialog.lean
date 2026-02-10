@@ -230,7 +230,7 @@ opaque getNativeDialogVersion : IO UInt32
 -- ════════════════════════════════════════════════════════════════════════════
 
 @[extern "allegro_al_create_native_file_dialog"]
-private opaque createNativeFileDialogRaw : String → String → String → UInt32 → IO FileChooser
+private opaque createNativeFileDialogRaw : @& String → @& String → @& String → UInt32 → IO FileChooser
 
 /-- Create a native file chooser dialog.
     - `initialPath`: starting directory or file (use `""` for default)
@@ -267,7 +267,7 @@ opaque destroyNativeFileDialog : FileChooser → IO Unit
 -- ════════════════════════════════════════════════════════════════════════════
 
 @[extern "allegro_al_show_native_message_box"]
-private opaque showNativeMessageBoxRaw : Display → String → String → String → String → UInt32 → IO UInt32
+private opaque showNativeMessageBoxRaw : Display → @& String → @& String → @& String → @& String → UInt32 → IO UInt32
 
 /-- Show a native message box. Blocks until the user dismisses it.
     - `display`: parent display (use 0 for no parent)
@@ -283,7 +283,7 @@ private opaque showNativeMessageBoxRaw : Display → String → String → Strin
 -- ════════════════════════════════════════════════════════════════════════════
 
 @[extern "allegro_al_open_native_text_log"]
-private opaque openNativeTextLogRaw : String → UInt32 → IO TextLog
+private opaque openNativeTextLogRaw : @& String → UInt32 → IO TextLog
 
 /-- Open a native text log window.
     - `title`: window title
@@ -301,7 +301,7 @@ opaque closeNativeTextLog : TextLog → IO Unit
 
 /-- Append a string to the text log. Formatting should be done on the Lean side. -/
 @[extern "allegro_al_append_native_text_log"]
-opaque appendNativeTextLog : TextLog → String → IO Unit
+opaque appendNativeTextLog : TextLog → @& String → IO Unit
 
 /-- Get the event source for a text log (fires `eventNativeDialogClose`). -/
 @[extern "allegro_al_get_native_text_log_event_source"]
@@ -336,7 +336,7 @@ opaque cloneMenuForPopup : Menu → IO Menu
 -- ════════════════════════════════════════════════════════════════════════════
 
 @[extern "allegro_al_append_menu_item"]
-private opaque appendMenuItemRaw : Menu → String → UInt32 → UInt32 → Bitmap → Menu → IO UInt32
+private opaque appendMenuItemRaw : Menu → @& String → UInt32 → UInt32 → Bitmap → Menu → IO UInt32
 
 /-- Append an item to a menu. Pass `""` as title for a separator.
     - `parent`: the menu to append to
@@ -350,7 +350,7 @@ private opaque appendMenuItemRaw : Menu → String → UInt32 → UInt32 → Bit
   appendMenuItemRaw parent title id flags.val icon submenu
 
 @[extern "allegro_al_insert_menu_item"]
-private opaque insertMenuItemRaw : Menu → UInt32 → String → UInt32 → UInt32 → Bitmap → Menu → IO UInt32
+private opaque insertMenuItemRaw : Menu → UInt32 → @& String → UInt32 → UInt32 → Bitmap → Menu → IO UInt32
 
 /-- Insert an item into a menu at position `pos` (0-based).
     Same parameters as `appendMenuItem`. -/
@@ -371,7 +371,7 @@ opaque getMenuItemCaption : Menu → UInt32 → IO String
 
 /-- Set the caption of the item at position `pos`. -/
 @[extern "allegro_al_set_menu_item_caption"]
-opaque setMenuItemCaption : Menu → UInt32 → String → IO Unit
+opaque setMenuItemCaption : Menu → UInt32 → @& String → IO Unit
 
 @[extern "allegro_al_get_menu_item_flags"]
 private opaque getMenuItemFlagsRaw : Menu → UInt32 → IO UInt32

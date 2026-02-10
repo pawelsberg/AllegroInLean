@@ -24,19 +24,19 @@ lean_object* allegro_al_create_builtin_font(void) {
     return io_ok_uint64(ptr_to_u64(font));
 }
 
-lean_object* allegro_al_load_font(lean_object* pathObj, int32_t size, uint32_t flags) {
+lean_object* allegro_al_load_font(b_lean_obj_arg pathObj, int32_t size, uint32_t flags) {
     const char *path = lean_string_cstr(pathObj);
     ALLEGRO_FONT *font = al_load_font(path, size, (int)flags);
     return io_ok_uint64(ptr_to_u64(font));
 }
 
-lean_object* allegro_al_load_bitmap_font(lean_object* pathObj) {
+lean_object* allegro_al_load_bitmap_font(b_lean_obj_arg pathObj) {
     const char *path = lean_string_cstr(pathObj);
     ALLEGRO_FONT *font = al_load_bitmap_font(path);
     return io_ok_uint64(ptr_to_u64(font));
 }
 
-lean_object* allegro_al_load_bitmap_font_flags(lean_object* pathObj, uint32_t flags) {
+lean_object* allegro_al_load_bitmap_font_flags(b_lean_obj_arg pathObj, uint32_t flags) {
     const char *path = lean_string_cstr(pathObj);
     ALLEGRO_FONT *font = al_load_bitmap_font_flags(path, (int)flags);
     return io_ok_uint64(ptr_to_u64(font));
@@ -56,7 +56,7 @@ lean_object* allegro_al_draw_text_rgb(
     uint32_t r, uint32_t g, uint32_t b,
     double x, double y,
     uint32_t flags,
-    lean_object* textObj) {
+    b_lean_obj_arg textObj) {
     if (font != 0) {
         const char *text = lean_string_cstr(textObj);
         ALLEGRO_COLOR color = al_map_rgb((unsigned char)r, (unsigned char)g, (unsigned char)b);
@@ -70,7 +70,7 @@ lean_object* allegro_al_draw_text_rgba(
     uint32_t r, uint32_t g, uint32_t b, uint32_t a,
     double x, double y,
     uint32_t flags,
-    lean_object* textObj) {
+    b_lean_obj_arg textObj) {
     if (font != 0) {
         const char *text = lean_string_cstr(textObj);
         ALLEGRO_COLOR color = al_map_rgba((unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a);
@@ -97,7 +97,7 @@ lean_object* allegro_al_draw_justified_text_rgb(
     uint32_t r, uint32_t g, uint32_t b,
     double x1, double x2, double y, double diff,
     uint32_t flags,
-    lean_object* textObj) {
+    b_lean_obj_arg textObj) {
     if (font != 0) {
         const char *text = lean_string_cstr(textObj);
         ALLEGRO_COLOR color = al_map_rgb((unsigned char)r, (unsigned char)g, (unsigned char)b);
@@ -112,7 +112,7 @@ lean_object* allegro_al_draw_multiline_text_rgb(
     uint32_t r, uint32_t g, uint32_t b,
     double x, double y, double max_width, double line_height,
     uint32_t flags,
-    lean_object* textObj) {
+    b_lean_obj_arg textObj) {
     if (font != 0) {
         const char *text = lean_string_cstr(textObj);
         ALLEGRO_COLOR color = al_map_rgb((unsigned char)r, (unsigned char)g, (unsigned char)b);
@@ -148,7 +148,7 @@ lean_object* allegro_al_get_glyph_advance(uint64_t font, int32_t codepoint1, int
 
 /* ── Text / font metrics ── */
 
-lean_object* allegro_al_get_text_width(uint64_t font, lean_object* textObj) {
+lean_object* allegro_al_get_text_width(uint64_t font, b_lean_obj_arg textObj) {
     if (font == 0) {
         return io_ok_uint32(0);
     }
@@ -201,7 +201,7 @@ lean_object* allegro_al_get_fallback_font(uint64_t font) {
 
 /* ── Tuple-returning queries ── */
 
-lean_object* allegro_al_get_text_dimensions(uint64_t font, lean_object* textObj) {
+lean_object* allegro_al_get_text_dimensions(uint64_t font, b_lean_obj_arg textObj) {
     if (font == 0) return io_ok_u32_quad(0, 0, 0, 0);
     int x, y, w, h;
     al_get_text_dimensions((ALLEGRO_FONT *)u64_to_ptr(font), lean_string_cstr(textObj), &x, &y, &w, &h);

@@ -17,13 +17,13 @@ lean_object* allegro_al_destroy_config(uint64_t cfg) {
 
 /* ── Load / Save ── */
 
-lean_object* allegro_al_load_config_file(lean_object* pathObj) {
+lean_object* allegro_al_load_config_file(b_lean_obj_arg pathObj) {
     const char *path = lean_string_cstr(pathObj);
     ALLEGRO_CONFIG *cfg = al_load_config_file(path);
     return io_ok_uint64(ptr_to_u64(cfg));
 }
 
-lean_object* allegro_al_save_config_file(lean_object* pathObj, uint64_t cfg) {
+lean_object* allegro_al_save_config_file(b_lean_obj_arg pathObj, uint64_t cfg) {
     if (cfg == 0) return io_ok_uint32(0);
     const char *path = lean_string_cstr(pathObj);
     bool ok = al_save_config_file(path, (const ALLEGRO_CONFIG *)u64_to_ptr(cfg));
@@ -32,14 +32,14 @@ lean_object* allegro_al_save_config_file(lean_object* pathObj, uint64_t cfg) {
 
 /* ── Sections ── */
 
-lean_object* allegro_al_add_config_section(uint64_t cfg, lean_object* nameObj) {
+lean_object* allegro_al_add_config_section(uint64_t cfg, b_lean_obj_arg nameObj) {
     if (cfg != 0) {
         al_add_config_section((ALLEGRO_CONFIG *)u64_to_ptr(cfg), lean_string_cstr(nameObj));
     }
     return io_ok_unit();
 }
 
-lean_object* allegro_al_remove_config_section(uint64_t cfg, lean_object* nameObj) {
+lean_object* allegro_al_remove_config_section(uint64_t cfg, b_lean_obj_arg nameObj) {
     if (cfg == 0) return io_ok_uint32(0);
     bool ok = al_remove_config_section((ALLEGRO_CONFIG *)u64_to_ptr(cfg), lean_string_cstr(nameObj));
     return io_ok_uint32(ok ? 1u : 0u);
@@ -47,7 +47,7 @@ lean_object* allegro_al_remove_config_section(uint64_t cfg, lean_object* nameObj
 
 /* ── Key/value ── */
 
-lean_object* allegro_al_set_config_value(uint64_t cfg, lean_object* sectionObj, lean_object* keyObj, lean_object* valueObj) {
+lean_object* allegro_al_set_config_value(uint64_t cfg, b_lean_obj_arg sectionObj, b_lean_obj_arg keyObj, b_lean_obj_arg valueObj) {
     if (cfg != 0) {
         const char *section = lean_string_cstr(sectionObj);
         /* Allegro treats "" section as the global (unnamed) section. */
@@ -59,7 +59,7 @@ lean_object* allegro_al_set_config_value(uint64_t cfg, lean_object* sectionObj, 
     return io_ok_unit();
 }
 
-lean_object* allegro_al_get_config_value(uint64_t cfg, lean_object* sectionObj, lean_object* keyObj) {
+lean_object* allegro_al_get_config_value(uint64_t cfg, b_lean_obj_arg sectionObj, b_lean_obj_arg keyObj) {
     if (cfg == 0) return io_ok_string("");
     const char *section = lean_string_cstr(sectionObj);
     const char *val = al_get_config_value(
@@ -69,7 +69,7 @@ lean_object* allegro_al_get_config_value(uint64_t cfg, lean_object* sectionObj, 
     return io_ok_string(val ? val : "");
 }
 
-lean_object* allegro_al_remove_config_key(uint64_t cfg, lean_object* sectionObj, lean_object* keyObj) {
+lean_object* allegro_al_remove_config_key(uint64_t cfg, b_lean_obj_arg sectionObj, b_lean_obj_arg keyObj) {
     if (cfg == 0) return io_ok_uint32(0);
     const char *section = lean_string_cstr(sectionObj);
     bool ok = al_remove_config_key((ALLEGRO_CONFIG *)u64_to_ptr(cfg),
@@ -80,7 +80,7 @@ lean_object* allegro_al_remove_config_key(uint64_t cfg, lean_object* sectionObj,
 
 /* ── Comments ── */
 
-lean_object* allegro_al_add_config_comment(uint64_t cfg, lean_object* sectionObj, lean_object* commentObj) {
+lean_object* allegro_al_add_config_comment(uint64_t cfg, b_lean_obj_arg sectionObj, b_lean_obj_arg commentObj) {
     if (cfg != 0) {
         const char *section = lean_string_cstr(sectionObj);
         al_add_config_comment((ALLEGRO_CONFIG *)u64_to_ptr(cfg),
@@ -131,7 +131,7 @@ lean_object* allegro_al_get_config_sections(uint64_t cfg) {
     return lean_io_result_mk_ok(arr);
 }
 
-lean_object* allegro_al_get_config_entries(uint64_t cfg, lean_object *sectionObj) {
+lean_object* allegro_al_get_config_entries(uint64_t cfg, b_lean_obj_arg sectionObj) {
     lean_object *arr = lean_mk_empty_array();
     if (cfg == 0) return lean_io_result_mk_ok(arr);
     const char *section = lean_string_cstr(sectionObj);

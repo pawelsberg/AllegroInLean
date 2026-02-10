@@ -31,9 +31,9 @@ lean_object* allegro_al_get_allegro_native_dialog_version(void) {
 
 /* ── File chooser ── */
 
-lean_object* allegro_al_create_native_file_dialog(lean_object *initialPathObj,
-                                                   lean_object *titleObj,
-                                                   lean_object *patternsObj,
+lean_object* allegro_al_create_native_file_dialog(b_lean_obj_arg initialPathObj,
+                                                   b_lean_obj_arg titleObj,
+                                                   b_lean_obj_arg patternsObj,
                                                    uint32_t mode) {
     const char *initial_path = lean_string_cstr(initialPathObj);
     const char *title        = lean_string_cstr(titleObj);
@@ -74,10 +74,10 @@ lean_object* allegro_al_destroy_native_file_dialog(uint64_t dialog) {
 /* ── Message box ── */
 
 lean_object* allegro_al_show_native_message_box(uint64_t display,
-                                                 lean_object *titleObj,
-                                                 lean_object *headingObj,
-                                                 lean_object *textObj,
-                                                 lean_object *buttonsObj,
+                                                 b_lean_obj_arg titleObj,
+                                                 b_lean_obj_arg headingObj,
+                                                 b_lean_obj_arg textObj,
+                                                 b_lean_obj_arg buttonsObj,
                                                  uint32_t flags) {
     const char *title   = lean_string_cstr(titleObj);
     const char *heading = lean_string_cstr(headingObj);
@@ -94,7 +94,7 @@ lean_object* allegro_al_show_native_message_box(uint64_t display,
 
 /* ── Text log ── */
 
-lean_object* allegro_al_open_native_text_log(lean_object *titleObj, uint32_t flags) {
+lean_object* allegro_al_open_native_text_log(b_lean_obj_arg titleObj, uint32_t flags) {
     const char *title = lean_string_cstr(titleObj);
     ALLEGRO_TEXTLOG *tl = al_open_native_text_log(title, (int)flags);
     return io_ok_uint64(ptr_to_u64(tl));
@@ -107,7 +107,7 @@ lean_object* allegro_al_close_native_text_log(uint64_t textlog) {
     return io_ok_unit();
 }
 
-lean_object* allegro_al_append_native_text_log(uint64_t textlog, lean_object *textObj) {
+lean_object* allegro_al_append_native_text_log(uint64_t textlog, b_lean_obj_arg textObj) {
     if (textlog != 0) {
         const char *text = lean_string_cstr(textObj);
         al_append_native_text_log((ALLEGRO_TEXTLOG *)u64_to_ptr(textlog), "%s", text);
@@ -151,7 +151,7 @@ lean_object* allegro_al_clone_menu_for_popup(uint64_t menu) {
     return io_ok_uint64(ptr_to_u64(al_clone_menu_for_popup((ALLEGRO_MENU *)u64_to_ptr(menu))));
 }
 
-lean_object* allegro_al_append_menu_item(uint64_t parent, lean_object *titleObj,
+lean_object* allegro_al_append_menu_item(uint64_t parent, b_lean_obj_arg titleObj,
                                           uint32_t id, uint32_t flags,
                                           uint64_t icon, uint64_t submenu) {
     if (parent == 0) return io_ok_uint32((uint32_t)-1);
@@ -166,7 +166,7 @@ lean_object* allegro_al_append_menu_item(uint64_t parent, lean_object *titleObj,
 }
 
 lean_object* allegro_al_insert_menu_item(uint64_t parent, uint32_t pos,
-                                          lean_object *titleObj,
+                                          b_lean_obj_arg titleObj,
                                           uint32_t id, uint32_t flags,
                                           uint64_t icon, uint64_t submenu) {
     if (parent == 0) return io_ok_uint32((uint32_t)-1);
@@ -190,7 +190,7 @@ lean_object* allegro_al_get_menu_item_caption(uint64_t menu, uint32_t pos) {
     return io_ok_string(c);
 }
 
-lean_object* allegro_al_set_menu_item_caption(uint64_t menu, uint32_t pos, lean_object *captionObj) {
+lean_object* allegro_al_set_menu_item_caption(uint64_t menu, uint32_t pos, b_lean_obj_arg captionObj) {
     if (menu != 0) {
         const char *caption = lean_string_cstr(captionObj);
         al_set_menu_item_caption((ALLEGRO_MENU *)u64_to_ptr(menu), (int)pos, caption);
