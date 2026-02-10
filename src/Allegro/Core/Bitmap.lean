@@ -1,4 +1,5 @@
 import Allegro.Core.System
+import Allegro.Core.Blending
 
 /-!
 Bitmap creation, format, locking, pixel access, and drawing for Allegro 5.
@@ -40,135 +41,234 @@ def Bitmap.null : Bitmap := (0 : UInt64)
 
 -- ── Pixel format constants ──
 
+/-- Allegro pixel format identifier. -/
+structure PixelFormat where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace PixelFormat
 /-- Let Allegro choose the best pixel format. -/
-def pixelFormatAny : UInt32 := 0
+def any : PixelFormat := ⟨0⟩
 /-- Any format without an alpha channel. -/
-def pixelFormatAnyNoAlpha : UInt32 := 1
+def anyNoAlpha : PixelFormat := ⟨1⟩
 /-- Any format with an alpha channel. -/
-def pixelFormatAnyWithAlpha : UInt32 := 2
+def anyWithAlpha : PixelFormat := ⟨2⟩
 /-- Any 15-bit format without alpha. -/
-def pixelFormatAny15NoAlpha : UInt32 := 3
+def any15NoAlpha : PixelFormat := ⟨3⟩
 /-- Any 16-bit format without alpha. -/
-def pixelFormatAny16NoAlpha : UInt32 := 4
+def any16NoAlpha : PixelFormat := ⟨4⟩
 /-- Any 16-bit format with alpha. -/
-def pixelFormatAny16WithAlpha : UInt32 := 5
+def any16WithAlpha : PixelFormat := ⟨5⟩
 /-- Any 24-bit format without alpha. -/
-def pixelFormatAny24NoAlpha : UInt32 := 6
+def any24NoAlpha : PixelFormat := ⟨6⟩
 /-- Any 32-bit format without alpha. -/
-def pixelFormatAny32NoAlpha : UInt32 := 7
+def any32NoAlpha : PixelFormat := ⟨7⟩
 /-- Any 32-bit format with alpha. -/
-def pixelFormatAny32WithAlpha : UInt32 := 8
+def any32WithAlpha : PixelFormat := ⟨8⟩
 /-- 32-bit ARGB (8 bits per channel). -/
-def pixelFormatArgb8888 : UInt32 := 9
+def argb8888 : PixelFormat := ⟨9⟩
 /-- 32-bit RGBA (8 bits per channel). -/
-def pixelFormatRgba8888 : UInt32 := 10
+def rgba8888 : PixelFormat := ⟨10⟩
 /-- 16-bit ARGB (4 bits per channel). -/
-def pixelFormatArgb4444 : UInt32 := 11
+def argb4444 : PixelFormat := ⟨11⟩
 /-- 24-bit RGB (8 bits per channel, no alpha). -/
-def pixelFormatRgb888 : UInt32 := 12
+def rgb888 : PixelFormat := ⟨12⟩
 /-- 16-bit RGB (5-6-5 bits). -/
-def pixelFormatRgb565 : UInt32 := 13
+def rgb565 : PixelFormat := ⟨13⟩
 /-- 16-bit RGB (5-5-5 bits, 1 unused). -/
-def pixelFormatRgb555 : UInt32 := 14
+def rgb555 : PixelFormat := ⟨14⟩
 /-- 16-bit RGBA (5-5-5-1 bits). -/
-def pixelFormatRgba5551 : UInt32 := 15
+def rgba5551 : PixelFormat := ⟨15⟩
 /-- 16-bit ARGB (1-5-5-5 bits). -/
-def pixelFormatArgb1555 : UInt32 := 16
+def argb1555 : PixelFormat := ⟨16⟩
 /-- 32-bit ABGR (8 bits per channel). -/
-def pixelFormatAbgr8888 : UInt32 := 17
+def abgr8888 : PixelFormat := ⟨17⟩
 /-- 32-bit xBGR (8 bits per channel, alpha ignored). -/
-def pixelFormatXbgr8888 : UInt32 := 18
+def xbgr8888 : PixelFormat := ⟨18⟩
 /-- 24-bit BGR (8 bits per channel, no alpha). -/
-def pixelFormatBgr888 : UInt32 := 19
+def bgr888 : PixelFormat := ⟨19⟩
 /-- 16-bit BGR (5-6-5 bits). -/
-def pixelFormatBgr565 : UInt32 := 20
+def bgr565 : PixelFormat := ⟨20⟩
 /-- 16-bit BGR (5-5-5 bits, 1 unused). -/
-def pixelFormatBgr555 : UInt32 := 21
+def bgr555 : PixelFormat := ⟨21⟩
 /-- 32-bit RGBx (8 bits per channel, alpha ignored). -/
-def pixelFormatRgbx8888 : UInt32 := 22
+def rgbx8888 : PixelFormat := ⟨22⟩
 /-- 32-bit xRGB (8 bits per channel, alpha ignored). -/
-def pixelFormatXrgb8888 : UInt32 := 23
+def xrgb8888 : PixelFormat := ⟨23⟩
 /-- 128-bit ABGR (32-bit float per channel). -/
-def pixelFormatAbgrF32 : UInt32 := 24
+def abgrF32 : PixelFormat := ⟨24⟩
+end PixelFormat
+
+-- Backward-compatible aliases
+def pixelFormatAny := PixelFormat.any
+def pixelFormatAnyNoAlpha := PixelFormat.anyNoAlpha
+def pixelFormatAnyWithAlpha := PixelFormat.anyWithAlpha
+def pixelFormatAny15NoAlpha := PixelFormat.any15NoAlpha
+def pixelFormatAny16NoAlpha := PixelFormat.any16NoAlpha
+def pixelFormatAny16WithAlpha := PixelFormat.any16WithAlpha
+def pixelFormatAny24NoAlpha := PixelFormat.any24NoAlpha
+def pixelFormatAny32NoAlpha := PixelFormat.any32NoAlpha
+def pixelFormatAny32WithAlpha := PixelFormat.any32WithAlpha
+def pixelFormatArgb8888 := PixelFormat.argb8888
+def pixelFormatRgba8888 := PixelFormat.rgba8888
+def pixelFormatArgb4444 := PixelFormat.argb4444
+def pixelFormatRgb888 := PixelFormat.rgb888
+def pixelFormatRgb565 := PixelFormat.rgb565
+def pixelFormatRgb555 := PixelFormat.rgb555
+def pixelFormatRgba5551 := PixelFormat.rgba5551
+def pixelFormatArgb1555 := PixelFormat.argb1555
+def pixelFormatAbgr8888 := PixelFormat.abgr8888
+def pixelFormatXbgr8888 := PixelFormat.xbgr8888
+def pixelFormatBgr888 := PixelFormat.bgr888
+def pixelFormatBgr565 := PixelFormat.bgr565
+def pixelFormatBgr555 := PixelFormat.bgr555
+def pixelFormatRgbx8888 := PixelFormat.rgbx8888
+def pixelFormatXrgb8888 := PixelFormat.xrgb8888
+def pixelFormatAbgrF32 := PixelFormat.abgrF32
 
 -- ── Pixel format queries ──
 
-/-- Bytes per pixel for the given format. -/
 @[extern "allegro_al_get_pixel_size"]
-opaque getPixelSize : UInt32 → IO UInt32
+private opaque getPixelSizeRaw : UInt32 → IO UInt32
+
+/-- Bytes per pixel for the given format. -/
+@[inline] def getPixelSize (fmt : PixelFormat) : IO UInt32 :=
+  getPixelSizeRaw fmt.val
+
+@[extern "allegro_al_get_pixel_format_bits"]
+private opaque getPixelFormatBitsRaw : UInt32 → IO UInt32
 
 /-- Bits per pixel for the given format. -/
-@[extern "allegro_al_get_pixel_format_bits"]
-opaque getPixelFormatBits : UInt32 → IO UInt32
+@[inline] def getPixelFormatBits (fmt : PixelFormat) : IO UInt32 :=
+  getPixelFormatBitsRaw fmt.val
+
+@[extern "allegro_al_get_pixel_block_size"]
+private opaque getPixelBlockSizeRaw : UInt32 → IO UInt32
 
 /-- Block size in bytes for compressed formats (1 for uncompressed). -/
-@[extern "allegro_al_get_pixel_block_size"]
-opaque getPixelBlockSize : UInt32 → IO UInt32
+@[inline] def getPixelBlockSize (fmt : PixelFormat) : IO UInt32 :=
+  getPixelBlockSizeRaw fmt.val
+
+@[extern "allegro_al_get_pixel_block_width"]
+private opaque getPixelBlockWidthRaw : UInt32 → IO UInt32
 
 /-- Block width for compressed formats (1 for uncompressed). -/
-@[extern "allegro_al_get_pixel_block_width"]
-opaque getPixelBlockWidth : UInt32 → IO UInt32
+@[inline] def getPixelBlockWidth (fmt : PixelFormat) : IO UInt32 :=
+  getPixelBlockWidthRaw fmt.val
+
+@[extern "allegro_al_get_pixel_block_height"]
+private opaque getPixelBlockHeightRaw : UInt32 → IO UInt32
 
 /-- Block height for compressed formats (1 for uncompressed). -/
-@[extern "allegro_al_get_pixel_block_height"]
-opaque getPixelBlockHeight : UInt32 → IO UInt32
+@[inline] def getPixelBlockHeight (fmt : PixelFormat) : IO UInt32 :=
+  getPixelBlockHeightRaw fmt.val
 
 -- ── Bitmap flag constants ──
 
+/-- Allegro bitmap creation flags (bitfield). -/
+structure BitmapFlags where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+instance : OrOp BitmapFlags where or a b := ⟨a.val ||| b.val⟩
+instance : AndOp BitmapFlags where and a b := ⟨a.val &&& b.val⟩
+
+namespace BitmapFlags
+/-- No special flags (default). -/
+def none : BitmapFlags := ⟨0⟩
 /-- Create the bitmap in system memory (not GPU). -/
-def bitmapFlagMemory : UInt32 := 1
+def memory : BitmapFlags := ⟨1⟩
 /-- Create the bitmap in video (GPU) memory. -/
-def bitmapFlagVideo : UInt32 := 1024
+def video : BitmapFlags := ⟨1024⟩
 /-- Force pixel format conversion on creation. -/
-def bitmapFlagConvert : UInt32 := 4096
+def convert : BitmapFlags := ⟨4096⟩
 /-- Do not preserve texture when the display is lost. -/
-def bitmapFlagNoPreserveTexture : UInt32 := 8
+def noPreserveTexture : BitmapFlags := ⟨8⟩
 /-- Use linear filtering for minification. -/
-def bitmapFlagMinLinear : UInt32 := 64
+def minLinear : BitmapFlags := ⟨64⟩
 /-- Use linear filtering for magnification. -/
-def bitmapFlagMagLinear : UInt32 := 128
+def magLinear : BitmapFlags := ⟨128⟩
 /-- Generate mipmaps for the bitmap. -/
-def bitmapFlagMipmap : UInt32 := 256
+def mipmap : BitmapFlags := ⟨256⟩
 /-- Do not premultiply alpha on load. -/
-def bitmapFlagNoPremultipliedAlpha : UInt32 := 512
+def noPremultipliedAlpha : BitmapFlags := ⟨512⟩
+end BitmapFlags
 
--- ── Draw flip flags ──
+-- Backward-compatible aliases
+def bitmapFlagMemory := BitmapFlags.memory
+def bitmapFlagVideo := BitmapFlags.video
+def bitmapFlagConvert := BitmapFlags.convert
+def bitmapFlagNoPreserveTexture := BitmapFlags.noPreserveTexture
+def bitmapFlagMinLinear := BitmapFlags.minLinear
+def bitmapFlagMagLinear := BitmapFlags.magLinear
+def bitmapFlagMipmap := BitmapFlags.mipmap
+def bitmapFlagNoPremultipliedAlpha := BitmapFlags.noPremultipliedAlpha
 
-/-- Flip the bitmap horizontally when drawing. -/
-def flipHorizontalFlag : UInt32 := 1
-/-- Flip the bitmap vertically when drawing. -/
-def flipVerticalFlag : UInt32 := 2
+-- FlipFlags is defined in Blending.lean (imported above) so both
+-- Bitmap.lean and Blending.lean can use it.
 
 -- ── Lock mode constants ──
 
+/-- Allegro bitmap lock mode. -/
+structure LockMode where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace LockMode
 /-- Lock for both reading and writing. -/
-def lockReadwrite : UInt32 := 0
+def readwrite : LockMode := ⟨0⟩
 /-- Lock for reading only. -/
-def lockReadonly : UInt32 := 1
+def readonly : LockMode := ⟨1⟩
 /-- Lock for writing only (may discard existing content). -/
-def lockWriteonly : UInt32 := 2
+def writeonly : LockMode := ⟨2⟩
+end LockMode
+
+-- Backward-compatible aliases
+def lockReadwrite := LockMode.readwrite
+def lockReadonly := LockMode.readonly
+def lockWriteonly := LockMode.writeonly
 
 -- ── Bitmap creation / new-bitmap setup ──
 
-/-- Set flags for the next bitmap to be created. -/
 @[extern "allegro_al_set_new_bitmap_flags"]
-opaque setNewBitmapFlags : UInt32 → IO Unit
+private opaque setNewBitmapFlagsRaw : UInt32 → IO Unit
+
+/-- Set flags for the next bitmap to be created. -/
+@[inline] def setNewBitmapFlags (flags : BitmapFlags) : IO Unit :=
+  setNewBitmapFlagsRaw flags.val
+
+@[extern "allegro_al_get_new_bitmap_flags"]
+private opaque getNewBitmapFlagsRaw : IO UInt32
 
 /-- Get the flags that will be used for the next bitmap creation. -/
-@[extern "allegro_al_get_new_bitmap_flags"]
-opaque getNewBitmapFlags : IO UInt32
+@[inline] def getNewBitmapFlags : IO BitmapFlags := do
+  let v ← getNewBitmapFlagsRaw
+  return ⟨v⟩
+
+@[extern "allegro_al_add_new_bitmap_flag"]
+private opaque addNewBitmapFlagRaw : UInt32 → IO Unit
 
 /-- Add a flag to the current new-bitmap flags (bitwise OR). -/
-@[extern "allegro_al_add_new_bitmap_flag"]
-opaque addNewBitmapFlag : UInt32 → IO Unit
+@[inline] def addNewBitmapFlag (flag : BitmapFlags) : IO Unit :=
+  addNewBitmapFlagRaw flag.val
+
+@[extern "allegro_al_set_new_bitmap_format"]
+private opaque setNewBitmapFormatRaw : UInt32 → IO Unit
 
 /-- Set the pixel format for the next bitmap to be created. -/
-@[extern "allegro_al_set_new_bitmap_format"]
-opaque setNewBitmapFormat : UInt32 → IO Unit
+@[inline] def setNewBitmapFormat (fmt : PixelFormat) : IO Unit :=
+  setNewBitmapFormatRaw fmt.val
+
+@[extern "allegro_al_get_new_bitmap_format"]
+private opaque getNewBitmapFormatRaw : IO UInt32
 
 /-- Get the pixel format that will be used for the next bitmap creation. -/
-@[extern "allegro_al_get_new_bitmap_format"]
-opaque getNewBitmapFormat : IO UInt32
+@[inline] def getNewBitmapFormat : IO PixelFormat := do
+  let v ← getNewBitmapFormatRaw
+  return ⟨v⟩
 
 /-- Create a new bitmap with the given width and height. Returns null on failure. -/
 @[extern "allegro_al_create_bitmap"]
@@ -204,13 +304,21 @@ opaque getBitmapWidth : UInt64 → IO UInt32
 @[extern "allegro_al_get_bitmap_height"]
 opaque getBitmapHeight : UInt64 → IO UInt32
 
-/-- Get the creation flags of a bitmap. -/
 @[extern "allegro_al_get_bitmap_flags"]
-opaque getBitmapFlags : UInt64 → IO UInt32
+private opaque getBitmapFlagsRaw : UInt64 → IO UInt32
+
+/-- Get the creation flags of a bitmap. -/
+@[inline] def getBitmapFlags (bmp : UInt64) : IO BitmapFlags := do
+  let v ← getBitmapFlagsRaw bmp
+  return ⟨v⟩
+
+@[extern "allegro_al_get_bitmap_format"]
+private opaque getBitmapFormatRaw : UInt64 → IO UInt32
 
 /-- Get the pixel format of a bitmap. -/
-@[extern "allegro_al_get_bitmap_format"]
-opaque getBitmapFormat : UInt64 → IO UInt32
+@[inline] def getBitmapFormat (bmp : UInt64) : IO PixelFormat := do
+  let v ← getBitmapFormatRaw bmp
+  return ⟨v⟩
 
 /-- Check whether a bitmap is a sub-bitmap. Returns 1 if yes. -/
 @[extern "allegro_al_is_sub_bitmap"]
@@ -249,21 +357,31 @@ instance : OfNat LockedRegion 0 := inferInstanceAs (OfNat UInt64 0)
 instance : ToString LockedRegion := ⟨fun (h : UInt64) => s!"LockedRegion#{h}"⟩
 instance : Repr LockedRegion := ⟨fun (h : UInt64) _ => .text s!"LockedRegion#{repr h}"⟩
 
-/-- Lock entire bitmap. Returns a LockedRegion handle (0 on failure). -/
 @[extern "allegro_al_lock_bitmap"]
-opaque lockBitmap : UInt64 → UInt32 → UInt32 → IO LockedRegion
+private opaque lockBitmapRaw : UInt64 → UInt32 → UInt32 → IO LockedRegion
+
+/-- Lock entire bitmap. Returns a LockedRegion handle (0 on failure). -/
+@[inline] def lockBitmap (bmp : UInt64) (fmt : PixelFormat) (mode : LockMode) : IO LockedRegion :=
+  lockBitmapRaw bmp fmt.val mode.val
+
+@[extern "allegro_al_lock_bitmap_region"]
+private opaque lockBitmapRegionRaw : UInt64 → Int32 → Int32 → Int32 → Int32 → UInt32 → UInt32 → IO LockedRegion
 
 /-- Lock a rectangular region. Returns a LockedRegion handle (0 on failure). -/
-@[extern "allegro_al_lock_bitmap_region"]
-opaque lockBitmapRegion : UInt64 → Int32 → Int32 → Int32 → Int32 → UInt32 → UInt32 → IO LockedRegion
+@[inline] def lockBitmapRegion (bmp : UInt64) (x y w h : Int32) (fmt : PixelFormat) (mode : LockMode) : IO LockedRegion :=
+  lockBitmapRegionRaw bmp x y w h fmt.val mode.val
 
 /-- Unlock a locked bitmap. -/
 @[extern "allegro_al_unlock_bitmap"]
 opaque unlockBitmap : UInt64 → IO Unit
 
-/-- Get the pixel format of a locked region. -/
 @[extern "allegro_al_locked_region_get_format"]
-opaque lockedRegionGetFormat : LockedRegion → IO UInt32
+private opaque lockedRegionGetFormatRaw : LockedRegion → IO UInt32
+
+/-- Get the pixel format of a locked region. -/
+@[inline] def lockedRegionGetFormat (lr : LockedRegion) : IO PixelFormat := do
+  let v ← lockedRegionGetFormatRaw lr
+  return ⟨v⟩
 
 /-- Get the pitch (bytes per row, may be negative) of a locked region. -/
 @[extern "allegro_al_locked_region_get_pitch"]
@@ -305,44 +423,68 @@ opaque putBlendedPixel : Int32 → Int32 → UInt32 → UInt32 → UInt32 → UI
 
 -- ── Bitmap drawing ──
 
-/-- Draw a bitmap at position (dx, dy) with the given flip flags. -/
 @[extern "allegro_al_draw_bitmap"]
-opaque drawBitmap : UInt64 → Float → Float → UInt32 → IO Unit
+private opaque drawBitmapRaw : UInt64 → Float → Float → UInt32 → IO Unit
+
+/-- Draw a bitmap at position (dx, dy) with the given flip flags. -/
+@[inline] def drawBitmap (bmp : UInt64) (dx dy : Float) (flags : FlipFlags) : IO Unit :=
+  drawBitmapRaw bmp dx dy flags.val
+
+@[extern "allegro_al_draw_scaled_bitmap"]
+private opaque drawScaledBitmapRaw : UInt64 → Float → Float → Float → Float → Float → Float → Float → Float → UInt32 → IO Unit
 
 /-- Draw a scaled bitmap.
     `drawScaledBitmap bmp sx sy sw sh dx dy dw dh flags` -/
-@[extern "allegro_al_draw_scaled_bitmap"]
-opaque drawScaledBitmap : UInt64 → Float → Float → Float → Float → Float → Float → Float → Float → UInt32 → IO Unit
+@[inline] def drawScaledBitmap (bmp : UInt64) (sx sy sw sh dx dy dw dh : Float) (flags : FlipFlags) : IO Unit :=
+  drawScaledBitmapRaw bmp sx sy sw sh dx dy dw dh flags.val
+
+@[extern "allegro_al_draw_bitmap_region"]
+private opaque drawBitmapRegionRaw : UInt64 → Float → Float → Float → Float → Float → Float → UInt32 → IO Unit
 
 /-- Draw a region of a bitmap.
     `drawBitmapRegion bmp sx sy sw sh dx dy flags` -/
-@[extern "allegro_al_draw_bitmap_region"]
-opaque drawBitmapRegion : UInt64 → Float → Float → Float → Float → Float → Float → UInt32 → IO Unit
+@[inline] def drawBitmapRegion (bmp : UInt64) (sx sy sw sh dx dy : Float) (flags : FlipFlags) : IO Unit :=
+  drawBitmapRegionRaw bmp sx sy sw sh dx dy flags.val
+
+@[extern "allegro_al_draw_rotated_bitmap"]
+private opaque drawRotatedBitmapRaw : UInt64 → Float → Float → Float → Float → Float → UInt32 → IO Unit
 
 /-- Draw a bitmap with rotation.
     `drawRotatedBitmap bmp cx cy dx dy angle flags` -/
-@[extern "allegro_al_draw_rotated_bitmap"]
-opaque drawRotatedBitmap : UInt64 → Float → Float → Float → Float → Float → UInt32 → IO Unit
+@[inline] def drawRotatedBitmap (bmp : UInt64) (cx cy dx dy angle : Float) (flags : FlipFlags) : IO Unit :=
+  drawRotatedBitmapRaw bmp cx cy dx dy angle flags.val
+
+@[extern "allegro_al_draw_scaled_rotated_bitmap"]
+private opaque drawScaledRotatedBitmapRaw : UInt64 → Float → Float → Float → Float → Float → Float → Float → UInt32 → IO Unit
 
 /-- Draw a bitmap with scaling and rotation.
     `drawScaledRotatedBitmap bmp cx cy dx dy xscale yscale angle flags` -/
-@[extern "allegro_al_draw_scaled_rotated_bitmap"]
-opaque drawScaledRotatedBitmap : UInt64 → Float → Float → Float → Float → Float → Float → Float → UInt32 → IO Unit
+@[inline] def drawScaledRotatedBitmap (bmp : UInt64) (cx cy dx dy xscale yscale angle : Float) (flags : FlipFlags) : IO Unit :=
+  drawScaledRotatedBitmapRaw bmp cx cy dx dy xscale yscale angle flags.val
+
+@[extern "allegro_al_draw_tinted_bitmap_rgb"]
+private opaque drawTintedBitmapRgbRaw : UInt64 → UInt32 → UInt32 → UInt32 → Float → Float → UInt32 → IO Unit
 
 /-- Draw a bitmap tinted with an RGB colour.
     `drawTintedBitmapRgb bmp r g b dx dy flags` -/
-@[extern "allegro_al_draw_tinted_bitmap_rgb"]
-opaque drawTintedBitmapRgb : UInt64 → UInt32 → UInt32 → UInt32 → Float → Float → UInt32 → IO Unit
+@[inline] def drawTintedBitmapRgb (bmp : UInt64) (r g b : UInt32) (dx dy : Float) (flags : FlipFlags) : IO Unit :=
+  drawTintedBitmapRgbRaw bmp r g b dx dy flags.val
+
+@[extern "allegro_al_draw_tinted_scaled_bitmap_rgb"]
+private opaque drawTintedScaledBitmapRgbRaw : UInt64 → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → Float → Float → Float → Float → UInt32 → IO Unit
 
 /-- Draw a tinted, scaled bitmap.
     `drawTintedScaledBitmapRgb bmp r g b sx sy sw sh dx dy dw dh flags` -/
-@[extern "allegro_al_draw_tinted_scaled_bitmap_rgb"]
-opaque drawTintedScaledBitmapRgb : UInt64 → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → Float → Float → Float → Float → UInt32 → IO Unit
+@[inline] def drawTintedScaledBitmapRgb (bmp : UInt64) (r g b : UInt32) (sx sy sw sh dx dy dw dh : Float) (flags : FlipFlags) : IO Unit :=
+  drawTintedScaledBitmapRgbRaw bmp r g b sx sy sw sh dx dy dw dh flags.val
+
+@[extern "allegro_al_draw_tinted_rotated_bitmap_rgb"]
+private opaque drawTintedRotatedBitmapRgbRaw : UInt64 → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → Float → UInt32 → IO Unit
 
 /-- Draw a tinted, rotated bitmap.
     `drawTintedRotatedBitmapRgb bmp r g b cx cy dx dy angle flags` -/
-@[extern "allegro_al_draw_tinted_rotated_bitmap_rgb"]
-opaque drawTintedRotatedBitmapRgb : UInt64 → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → Float → UInt32 → IO Unit
+@[inline] def drawTintedRotatedBitmapRgb (bmp : UInt64) (r g b : UInt32) (cx cy dx dy angle : Float) (flags : FlipFlags) : IO Unit :=
+  drawTintedRotatedBitmapRgbRaw bmp r g b cx cy dx dy angle flags.val
 
 -- ── Depth / samples / wrap ──
 
@@ -362,24 +504,45 @@ opaque getNewBitmapSamples : IO UInt32
 @[extern "allegro_al_set_new_bitmap_samples"]
 opaque setNewBitmapSamples : UInt32 → IO Unit
 
-/-- Get the texture wrap mode (u, v) for newly created bitmaps. -/
-@[extern "allegro_al_get_new_bitmap_wrap"]
-opaque getNewBitmapWrap : IO (UInt32 × UInt32)
-
-/-- Set the texture wrap mode (u, v) for newly created bitmaps. -/
-@[extern "allegro_al_set_new_bitmap_wrap"]
-opaque setNewBitmapWrap : UInt32 → UInt32 → IO Unit
-
 -- ── Bitmap wrap mode constants ──
 
+/-- Allegro texture wrap mode. -/
+structure BitmapWrapMode where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace BitmapWrapMode
 /-- Wrap mode: use the default (usually clamp). -/
-def bitmapWrapDefault : UInt32 := 0
+def default : BitmapWrapMode := ⟨0⟩
 /-- Wrap mode: repeat the texture. -/
-def bitmapWrapRepeat : UInt32 := 1
+def «repeat» : BitmapWrapMode := ⟨1⟩
 /-- Wrap mode: clamp to edge. -/
-def bitmapWrapClamp : UInt32 := 2
+def clamp : BitmapWrapMode := ⟨2⟩
 /-- Wrap mode: mirror the texture. -/
-def bitmapWrapMirror : UInt32 := 3
+def mirror : BitmapWrapMode := ⟨3⟩
+end BitmapWrapMode
+
+-- Backward-compatible aliases
+def bitmapWrapDefault := BitmapWrapMode.default
+def bitmapWrapRepeat := BitmapWrapMode.«repeat»
+def bitmapWrapClamp := BitmapWrapMode.clamp
+def bitmapWrapMirror := BitmapWrapMode.mirror
+
+@[extern "allegro_al_get_new_bitmap_wrap"]
+private opaque getNewBitmapWrapRaw : IO (UInt32 × UInt32)
+
+/-- Get the texture wrap mode (u, v) for newly created bitmaps. -/
+@[inline] def getNewBitmapWrap : IO (BitmapWrapMode × BitmapWrapMode) := do
+  let (u, v) ← getNewBitmapWrapRaw
+  return (⟨u⟩, ⟨v⟩)
+
+@[extern "allegro_al_set_new_bitmap_wrap"]
+private opaque setNewBitmapWrapRaw : UInt32 → UInt32 → IO Unit
+
+/-- Set the texture wrap mode (u, v) for newly created bitmaps. -/
+@[inline] def setNewBitmapWrap (u v : BitmapWrapMode) : IO Unit :=
+  setNewBitmapWrapRaw u.val v.val
 
 /-- Get the depth buffer bit count of a bitmap. -/
 @[extern "allegro_al_get_bitmap_depth"]
@@ -409,21 +572,21 @@ opaque convertMaskToAlpha : UInt64 → UInt32 → UInt32 → UInt32 → IO Unit
 
 /-- Get the per-bitmap blender as `(op, src, dst)`. -/
 @[extern "allegro_al_get_bitmap_blender"]
-opaque getBitmapBlender : IO (UInt32 × UInt32 × UInt32)
+opaque getBitmapBlender : IO (BlendOp × BlendFactor × BlendFactor)
 
 /-- Set the per-bitmap blender.
     `setBitmapBlender op src dst` -/
 @[extern "allegro_al_set_bitmap_blender"]
-opaque setBitmapBlender : UInt32 → UInt32 → UInt32 → IO Unit
+opaque setBitmapBlender : BlendOp → BlendFactor → BlendFactor → IO Unit
 
 /-- Get the per-bitmap separate blender as `(op, src, dst, alphaOp, alphaSrc, alphaDst)`. -/
 @[extern "allegro_al_get_separate_bitmap_blender"]
-opaque getSeparateBitmapBlender : IO (UInt32 × UInt32 × UInt32 × UInt32 × UInt32 × UInt32)
+opaque getSeparateBitmapBlender : IO (BlendOp × BlendFactor × BlendFactor × BlendOp × BlendFactor × BlendFactor)
 
 /-- Set the per-bitmap separate blender.
     `setSeparateBitmapBlender op src dst alphaOp alphaSrc alphaDst` -/
 @[extern "allegro_al_set_separate_bitmap_blender"]
-opaque setSeparateBitmapBlender : UInt32 → UInt32 → UInt32 → UInt32 → UInt32 → UInt32 → IO Unit
+opaque setSeparateBitmapBlender : BlendOp → BlendFactor → BlendFactor → BlendOp → BlendFactor → BlendFactor → IO Unit
 
 /-- Get the per-bitmap blend colour as `(r, g, b, a)` with components in 0.0…1.0. -/
 @[extern "allegro_al_get_bitmap_blend_color"]
@@ -440,31 +603,46 @@ opaque resetBitmapBlender : IO Unit
 
 -- ── Tinted drawing (remaining) ──
 
+@[extern "allegro_al_draw_tinted_bitmap_region_rgb"]
+private opaque drawTintedBitmapRegionRgbRaw : UInt64 → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → Float → Float → UInt32 → IO Unit
+
 /-- Draw a tinted region of a bitmap.
     `drawTintedBitmapRegionRgb bmp r g b sx sy sw sh dx dy flags` -/
-@[extern "allegro_al_draw_tinted_bitmap_region_rgb"]
-opaque drawTintedBitmapRegionRgb : UInt64 → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → Float → Float → UInt32 → IO Unit
+@[inline] def drawTintedBitmapRegionRgb (bmp : UInt64) (r g b : UInt32) (sx sy sw sh dx dy : Float) (flags : FlipFlags) : IO Unit :=
+  drawTintedBitmapRegionRgbRaw bmp r g b sx sy sw sh dx dy flags.val
+
+@[extern "allegro_al_draw_tinted_scaled_rotated_bitmap_rgb"]
+private opaque drawTintedScaledRotatedBitmapRgbRaw : UInt64 → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → Float → Float → Float → UInt32 → IO Unit
 
 /-- Draw a tinted, scaled, rotated bitmap.
     `drawTintedScaledRotatedBitmapRgb bmp r g b cx cy dx dy xscale yscale angle flags` -/
-@[extern "allegro_al_draw_tinted_scaled_rotated_bitmap_rgb"]
-opaque drawTintedScaledRotatedBitmapRgb : UInt64 → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → Float → Float → Float → UInt32 → IO Unit
+@[inline] def drawTintedScaledRotatedBitmapRgb (bmp : UInt64) (r g b : UInt32) (cx cy dx dy xscale yscale angle : Float) (flags : FlipFlags) : IO Unit :=
+  drawTintedScaledRotatedBitmapRgbRaw bmp r g b cx cy dx dy xscale yscale angle flags.val
+
+@[extern "allegro_al_draw_tinted_scaled_rotated_bitmap_region_rgb"]
+private opaque drawTintedScaledRotatedBitmapRegionRgbRaw : UInt64 → Float → Float → Float → Float → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → Float → Float → Float → UInt32 → IO Unit
 
 /-- Draw a tinted, scaled, rotated region of a bitmap.
     `drawTintedScaledRotatedBitmapRegionRgb bmp sx sy sw sh r g b cx cy dx dy xscale yscale angle flags` -/
-@[extern "allegro_al_draw_tinted_scaled_rotated_bitmap_region_rgb"]
-opaque drawTintedScaledRotatedBitmapRegionRgb : UInt64 → Float → Float → Float → Float → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → Float → Float → Float → UInt32 → IO Unit
+@[inline] def drawTintedScaledRotatedBitmapRegionRgb (bmp : UInt64) (sx sy sw sh : Float) (r g b : UInt32) (cx cy dx dy xscale yscale angle : Float) (flags : FlipFlags) : IO Unit :=
+  drawTintedScaledRotatedBitmapRegionRgbRaw bmp sx sy sw sh r g b cx cy dx dy xscale yscale angle flags.val
 
 -- ── Block-aligned locking ──
 
-/-- Lock a bitmap using block-aligned access. Returns a LockedRegion handle (0 on failure). -/
 @[extern "allegro_al_lock_bitmap_blocked"]
-opaque lockBitmapBlocked : UInt64 → UInt32 → IO LockedRegion
+private opaque lockBitmapBlockedRaw : UInt64 → UInt32 → IO LockedRegion
+
+/-- Lock a bitmap using block-aligned access. Returns a LockedRegion handle (0 on failure). -/
+@[inline] def lockBitmapBlocked (bmp : UInt64) (mode : LockMode) : IO LockedRegion :=
+  lockBitmapBlockedRaw bmp mode.val
+
+@[extern "allegro_al_lock_bitmap_region_blocked"]
+private opaque lockBitmapRegionBlockedRaw : UInt64 → Int32 → Int32 → Int32 → Int32 → UInt32 → IO LockedRegion
 
 /-- Lock a block-aligned region of a bitmap. Returns a LockedRegion handle (0 on failure).
     `lockBitmapRegionBlocked bmp xBlock yBlock wBlock hBlock flags` -/
-@[extern "allegro_al_lock_bitmap_region_blocked"]
-opaque lockBitmapRegionBlocked : UInt64 → Int32 → Int32 → Int32 → Int32 → UInt32 → IO LockedRegion
+@[inline] def lockBitmapRegionBlocked (bmp : UInt64) (xBlock yBlock wBlock hBlock : Int32) (mode : LockMode) : IO LockedRegion :=
+  lockBitmapRegionBlockedRaw bmp xBlock yBlock wBlock hBlock mode.val
 
 -- ── Option-returning variants ──
 
@@ -479,19 +657,19 @@ def createSubBitmap? (parent : Bitmap) (x y w h : Int32) : IO (Option Bitmap) :=
   liftOption (createSubBitmap parent x y w h)
 
 /-- Lock a bitmap for direct pixel access, returning `none` on failure. -/
-def lockBitmap? (bmp : Bitmap) (format flags : UInt32) : IO (Option LockedRegion) :=
-  liftOption (lockBitmap bmp format flags)
+def lockBitmap? (bmp : Bitmap) (format : PixelFormat) (mode : LockMode) : IO (Option LockedRegion) :=
+  liftOption (lockBitmap bmp format mode)
 
 /-- Lock a bitmap region, returning `none` on failure. -/
-def lockBitmapRegion? (bmp : Bitmap) (x y w h : Int32) (format flags : UInt32) : IO (Option LockedRegion) :=
-  liftOption (lockBitmapRegion bmp x y w h format flags)
+def lockBitmapRegion? (bmp : Bitmap) (x y w h : Int32) (format : PixelFormat) (mode : LockMode) : IO (Option LockedRegion) :=
+  liftOption (lockBitmapRegion bmp x y w h format mode)
 
 /-- Lock a bitmap with block-aligned access, returning `none` on failure. -/
-def lockBitmapBlocked? (bmp : Bitmap) (flags : UInt32) : IO (Option LockedRegion) :=
-  liftOption (lockBitmapBlocked bmp flags)
+def lockBitmapBlocked? (bmp : Bitmap) (mode : LockMode) : IO (Option LockedRegion) :=
+  liftOption (lockBitmapBlocked bmp mode)
 
 /-- Lock a block-aligned bitmap region, returning `none` on failure. -/
-def lockBitmapRegionBlocked? (bmp : Bitmap) (x y w h : Int32) (flags : UInt32) : IO (Option LockedRegion) :=
-  liftOption (lockBitmapRegionBlocked bmp x y w h flags)
+def lockBitmapRegionBlocked? (bmp : Bitmap) (x y w h : Int32) (mode : LockMode) : IO (Option LockedRegion) :=
+  liftOption (lockBitmapRegionBlocked bmp x y w h mode)
 
 end Allegro

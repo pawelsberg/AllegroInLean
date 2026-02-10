@@ -39,7 +39,7 @@ def main : IO Unit := do
     else if evType == evTimer then
       Allegro.clearToColorRgb 20 20 20
       if hasBmp then
-        bmp.draw 100 80 0
+        bmp.draw 100 80 FlipFlags.none
       Allegro.flipDisplay
 
   if hasBmp then

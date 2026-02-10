@@ -138,11 +138,97 @@ opaque dropNextEvent : EventQueue → IO UInt32
 @[extern "allegro_al_is_event_queue_empty"]
 opaque isEventQueueEmpty : EventQueue → IO UInt32
 
+-- ════════════════════════════════════════════════════════════════════
+-- EventType — strongly-typed event type identifier
+-- ════════════════════════════════════════════════════════════════════
+
+/-- Allegro event type identifier. -/
+structure EventType where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Inhabited, Repr
+
+namespace EventType
+-- Joystick events
+def joystickAxis : EventType := ⟨1⟩
+def joystickButtonDown : EventType := ⟨2⟩
+def joystickButtonUp : EventType := ⟨3⟩
+def joystickConfiguration : EventType := ⟨4⟩
+-- Keyboard events
+def keyDown : EventType := ⟨10⟩
+def keyChar : EventType := ⟨11⟩
+def keyUp : EventType := ⟨12⟩
+-- Mouse events
+def mouseAxes : EventType := ⟨20⟩
+def mouseButtonDown : EventType := ⟨21⟩
+def mouseButtonUp : EventType := ⟨22⟩
+def mouseEnterDisplay : EventType := ⟨23⟩
+def mouseLeaveDisplay : EventType := ⟨24⟩
+def mouseWarped : EventType := ⟨25⟩
+-- Timer events
+def timer : EventType := ⟨30⟩
+-- Display events
+def displayExpose : EventType := ⟨40⟩
+def displayResize : EventType := ⟨41⟩
+def displayClose : EventType := ⟨42⟩
+def displayLost : EventType := ⟨43⟩
+def displayFound : EventType := ⟨44⟩
+def displaySwitchIn : EventType := ⟨45⟩
+def displaySwitchOut : EventType := ⟨46⟩
+def displayOrientation : EventType := ⟨47⟩
+def displayHaltDrawing : EventType := ⟨48⟩
+def displayResumeDrawing : EventType := ⟨49⟩
+-- Touch events
+def touchBegin : EventType := ⟨50⟩
+def touchEnd : EventType := ⟨51⟩
+def touchMove : EventType := ⟨52⟩
+def touchCancel : EventType := ⟨53⟩
+-- Display connect/disconnect events
+def displayConnected : EventType := ⟨60⟩
+def displayDisconnected : EventType := ⟨61⟩
+end EventType
+
+-- Backward-compatible aliases
+def eventTypeJoystickAxis := EventType.joystickAxis
+def eventTypeJoystickButtonDown := EventType.joystickButtonDown
+def eventTypeJoystickButtonUp := EventType.joystickButtonUp
+def eventTypeJoystickConfiguration := EventType.joystickConfiguration
+def eventTypeKeyDown := EventType.keyDown
+def eventTypeKeyChar := EventType.keyChar
+def eventTypeKeyUp := EventType.keyUp
+def eventTypeMouseAxes := EventType.mouseAxes
+def eventTypeMouseButtonDown := EventType.mouseButtonDown
+def eventTypeMouseButtonUp := EventType.mouseButtonUp
+def eventTypeMouseEnterDisplay := EventType.mouseEnterDisplay
+def eventTypeMouseLeaveDisplay := EventType.mouseLeaveDisplay
+def eventTypeMouseWarped := EventType.mouseWarped
+def eventTypeTimer := EventType.timer
+def eventTypeDisplayExpose := EventType.displayExpose
+def eventTypeDisplayResize := EventType.displayResize
+def eventTypeDisplayClose := EventType.displayClose
+def eventTypeDisplayLost := EventType.displayLost
+def eventTypeDisplayFound := EventType.displayFound
+def eventTypeDisplaySwitchIn := EventType.displaySwitchIn
+def eventTypeDisplaySwitchOut := EventType.displaySwitchOut
+def eventTypeDisplayOrientation := EventType.displayOrientation
+def eventTypeDisplayHaltDrawing := EventType.displayHaltDrawing
+def eventTypeDisplayResumeDrawing := EventType.displayResumeDrawing
+def eventTypeTouchBegin := EventType.touchBegin
+def eventTypeTouchEnd := EventType.touchEnd
+def eventTypeTouchMove := EventType.touchMove
+def eventTypeTouchCancel := EventType.touchCancel
+def eventTypeDisplayConnected := EventType.displayConnected
+def eventTypeDisplayDisconnected := EventType.displayDisconnected
+
 -- ── General event fields ──
 
 /-- Get the type code of an event. -/
 @[extern "allegro_al_event_get_type"]
-opaque eventGetType : Event → IO UInt32
+private opaque eventGetTypeRaw : Event → IO UInt32
+
+@[inline] def eventGetType (ev : Event) : IO EventType := do
+  let v ← eventGetTypeRaw ev
+  return ⟨v⟩
 
 /-- Timestamp (seconds since Allegro init) of any event. -/
 @[extern "allegro_al_event_get_timestamp"]
@@ -351,8 +437,8 @@ opaque emitUserEvent : EventSource → UInt64 → UInt64 → UInt64 → UInt64 �
     * **User** (≥512): `u64v`=data1
 -/
 structure EventData where
-  /-- Event type constant (e.g. `eventTypeKeyDown`). -/
-  type      : UInt32
+  /-- Event type constant (e.g. `EventType.keyDown`). -/
+  type      : EventType
   /-- Seconds since Allegro init. -/
   timestamp : Float
   /-- The event source pointer (as UInt64). -/
@@ -381,7 +467,21 @@ structure EventData where
   fv2       : Float
   /-- UInt64 slot (timer.count / joystick.id / touch.id / user.data1). -/
   u64v      : UInt64
-  deriving BEq, Inhabited, Repr
+  deriving Repr
+
+instance : Inhabited EventData where
+  default := {
+    type := default, timestamp := 0.0, source := 0,
+    a := 0, b := 0, c := 0, d := 0, e := 0, f := 0, g := 0, h := 0, i := 0,
+    fv1 := 0.0, fv2 := 0.0, u64v := 0
+  }
+
+instance : BEq EventData where
+  beq x y :=
+    x.type == y.type && x.timestamp == y.timestamp && x.source == y.source &&
+    x.a == y.a && x.b == y.b && x.c == y.c && x.d == y.d &&
+    x.e == y.e && x.f == y.f && x.g == y.g && x.h == y.h &&
+    x.i == y.i && x.fv1 == y.fv1 && x.fv2 == y.fv2 && x.u64v == y.u64v
 
 -- ── Convenience accessors ──
 
@@ -425,84 +525,6 @@ opaque getNextEventData : EventQueue → IO (UInt32 × EventData)
 /-- Peek at the next event without removing it. Returns `(gotEvent, data)`. -/
 @[extern "allegro_al_peek_next_event_data"]
 opaque peekNextEventData : EventQueue → IO (UInt32 × EventData)
-
--- ── Event type constants: keyboard ──
-
-/-- A keyboard key was pressed down. -/
-def eventTypeKeyDown : UInt32 := 10
-/-- A keyboard key was released. -/
-def eventTypeKeyUp : UInt32 := 12
-/-- A character was typed (includes auto-repeat). -/
-def eventTypeKeyChar : UInt32 := 11
-
--- ── Event type constants: display ──
-
-/-- The user clicked the window close button. -/
-def eventTypeDisplayClose : UInt32 := 42
-/-- The display was resized. -/
-def eventTypeDisplayResize : UInt32 := 41
-/-- A display region needs repainting. -/
-def eventTypeDisplayExpose : UInt32 := 40
-/-- The display lost input focus. -/
-def eventTypeDisplaySwitchOut : UInt32 := 46
-/-- The display gained input focus. -/
-def eventTypeDisplaySwitchIn : UInt32 := 45
-/-- The display's OpenGL context was lost. -/
-def eventTypeDisplayLost : UInt32 := 43
-/-- The display's OpenGL context was restored. -/
-def eventTypeDisplayFound : UInt32 := 44
-/-- The display orientation changed (mobile). -/
-def eventTypeDisplayOrientation : UInt32 := 47
-/-- The OS requests that drawing be halted. -/
-def eventTypeDisplayHaltDrawing : UInt32 := 48
-/-- Drawing may resume after a halt. -/
-def eventTypeDisplayResumeDrawing : UInt32 := 49
-/-- A new monitor was connected. -/
-def eventTypeDisplayConnected : UInt32 := 60
-/-- A monitor was disconnected. -/
-def eventTypeDisplayDisconnected : UInt32 := 61
-
--- ── Event type constants: mouse ──
-
-/-- Mouse axes changed (movement or scroll). -/
-def eventTypeMouseAxes : UInt32 := 20
-/-- A mouse button was pressed. -/
-def eventTypeMouseButtonDown : UInt32 := 21
-/-- A mouse button was released. -/
-def eventTypeMouseButtonUp : UInt32 := 22
-/-- The mouse cursor entered the display window. -/
-def eventTypeMouseEnterDisplay : UInt32 := 23
-/-- The mouse cursor left the display window. -/
-def eventTypeMouseLeaveDisplay : UInt32 := 24
-/-- The mouse was warped (programmatically moved). -/
-def eventTypeMouseWarped : UInt32 := 25
-
--- ── Event type constants: timer ──
-
-/-- A timer ticked. -/
-def eventTypeTimer : UInt32 := 30
-
--- ── Event type constants: joystick ──
-
-/-- A joystick axis changed. -/
-def eventTypeJoystickAxis : UInt32 := 1
-/-- A joystick button was pressed. -/
-def eventTypeJoystickButtonDown : UInt32 := 2
-/-- A joystick button was released. -/
-def eventTypeJoystickButtonUp : UInt32 := 3
-/-- Joystick configuration changed (device added/removed). -/
-def eventTypeJoystickConfiguration : UInt32 := 4
-
--- ── Event type constants: touch ──
-
-/-- A touch input began (finger down). -/
-def eventTypeTouchBegin : UInt32 := 50
-/-- A touch input ended (finger up). -/
-def eventTypeTouchEnd : UInt32 := 51
-/-- A touch input moved (finger dragged). -/
-def eventTypeTouchMove : UInt32 := 52
-/-- A touch input was cancelled. -/
-def eventTypeTouchCancel : UInt32 := 53
 
 -- ════════════════════════════════════════════════════════════════════
 -- Timeout

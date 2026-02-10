@@ -17,7 +17,7 @@ def main : IO Unit := do
 
   IO.println "── Shader Demo ──"
 
-  Allegro.setNewDisplayFlags 0
+  Allegro.setNewDisplayFlags ⟨0⟩
   let display ← Allegro.createDisplay 320 200
   if display == 0 then
     IO.eprintln "  createDisplay failed"; Allegro.uninstallSystem; return
@@ -32,7 +32,7 @@ def main : IO Unit := do
 
   -- Determine platform from the shader
   let plat ← shader.platform
-  IO.println s!"  getShaderPlatform = {plat}"
+  IO.println s!"  getShaderPlatform = {plat.val}"
 
   -- Get default shader sources
   let vSrc ← Allegro.getDefaultShaderSource plat Allegro.shaderTypeVertex

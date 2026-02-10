@@ -38,7 +38,7 @@ def main : IO Unit := do
   IO.println s!"  setNewWindowPosition(100,100) → getNewWindowPosition = ({wx},{wy})"
 
   -- Create a display to test runtime properties
-  Allegro.setNewDisplayFlags 0
+  Allegro.setNewDisplayFlags ⟨0⟩
   let display ← Allegro.createDisplay 320 200
   if display == 0 then
     IO.eprintln "  createDisplay failed (headless?); skipping runtime tests"
@@ -51,7 +51,7 @@ def main : IO Unit := do
   IO.println s!"  getDisplayRefreshRate = {rr2}"
 
   let orient ← display.orientation
-  IO.println s!"  getDisplayOrientation = {orient}"
+  IO.println s!"  getDisplayOrientation = {orient.val}"
 
   let adapter ← display.adapter
   IO.println s!"  getDisplayAdapter = {adapter}"
@@ -67,7 +67,7 @@ def main : IO Unit := do
   IO.println "  applyWindowConstraints(0) — OK"
 
   -- setDisplayOptionLive (option 0 = RED_SIZE, value 8)
-  display.setOptionLive (0 : UInt32) 8
+  display.setOptionLive ⟨0⟩ 8
   IO.println "  setDisplayOptionLive — OK"
 
   -- isCompatibleBitmap — with a small memory bitmap

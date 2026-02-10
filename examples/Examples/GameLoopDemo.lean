@@ -174,7 +174,7 @@ def main : IO Unit := do
   let _ ← Allegro.initAcodecAddon
   let _ ← Allegro.installKeyboard
 
-  Allegro.setNewDisplayFlags 0
+  Allegro.setNewDisplayFlags ⟨0⟩
   let display ← Allegro.createDisplay screenW.toUInt32 screenH.toUInt32
   if display == 0 then
     IO.eprintln "Failed to create display"
@@ -226,7 +226,7 @@ def main : IO Unit := do
     if eType == evtDisplayClose then
       running := false
     else if eType == evtKeyDown then
-      let kc ← evt.keyboardKeycode
+      let kc : KeyCode := ⟨← evt.keyboardKeycode⟩
       if kc == keyEsc then
         running := false
       else if kc == keyLeft then
@@ -234,7 +234,7 @@ def main : IO Unit := do
       else if kc == keyRight then
         gs := { gs with rightHeld := true }
     else if eType == evtKeyUp then
-      let kc ← evt.keyboardKeycode
+      let kc : KeyCode := ⟨← evt.keyboardKeycode⟩
       if kc == keyLeft then
         gs := { gs with leftHeld := false }
       else if kc == keyRight then
@@ -247,7 +247,7 @@ def main : IO Unit := do
       seed := seed'
       -- Play beep on catch
       if gs.score > oldScore && beep != 0 then
-        let _ ← beep.play 1.0 0.0 1.0 0
+        let _ ← beep.play 1.0 0.0 1.0 Playmode.once
         pure ()
       redraw := true
 

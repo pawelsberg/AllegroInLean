@@ -73,9 +73,9 @@ def testBitmapInvalidHandle : IO Bool := do
   check "getBitmapHeight 0 returns 0" (h == 0)
   -- getBitmapFlags/Format on null → 0
   let fl ← null.flags
-  check "getBitmapFlags 0 returns 0" (fl == 0)
+  check "getBitmapFlags 0 returns 0" (fl.val == 0)
   let fmt ← null.format
-  check "getBitmapFormat 0 returns 0" (fmt == 0)
+  check "getBitmapFormat 0 returns 0" (fmt.val == 0)
   -- cloneBitmap null → 0
   let cl ← null.clone
   check "cloneBitmap 0 returns 0" (cl == 0)
@@ -92,7 +92,7 @@ def testBitmapInvalidHandle : IO Bool := do
   null.destroy
   check "destroyBitmap 0 no crash" true
   -- drawBitmap null → no crash
-  null.draw 0.0 0.0 0
+  null.draw 0.0 0.0 FlipFlags.none
   check "drawBitmap 0 no crash" true
   pure true
 
@@ -123,7 +123,7 @@ def testEventsInvalidHandle : IO Bool := do
   let nullE : Event := 0
   -- eventGetType on null event → 0
   let ty ← nullE.type
-  check "eventGetType 0 returns 0" (ty == 0)
+  check "eventGetType 0 returns 0" (ty.val == 0)
   -- eventGetTimestamp on null event → 0.0
   let ts ← nullE.timestamp
   check "eventGetTimestamp 0 returns 0.0" (ts == 0.0)
@@ -187,11 +187,11 @@ def testAudioInvalidHandle : IO Bool := do
   let slen ← nullSample.length
   check "getSampleLength 0 returns 0" (slen == 0)
   let sdep ← nullSample.depth
-  check "getSampleDepth 0 returns 0" (sdep == 0)
+  check "getSampleDepth 0 returns 0" (sdep.val == 0)
   let sch ← nullSample.channels
-  check "getSampleChannels 0 returns 0" (sch == 0)
+  check "getSampleChannels 0 returns 0" (sch.val == 0)
   -- playSample null → 0
-  let ps ← nullSample.play 1.0 0.0 1.0 0
+  let ps ← nullSample.play 1.0 0.0 1.0 ⟨0⟩
   check "playSample 0 returns 0" (ps == 0)
   -- destroySample 0
   nullSample.destroy
@@ -213,7 +213,7 @@ def testAudioInvalidHandle : IO Bool := do
   let silen ← nullInst.length
   check "getSampleInstanceLength 0 returns 0" (silen == 0)
   let sipm ← nullInst.playmode
-  check "getSampleInstancePlaymode 0 returns 0" (sipm == 0)
+  check "getSampleInstancePlaymode 0 returns 0" (sipm.val == 0)
   let pir ← nullInst.play
   check "playSampleInstance 0 returns 0" (pir == 0)
   let sir ← nullInst.stop
@@ -234,7 +234,7 @@ def testAudioInvalidHandle : IO Bool := do
   let aspl ← nullStream.isPlaying
   check "getAudioStreamPlaying 0 returns 0" (aspl == 0)
   let aspm ← nullStream.playmode
-  check "getAudioStreamPlaymode 0 returns 0" (aspm == 0)
+  check "getAudioStreamPlaymode 0 returns 0" (aspm.val == 0)
   let aspos ← nullStream.positionSecs
   check "getAudioStreamPositionSecs 0 returns 0.0" (aspos == 0.0)
   let aslen ← nullStream.lengthSecs
@@ -261,14 +261,14 @@ def testAudioInvalidHandle : IO Bool := do
   let mf ← nullMixer.frequency
   check "getMixerFrequency 0 returns 0" (mf == 0)
   let mq ← nullMixer.quality
-  check "getMixerQuality 0 returns 0" (mq == 0)
+  check "getMixerQuality 0 returns 0" (mq.val == 0)
   let mp ← nullMixer.isPlaying
   check "getMixerPlaying 0 returns 0" (mp == 0)
   let smf ← nullMixer.setFrequency 44100
   check "setMixerFrequency 0 returns 0" (smf == 0)
   let smg ← nullMixer.setGain 1.0
   check "setMixerGain 0 returns 0" (smg == 0)
-  let smq ← nullMixer.setQuality 0
+  let smq ← nullMixer.setQuality ⟨0⟩
   check "setMixerQuality 0 returns 0" (smq == 0)
   let smp ← nullMixer.setPlaying 1
   check "setMixerPlaying 0 returns 0" (smp == 0)
@@ -437,7 +437,7 @@ def testDisplayInvalidHandle : IO Bool := do
   let h ← null.height
   check "getDisplayHeight 0 returns 0" (h == 0)
   let fl ← null.flags
-  check "getDisplayFlags 0 returns 0" (fl == 0)
+  check "getDisplayFlags 0 returns 0" (fl.val == 0)
   let bb ← null.backbuffer
   check "getBackbuffer 0 returns 0" (bb == 0)
   null.destroy
@@ -460,7 +460,7 @@ def testDisplayInvalidHandle : IO Bool := do
   check "destroyMouseCursor 0 no crash" true
   let sm ← null.setMouseCursor nullMC
   check "setMouseCursor 0 0 → 0" (sm == 0)
-  let ss ← null.setSystemCursor 1
+  let ss ← null.setSystemCursor ⟨1⟩
   check "setSystemMouseCursor 0 → 0" (ss == 0)
   let mx ← null.setMouseXy 10 10
   check "setMouseXy 0 → 0" (mx == 0)

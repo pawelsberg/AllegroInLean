@@ -124,10 +124,128 @@ opaque loadSample : String → IO Sample
 @[extern "allegro_al_destroy_sample"]
 opaque destroySample : Sample → IO Unit
 
+-- ── Playmode constants ──
+
+/-- Allegro playmode (once, loop, bidirectional, etc.). -/
+structure Playmode where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace Playmode
+/-- Play the sample/stream once, then stop. -/
+def once : Playmode := ⟨256⟩
+/-- Loop the sample/stream continuously. -/
+def loop : Playmode := ⟨257⟩
+/-- Loop the sample/stream in bidirectional (ping-pong) mode. -/
+def bidir : Playmode := ⟨258⟩
+/-- Play the sample loop section once (loop start → loop end), then stop. -/
+def loopOnce : Playmode := ⟨261⟩
+end Playmode
+
+-- Backward-compatible aliases
+def playmodeOnce := Playmode.once
+def playmodeLoop := Playmode.loop
+def playmodeBidir := Playmode.bidir
+def playmodeLoopOnce := Playmode.loopOnce
+
+-- ── Audio depth constants ──
+
+/-- Allegro audio sample depth (bit-depth and signedness). -/
+structure AudioDepth where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace AudioDepth
+/-- Signed 8-bit integer audio depth. -/
+def int8 : AudioDepth := ⟨0⟩
+/-- Signed 16-bit integer audio depth. -/
+def int16 : AudioDepth := ⟨1⟩
+/-- Signed 24-bit integer audio depth. -/
+def int24 : AudioDepth := ⟨2⟩
+/-- 32-bit floating-point audio depth. -/
+def float32 : AudioDepth := ⟨3⟩
+/-- Unsigned 8-bit integer audio depth. -/
+def uint8 : AudioDepth := ⟨8⟩
+/-- Unsigned 16-bit integer audio depth. -/
+def uint16 : AudioDepth := ⟨9⟩
+/-- Unsigned 24-bit integer audio depth. -/
+def uint24 : AudioDepth := ⟨10⟩
+end AudioDepth
+
+-- Backward-compatible aliases
+def audioDepthInt8 := AudioDepth.int8
+def audioDepthInt16 := AudioDepth.int16
+def audioDepthInt24 := AudioDepth.int24
+def audioDepthFloat32 := AudioDepth.float32
+def audioDepthUint8 := AudioDepth.uint8
+def audioDepthUint16 := AudioDepth.uint16
+def audioDepthUint24 := AudioDepth.uint24
+
+-- ── Channel configuration constants ──
+
+/-- Allegro channel configuration (mono, stereo, surround, etc.). -/
+structure ChannelConf where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace ChannelConf
+/-- Mono (1 channel). -/
+def conf1 : ChannelConf := ⟨16⟩
+/-- Stereo (2 channels). -/
+def conf2 : ChannelConf := ⟨32⟩
+/-- 3 channels. -/
+def conf3 : ChannelConf := ⟨48⟩
+/-- 4 channels (quadraphonic). -/
+def conf4 : ChannelConf := ⟨64⟩
+/-- 5.1 surround (6 channels). -/
+def conf51 : ChannelConf := ⟨81⟩
+/-- 6.1 surround (7 channels). -/
+def conf61 : ChannelConf := ⟨97⟩
+/-- 7.1 surround (8 channels). -/
+def conf71 : ChannelConf := ⟨113⟩
+end ChannelConf
+
+-- Backward-compatible aliases
+def channelConf1 := ChannelConf.conf1
+def channelConf2 := ChannelConf.conf2
+def channelConf3 := ChannelConf.conf3
+def channelConf4 := ChannelConf.conf4
+def channelConf51 := ChannelConf.conf51
+def channelConf61 := ChannelConf.conf61
+def channelConf71 := ChannelConf.conf71
+
+-- ── Mixer quality constants ──
+
+/-- Allegro mixer interpolation quality. -/
+structure MixerQuality where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace MixerQuality
+/-- Point (nearest-neighbour) sample interpolation — fastest, lowest quality. -/
+def point : MixerQuality := ⟨272⟩
+/-- Linear sample interpolation — good balance of speed and quality. -/
+def linear : MixerQuality := ⟨273⟩
+/-- Cubic sample interpolation — highest quality, most CPU intensive. -/
+def cubic : MixerQuality := ⟨274⟩
+end MixerQuality
+
+-- Backward-compatible aliases
+def mixerQualityPoint := MixerQuality.point
+def mixerQualityLinear := MixerQuality.linear
+def mixerQualityCubic := MixerQuality.cubic
+
+@[extern "allegro_al_play_sample"]
+private opaque playSampleRaw : Sample → Float → Float → Float → UInt32 → IO UInt32
+
 /-- Fire-and-forget playback. `playSample spl gain pan speed loopFlag`
     where loopFlag = 0 for once, non-zero for loop. -/
-@[extern "allegro_al_play_sample"]
-opaque playSample : Sample → Float → Float → Float → UInt32 → IO UInt32
+@[inline] def playSample (spl : Sample) (gain pan speed : Float) (mode : Playmode) : IO UInt32 :=
+  playSampleRaw spl gain pan speed mode.val
 
 /-- Stop all samples started by `playSample`. -/
 @[extern "allegro_al_stop_samples"]
@@ -141,13 +259,21 @@ opaque getSampleFrequency : Sample → IO UInt32
 @[extern "allegro_al_get_sample_length"]
 opaque getSampleLength : Sample → IO UInt32
 
-/-- Get the audio depth of the sample. -/
 @[extern "allegro_al_get_sample_depth"]
-opaque getSampleDepth : Sample → IO UInt32
+private opaque getSampleDepthRaw : Sample → IO UInt32
+
+/-- Get the audio depth of the sample. -/
+@[inline] def getSampleDepth (spl : Sample) : IO AudioDepth := do
+  let v ← getSampleDepthRaw spl
+  return ⟨v⟩
+
+@[extern "allegro_al_get_sample_channels"]
+private opaque getSampleChannelsRaw : Sample → IO UInt32
 
 /-- Get the channel configuration of the sample. -/
-@[extern "allegro_al_get_sample_channels"]
-opaque getSampleChannels : Sample → IO UInt32
+@[inline] def getSampleChannels (spl : Sample) : IO ChannelConf := do
+  let v ← getSampleChannelsRaw spl
+  return ⟨v⟩
 
 -- ── Sample instance ──
 
@@ -211,13 +337,20 @@ opaque setSampleInstancePosition : SampleInstance → UInt32 → IO UInt32
 @[extern "allegro_al_get_sample_instance_length"]
 opaque getSampleInstanceLength : SampleInstance → IO UInt32
 
-/-- Get the playmode of a sample instance. -/
 @[extern "allegro_al_get_sample_instance_playmode"]
-opaque getSampleInstancePlaymode : SampleInstance → IO UInt32
+private opaque getSampleInstancePlaymodeRaw : SampleInstance → IO UInt32
+
+/-- Get the playmode of a sample instance. -/
+@[inline] def getSampleInstancePlaymode (inst : SampleInstance) : IO Playmode := do
+  let v ← getSampleInstancePlaymodeRaw inst
+  return ⟨v⟩
+
+@[extern "allegro_al_set_sample_instance_playmode"]
+private opaque setSampleInstancePlaymodeRaw : SampleInstance → UInt32 → IO UInt32
 
 /-- Set the playmode of a sample instance (once, loop, etc.). Returns non-zero on success. -/
-@[extern "allegro_al_set_sample_instance_playmode"]
-opaque setSampleInstancePlaymode : SampleInstance → UInt32 → IO UInt32
+@[inline] def setSampleInstancePlaymode (inst : SampleInstance) (mode : Playmode) : IO UInt32 :=
+  setSampleInstancePlaymodeRaw inst mode.val
 
 /-- Detach a sample instance from its mixer. Returns non-zero on success. -/
 @[extern "allegro_al_detach_sample_instance"]
@@ -281,13 +414,20 @@ opaque getAudioStreamSpeed : AudioStream → IO Float
 @[extern "allegro_al_set_audio_stream_speed"]
 opaque setAudioStreamSpeed : AudioStream → Float → IO UInt32
 
-/-- Get the playmode of the audio stream. -/
 @[extern "allegro_al_get_audio_stream_playmode"]
-opaque getAudioStreamPlaymode : AudioStream → IO UInt32
+private opaque getAudioStreamPlaymodeRaw : AudioStream → IO UInt32
+
+/-- Get the playmode of the audio stream. -/
+@[inline] def getAudioStreamPlaymode (stream : AudioStream) : IO Playmode := do
+  let v ← getAudioStreamPlaymodeRaw stream
+  return ⟨v⟩
+
+@[extern "allegro_al_set_audio_stream_playmode"]
+private opaque setAudioStreamPlaymodeRaw : AudioStream → UInt32 → IO UInt32
 
 /-- Set the playmode of the audio stream (once, loop, etc.). Returns non-zero on success. -/
-@[extern "allegro_al_set_audio_stream_playmode"]
-opaque setAudioStreamPlaymode : AudioStream → UInt32 → IO UInt32
+@[inline] def setAudioStreamPlaymode (stream : AudioStream) (mode : Playmode) : IO UInt32 :=
+  setAudioStreamPlaymodeRaw stream mode.val
 
 /-- Seek to a position in the audio stream (in seconds). Returns non-zero on success. -/
 @[extern "allegro_al_seek_audio_stream_secs"]
@@ -319,9 +459,12 @@ opaque detachAudioStream : AudioStream → IO UInt32
 
 -- ── Mixer ──
 
-/-- Create a mixer. `createMixer frequency depth channelConf` -/
 @[extern "allegro_al_create_mixer"]
-opaque createMixer : UInt32 → UInt32 → UInt32 → IO Mixer
+private opaque createMixerRaw : UInt32 → UInt32 → UInt32 → IO Mixer
+
+/-- Create a mixer. `createMixer frequency depth channelConf` -/
+@[inline] def createMixer (freq : UInt32) (depth : AudioDepth) (chanConf : ChannelConf) : IO Mixer :=
+  createMixerRaw freq depth.val chanConf.val
 
 /-- Destroy a mixer and free its resources. -/
 @[extern "allegro_al_destroy_mixer"]
@@ -363,13 +506,20 @@ opaque getMixerGain : Mixer → IO Float
 @[extern "allegro_al_set_mixer_gain"]
 opaque setMixerGain : Mixer → Float → IO UInt32
 
-/-- Get the mixer's interpolation quality. -/
 @[extern "allegro_al_get_mixer_quality"]
-opaque getMixerQuality : Mixer → IO UInt32
+private opaque getMixerQualityRaw : Mixer → IO UInt32
+
+/-- Get the mixer's interpolation quality. -/
+@[inline] def getMixerQuality (mixer : Mixer) : IO MixerQuality := do
+  let v ← getMixerQualityRaw mixer
+  return ⟨v⟩
+
+@[extern "allegro_al_set_mixer_quality"]
+private opaque setMixerQualityRaw : Mixer → UInt32 → IO UInt32
 
 /-- Set the mixer's interpolation quality. Returns non-zero on success. -/
-@[extern "allegro_al_set_mixer_quality"]
-opaque setMixerQuality : Mixer → UInt32 → IO UInt32
+@[inline] def setMixerQuality (mixer : Mixer) (quality : MixerQuality) : IO UInt32 :=
+  setMixerQualityRaw mixer quality.val
 
 /-- Check if the mixer is playing. Returns 1 if playing. -/
 @[extern "allegro_al_get_mixer_playing"]
@@ -381,9 +531,12 @@ opaque setMixerPlaying : Mixer → UInt32 → IO UInt32
 
 -- ── Voice ──
 
-/-- Create a voice. `createVoice frequency depth channelConf` -/
 @[extern "allegro_al_create_voice"]
-opaque createVoice : UInt32 → UInt32 → UInt32 → IO Voice
+private opaque createVoiceRaw : UInt32 → UInt32 → UInt32 → IO Voice
+
+/-- Create a voice. `createVoice frequency depth channelConf` -/
+@[inline] def createVoice (freq : UInt32) (depth : AudioDepth) (chanConf : ChannelConf) : IO Voice :=
+  createVoiceRaw freq depth.val chanConf.val
 
 /-- Destroy a voice and free its resources. -/
 @[extern "allegro_al_destroy_voice"]
@@ -419,13 +572,19 @@ opaque getDefaultVoice : IO Voice
 @[extern "allegro_al_get_allegro_audio_version"]
 opaque getAudioVersion : IO UInt32
 
-/-- Get the number of channels for a channel configuration constant. -/
 @[extern "allegro_al_get_channel_count"]
-opaque getChannelCount : UInt32 → IO UInt32
+private opaque getChannelCountRaw : UInt32 → IO UInt32
+
+/-- Get the number of channels for a channel configuration constant. -/
+@[inline] def getChannelCount (conf : ChannelConf) : IO UInt32 :=
+  getChannelCountRaw conf.val
+
+@[extern "allegro_al_get_audio_depth_size"]
+private opaque getAudioDepthSizeRaw : UInt32 → IO UInt32
 
 /-- Get the byte size of one sample for the given audio depth. -/
-@[extern "allegro_al_get_audio_depth_size"]
-opaque getAudioDepthSize : UInt32 → IO UInt32
+@[inline] def getAudioDepthSize (depth : AudioDepth) : IO UInt32 :=
+  getAudioDepthSizeRaw depth.val
 
 /-- Get the acodec addon version (packed as major·minor·revision·release). -/
 @[extern "allegro_al_get_allegro_acodec_version"]
@@ -441,13 +600,21 @@ opaque isAcodecAddonInitialized : IO UInt32
 @[extern "allegro_al_get_sample_instance_frequency"]
 opaque getSampleInstanceFrequency : SampleInstance → IO UInt32
 
-/-- Get the channel configuration of a sample instance. -/
 @[extern "allegro_al_get_sample_instance_channels"]
-opaque getSampleInstanceChannels : SampleInstance → IO UInt32
+private opaque getSampleInstanceChannelsRaw : SampleInstance → IO UInt32
+
+/-- Get the channel configuration of a sample instance. -/
+@[inline] def getSampleInstanceChannels (inst : SampleInstance) : IO ChannelConf := do
+  let v ← getSampleInstanceChannelsRaw inst
+  return ⟨v⟩
+
+@[extern "allegro_al_get_sample_instance_depth"]
+private opaque getSampleInstanceDepthRaw : SampleInstance → IO UInt32
 
 /-- Get the audio depth of a sample instance. -/
-@[extern "allegro_al_get_sample_instance_depth"]
-opaque getSampleInstanceDepth : SampleInstance → IO UInt32
+@[inline] def getSampleInstanceDepth (inst : SampleInstance) : IO AudioDepth := do
+  let v ← getSampleInstanceDepthRaw inst
+  return ⟨v⟩
 
 /-- Check if a sample instance is attached to a mixer or voice. Returns 1 if attached. -/
 @[extern "allegro_al_get_sample_instance_attached"]
@@ -479,13 +646,21 @@ opaque getAudioStreamFragments : AudioStream → IO UInt32
 @[extern "allegro_al_get_available_audio_stream_fragments"]
 opaque getAvailableAudioStreamFragments : AudioStream → IO UInt32
 
-/-- Get the channel configuration of an audio stream. -/
 @[extern "allegro_al_get_audio_stream_channels"]
-opaque getAudioStreamChannels : AudioStream → IO UInt32
+private opaque getAudioStreamChannelsRaw : AudioStream → IO UInt32
+
+/-- Get the channel configuration of an audio stream. -/
+@[inline] def getAudioStreamChannels (stream : AudioStream) : IO ChannelConf := do
+  let v ← getAudioStreamChannelsRaw stream
+  return ⟨v⟩
+
+@[extern "allegro_al_get_audio_stream_depth"]
+private opaque getAudioStreamDepthRaw : AudioStream → IO UInt32
 
 /-- Get the audio depth of an audio stream. -/
-@[extern "allegro_al_get_audio_stream_depth"]
-opaque getAudioStreamDepth : AudioStream → IO UInt32
+@[inline] def getAudioStreamDepth (stream : AudioStream) : IO AudioDepth := do
+  let v ← getAudioStreamDepthRaw stream
+  return ⟨v⟩
 
 /-- Check if an audio stream is attached to a mixer or voice. Returns 1 if attached. -/
 @[extern "allegro_al_get_audio_stream_attached"]
@@ -497,13 +672,21 @@ opaque getAudioStreamPlayedSamples : AudioStream → IO UInt64
 
 -- ── Mixer extra getters ──
 
-/-- Get the mixer's channel configuration. -/
 @[extern "allegro_al_get_mixer_channels"]
-opaque getMixerChannels : Mixer → IO UInt32
+private opaque getMixerChannelsRaw : Mixer → IO UInt32
+
+/-- Get the mixer's channel configuration. -/
+@[inline] def getMixerChannels (mixer : Mixer) : IO ChannelConf := do
+  let v ← getMixerChannelsRaw mixer
+  return ⟨v⟩
+
+@[extern "allegro_al_get_mixer_depth"]
+private opaque getMixerDepthRaw : Mixer → IO UInt32
 
 /-- Get the mixer's audio depth. -/
-@[extern "allegro_al_get_mixer_depth"]
-opaque getMixerDepth : Mixer → IO UInt32
+@[inline] def getMixerDepth (mixer : Mixer) : IO AudioDepth := do
+  let v ← getMixerDepthRaw mixer
+  return ⟨v⟩
 
 /-- Check if a mixer is attached to another mixer or voice. Returns 1 if attached. -/
 @[extern "allegro_al_get_mixer_attached"]
@@ -523,13 +706,21 @@ opaque getVoicePosition : Voice → IO UInt32
 @[extern "allegro_al_set_voice_position"]
 opaque setVoicePosition : Voice → UInt32 → IO UInt32
 
-/-- Get the voice's channel configuration. -/
 @[extern "allegro_al_get_voice_channels"]
-opaque getVoiceChannels : Voice → IO UInt32
+private opaque getVoiceChannelsRaw : Voice → IO UInt32
+
+/-- Get the voice's channel configuration. -/
+@[inline] def getVoiceChannels (voice : Voice) : IO ChannelConf := do
+  let v ← getVoiceChannelsRaw voice
+  return ⟨v⟩
+
+@[extern "allegro_al_get_voice_depth"]
+private opaque getVoiceDepthRaw : Voice → IO UInt32
 
 /-- Get the voice's audio depth. -/
-@[extern "allegro_al_get_voice_depth"]
-opaque getVoiceDepth : Voice → IO UInt32
+@[inline] def getVoiceDepth (voice : Voice) : IO AudioDepth := do
+  let v ← getVoiceDepthRaw voice
+  return ⟨v⟩
 
 /-- Check if a voice has any attached sources. Returns 1 if yes. -/
 @[extern "allegro_al_voice_has_attachments"]
@@ -571,60 +762,6 @@ opaque getNumAudioOutputDevices : IO UInt32
 @[extern "allegro_al_get_audio_device_name"]
 opaque getAudioDeviceName : UInt32 → IO String
 
--- ── Playmode constants ──
-
-/-- Play the sample/stream once, then stop. -/
-def playmodeOnce : UInt32 := 256
-/-- Loop the sample/stream continuously. -/
-def playmodeLoop : UInt32 := 257
-/-- Loop the sample/stream in bidirectional (ping-pong) mode. -/
-def playmodeBidir : UInt32 := 258
-/-- Play the sample loop section once (loop start → loop end), then stop. -/
-def playmodeLoopOnce : UInt32 := 261
-
--- ── Audio depth constants ──
-
-/-- Signed 8-bit integer audio depth. -/
-def audioDepthInt8 : UInt32 := 0
-/-- Signed 16-bit integer audio depth. -/
-def audioDepthInt16 : UInt32 := 1
-/-- Signed 24-bit integer audio depth. -/
-def audioDepthInt24 : UInt32 := 2
-/-- 32-bit floating-point audio depth. -/
-def audioDepthFloat32 : UInt32 := 3
-/-- Unsigned 8-bit integer audio depth. -/
-def audioDepthUint8 : UInt32 := 8
-/-- Unsigned 16-bit integer audio depth. -/
-def audioDepthUint16 : UInt32 := 9
-/-- Unsigned 24-bit integer audio depth. -/
-def audioDepthUint24 : UInt32 := 10
-
--- ── Channel configuration constants ──
-
-/-- Mono (1 channel). -/
-def channelConf1 : UInt32 := 16
-/-- Stereo (2 channels). -/
-def channelConf2 : UInt32 := 32
-/-- 3 channels. -/
-def channelConf3 : UInt32 := 48
-/-- 4 channels (quadraphonic). -/
-def channelConf4 : UInt32 := 64
-/-- 5.1 surround (6 channels). -/
-def channelConf51 : UInt32 := 81
-/-- 6.1 surround (7 channels). -/
-def channelConf61 : UInt32 := 97
-/-- 7.1 surround (8 channels). -/
-def channelConf71 : UInt32 := 113
-
--- ── Mixer quality constants ──
-
-/-- Point (nearest-neighbour) sample interpolation — fastest, lowest quality. -/
-def mixerQualityPoint : UInt32 := 272
-/-- Linear sample interpolation — good balance of speed and quality. -/
-def mixerQualityLinear : UInt32 := 273
-/-- Cubic sample interpolation — highest quality, most CPU intensive. -/
-def mixerQualityCubic : UInt32 := 274
-
 -- ── Sample data access ──
 
 /-- Get the sample data currently set on a sample instance. Returns null (0) if none. -/
@@ -638,6 +775,9 @@ opaque setSample : SampleInstance → Sample → IO UInt32
 
 -- ── Audio recorder (UNSTABLE) ──
 
+@[extern "allegro_al_create_audio_recorder"]
+private opaque createAudioRecorderRaw : UInt32 → UInt32 → UInt32 → UInt32 → UInt32 → IO AudioRecorder
+
 /-- Create an audio recorder.
     - `fragmentCount`: number of fragments to buffer
     - `samples`: samples per fragment
@@ -645,8 +785,8 @@ opaque setSample : SampleInstance → Sample → IO UInt32
     - `depth`: audio depth constant (e.g. `audioDepthInt16`)
     - `chanConf`: channel configuration (e.g. `channelConf1`)
     Returns a recorder handle or null (0) on failure. -/
-@[extern "allegro_al_create_audio_recorder"]
-opaque createAudioRecorder : UInt32 → UInt32 → UInt32 → UInt32 → UInt32 → IO AudioRecorder
+@[inline] def createAudioRecorder (fragmentCount samples freq : UInt32) (depth : AudioDepth) (chanConf : ChannelConf) : IO AudioRecorder :=
+  createAudioRecorderRaw fragmentCount samples freq depth.val chanConf.val
 
 /-- Start recording audio. Returns 1 on success. -/
 @[extern "allegro_al_start_audio_recorder"]
@@ -680,11 +820,14 @@ instance : OfNat SampleId 0 := inferInstanceAs (OfNat UInt64 0)
 instance : ToString SampleId := ⟨fun (h : UInt64) => s!"SampleId#{h}"⟩
 instance : Repr SampleId := ⟨fun (h : UInt64) _ => .text s!"SampleId#{repr h}"⟩
 
+@[extern "allegro_al_play_sample_with_id"]
+private opaque playSampleWithIdRaw : Sample → Float → Float → Float → UInt32 → IO SampleId
+
 /-- Play a sample and return its `SampleId` (0 on failure).
     Unlike `playSample`, this accepts a playmode constant directly
     and returns the ID needed for `stopSample`. -/
-@[extern "allegro_al_play_sample_with_id"]
-opaque playSampleWithId : Sample → Float → Float → Float → UInt32 → IO SampleId
+@[inline] def playSampleWithId (spl : Sample) (gain pan speed : Float) (mode : Playmode) : IO SampleId :=
+  playSampleWithIdRaw spl gain pan speed mode.val
 
 /-- Stop a specific playing sample identified by its `SampleId`. -/
 @[extern "allegro_al_stop_sample"]
@@ -701,13 +844,19 @@ opaque unlockSampleId : SampleId → IO Unit
 
 -- ── Create audio stream from parameters ──
 
+@[extern "allegro_al_create_audio_stream"]
+private opaque createAudioStreamRawRaw : UInt32 → UInt32 → UInt32 → UInt32 → UInt32 → IO AudioStream
+
 /-- Create an audio stream (not from file).
     `bufferCount` fragments, `samples` per fragment, at `freq` Hz,
     with given `depth` and `chanConf`. Returns 0 on failure. -/
-@[extern "allegro_al_create_audio_stream"]
-opaque createAudioStreamRaw : UInt32 → UInt32 → UInt32 → UInt32 → UInt32 → IO AudioStream
+@[inline] def createAudioStreamRaw (bufferCount samples freq : UInt32) (depth : AudioDepth) (chanConf : ChannelConf) : IO AudioStream :=
+  createAudioStreamRawRaw bufferCount samples freq depth.val chanConf.val
 
 -- ── Create sample from raw buffer ──
+
+@[extern "allegro_al_create_sample"]
+private opaque createSampleRawRaw : UInt64 → UInt32 → UInt32 → UInt32 → UInt32 → UInt32 → IO Sample
 
 /-- Create a sample from a raw memory buffer.
     - `buf`: pointer to audio data (as UInt64)
@@ -717,8 +866,8 @@ opaque createAudioStreamRaw : UInt32 → UInt32 → UInt32 → UInt32 → UInt32
     - `chanConf`: channel configuration
     - `freeBuf`: 1 to let Allegro free the buffer on destroy, 0 otherwise
     Returns 0 on failure. -/
-@[extern "allegro_al_create_sample"]
-opaque createSampleRaw : UInt64 → UInt32 → UInt32 → UInt32 → UInt32 → UInt32 → IO Sample
+@[inline] def createSampleRaw (buf : UInt64) (samples freq : UInt32) (depth : AudioDepth) (chanConf : ChannelConf) (freeBuf : UInt32) : IO Sample :=
+  createSampleRawRaw buf samples freq depth.val chanConf.val freeBuf
 
 -- ── Raw sample data access ──
 
@@ -728,13 +877,16 @@ opaque getSampleData : Sample → IO UInt64
 
 -- ── Fill silence ──
 
+@[extern "allegro_al_fill_silence"]
+private opaque fillSilenceRaw : UInt64 → UInt32 → UInt32 → UInt32 → IO Unit
+
 /-- Fill a buffer with silence.
     - `buf`: pointer to audio buffer (as UInt64)
     - `samples`: number of samples to fill
     - `depth`: audio depth constant
     - `chanConf`: channel configuration -/
-@[extern "allegro_al_fill_silence"]
-opaque fillSilence : UInt64 → UInt32 → UInt32 → UInt32 → IO Unit
+@[inline] def fillSilence (buf : UInt64) (samples : UInt32) (depth : AudioDepth) (chanConf : ChannelConf) : IO Unit :=
+  fillSilenceRaw buf samples depth.val chanConf.val
 
 -- ── Audio stream fragment access ──
 
@@ -778,33 +930,33 @@ def playAudioStream? (filename : String) : IO (Option AudioStream) :=
   liftOption (playAudioStream filename)
 
 /-- Create a mixer, returning `none` on failure (bad parameters, OOM). -/
-def createMixer? (freq depth chanConf : UInt32) : IO (Option Mixer) :=
+def createMixer? (freq : UInt32) (depth : AudioDepth) (chanConf : ChannelConf) : IO (Option Mixer) :=
   liftOption (createMixer freq depth chanConf)
 
 /-- Get the default mixer, returning `none` if `reserveSamples` was not called. -/
 def getDefaultMixer? : IO (Option Mixer) := liftOption getDefaultMixer
 
 /-- Create a voice, returning `none` on failure (no audio device, bad parameters). -/
-def createVoice? (freq depth chanConf : UInt32) : IO (Option Voice) :=
+def createVoice? (freq : UInt32) (depth : AudioDepth) (chanConf : ChannelConf) : IO (Option Voice) :=
   liftOption (createVoice freq depth chanConf)
 
 /-- Get the default voice, returning `none` if no default voice is set. -/
 def getDefaultVoice? : IO (Option Voice) := liftOption getDefaultVoice
 
 /-- Create an audio recorder, returning `none` on failure. -/
-def createAudioRecorder? (fragmentCount samples freq depth chanConf : UInt32) : IO (Option AudioRecorder) :=
+def createAudioRecorder? (fragmentCount samples freq : UInt32) (depth : AudioDepth) (chanConf : ChannelConf) : IO (Option AudioRecorder) :=
   liftOption (createAudioRecorder fragmentCount samples freq depth chanConf)
 
 /-- Create an audio stream (from params), returning `none` on failure. -/
-def createAudioStreamRaw? (bufferCount samples freq depth chanConf : UInt32) : IO (Option AudioStream) :=
+def createAudioStreamRaw? (bufferCount samples freq : UInt32) (depth : AudioDepth) (chanConf : ChannelConf) : IO (Option AudioStream) :=
   liftOption (createAudioStreamRaw bufferCount samples freq depth chanConf)
 
 /-- Create a sample from raw buffer, returning `none` on failure. -/
-def createSampleRaw? (buf : UInt64) (samples freq depth chanConf freeBuf : UInt32) : IO (Option Sample) :=
+def createSampleRaw? (buf : UInt64) (samples freq : UInt32) (depth : AudioDepth) (chanConf : ChannelConf) (freeBuf : UInt32) : IO (Option Sample) :=
   liftOption (createSampleRaw buf samples freq depth chanConf freeBuf)
 
 /-- Play a sample and get its ID, returning `none` on failure. -/
-def playSampleWithId? (spl : Sample) (gain pan speed : Float) (playmode : UInt32) : IO (Option SampleId) :=
+def playSampleWithId? (spl : Sample) (gain pan speed : Float) (playmode : Playmode) : IO (Option SampleId) :=
   liftOption (playSampleWithId spl gain pan speed playmode)
 
 -- ── File-based audio I/O ──

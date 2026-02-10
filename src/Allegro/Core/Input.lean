@@ -54,9 +54,190 @@ opaque getMouseEventSource : IO UInt64
 
 -- ── Keyboard helpers ──
 
+-- ── Key constants ──
+
+/-- Allegro keyboard key code. -/
+structure KeyCode where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace KeyCode
+-- Letters
+def a : KeyCode := ⟨1⟩
+def b : KeyCode := ⟨2⟩
+def c : KeyCode := ⟨3⟩
+def d : KeyCode := ⟨4⟩
+def e : KeyCode := ⟨5⟩
+def f : KeyCode := ⟨6⟩
+def g : KeyCode := ⟨7⟩
+def h : KeyCode := ⟨8⟩
+def i : KeyCode := ⟨9⟩
+def j : KeyCode := ⟨10⟩
+def k : KeyCode := ⟨11⟩
+def l : KeyCode := ⟨12⟩
+def m : KeyCode := ⟨13⟩
+def n : KeyCode := ⟨14⟩
+def o : KeyCode := ⟨15⟩
+def p : KeyCode := ⟨16⟩
+def q : KeyCode := ⟨17⟩
+def r : KeyCode := ⟨18⟩
+def s : KeyCode := ⟨19⟩
+def t : KeyCode := ⟨20⟩
+def u : KeyCode := ⟨21⟩
+def v : KeyCode := ⟨22⟩
+def w : KeyCode := ⟨23⟩
+def x : KeyCode := ⟨24⟩
+def y : KeyCode := ⟨25⟩
+def z : KeyCode := ⟨26⟩
+-- Digits
+def num0 : KeyCode := ⟨27⟩
+def num1 : KeyCode := ⟨28⟩
+def num2 : KeyCode := ⟨29⟩
+def num3 : KeyCode := ⟨30⟩
+def num4 : KeyCode := ⟨31⟩
+def num5 : KeyCode := ⟨32⟩
+def num6 : KeyCode := ⟨33⟩
+def num7 : KeyCode := ⟨34⟩
+def num8 : KeyCode := ⟨35⟩
+def num9 : KeyCode := ⟨36⟩
+-- Special keys
+/-- Keycode for Escape. -/
+def escape : KeyCode := ⟨59⟩
+/-- Keycode for Space. -/
+def space : KeyCode := ⟨75⟩
+/-- Keycode for Enter / Return. -/
+def enter : KeyCode := ⟨67⟩
+/-- Keycode for Tab. -/
+def tab : KeyCode := ⟨64⟩
+/-- Keycode for Backspace. -/
+def backspace : KeyCode := ⟨63⟩
+/-- Keycode for Delete. -/
+def delete : KeyCode := ⟨77⟩
+/-- Keycode for Insert. -/
+def insert : KeyCode := ⟨76⟩
+/-- Keycode for Home. -/
+def home : KeyCode := ⟨78⟩
+/-- Keycode for End. -/
+def «end» : KeyCode := ⟨79⟩
+/-- Keycode for Page Up. -/
+def pgUp : KeyCode := ⟨80⟩
+/-- Keycode for Page Down. -/
+def pgDn : KeyCode := ⟨81⟩
+-- Arrow keys
+/-- Keycode for Left arrow. -/
+def left : KeyCode := ⟨82⟩
+/-- Keycode for Right arrow. -/
+def right : KeyCode := ⟨83⟩
+/-- Keycode for Up arrow. -/
+def up : KeyCode := ⟨84⟩
+/-- Keycode for Down arrow. -/
+def down : KeyCode := ⟨85⟩
+-- Modifier keys
+/-- Keycode for Left Shift. -/
+def lShift : KeyCode := ⟨215⟩
+/-- Keycode for Right Shift. -/
+def rShift : KeyCode := ⟨216⟩
+/-- Keycode for Left Control. -/
+def lCtrl : KeyCode := ⟨217⟩
+/-- Keycode for Right Control. -/
+def rCtrl : KeyCode := ⟨218⟩
+/-- Keycode for Alt. -/
+def alt : KeyCode := ⟨219⟩
+/-- Keycode for AltGr (right Alt on international keyboards). -/
+def altGr : KeyCode := ⟨220⟩
+-- Function keys
+def f1 : KeyCode := ⟨47⟩
+def f2 : KeyCode := ⟨48⟩
+def f3 : KeyCode := ⟨49⟩
+def f4 : KeyCode := ⟨50⟩
+def f5 : KeyCode := ⟨51⟩
+def f6 : KeyCode := ⟨52⟩
+def f7 : KeyCode := ⟨53⟩
+def f8 : KeyCode := ⟨54⟩
+def f9 : KeyCode := ⟨55⟩
+def f10 : KeyCode := ⟨56⟩
+def f11 : KeyCode := ⟨57⟩
+def f12 : KeyCode := ⟨58⟩
+end KeyCode
+
+-- Backward-compatible aliases
+def keyA := KeyCode.a
+def keyB := KeyCode.b
+def keyC := KeyCode.c
+def keyD := KeyCode.d
+def keyE := KeyCode.e
+def keyF := KeyCode.f
+def keyG := KeyCode.g
+def keyH := KeyCode.h
+def keyI := KeyCode.i
+def keyJ := KeyCode.j
+def keyK := KeyCode.k
+def keyL := KeyCode.l
+def keyM := KeyCode.m
+def keyN := KeyCode.n
+def keyO := KeyCode.o
+def keyP := KeyCode.p
+def keyQ := KeyCode.q
+def keyR := KeyCode.r
+def keyS := KeyCode.s
+def keyT := KeyCode.t
+def keyU := KeyCode.u
+def keyV := KeyCode.v
+def keyW := KeyCode.w
+def keyX := KeyCode.x
+def keyY := KeyCode.y
+def keyZ := KeyCode.z
+def key0 := KeyCode.num0
+def key1 := KeyCode.num1
+def key2 := KeyCode.num2
+def key3 := KeyCode.num3
+def key4 := KeyCode.num4
+def key5 := KeyCode.num5
+def key6 := KeyCode.num6
+def key7 := KeyCode.num7
+def key8 := KeyCode.num8
+def key9 := KeyCode.num9
+def keyEscape := KeyCode.escape
+def keySpace := KeyCode.space
+def keyEnter := KeyCode.enter
+def keyTab := KeyCode.tab
+def keyBackspace := KeyCode.backspace
+def keyDelete := KeyCode.delete
+def keyInsert := KeyCode.insert
+def keyHome := KeyCode.home
+def keyEnd := KeyCode.«end»
+def keyPgUp := KeyCode.pgUp
+def keyPgDn := KeyCode.pgDn
+def keyLeft := KeyCode.left
+def keyRight := KeyCode.right
+def keyUp := KeyCode.up
+def keyArrowDown := KeyCode.down
+def keyLShift := KeyCode.lShift
+def keyRShift := KeyCode.rShift
+def keyLCtrl := KeyCode.lCtrl
+def keyRCtrl := KeyCode.rCtrl
+def keyAlt := KeyCode.alt
+def keyAltGr := KeyCode.altGr
+def keyF1 := KeyCode.f1
+def keyF2 := KeyCode.f2
+def keyF3 := KeyCode.f3
+def keyF4 := KeyCode.f4
+def keyF5 := KeyCode.f5
+def keyF6 := KeyCode.f6
+def keyF7 := KeyCode.f7
+def keyF8 := KeyCode.f8
+def keyF9 := KeyCode.f9
+def keyF10 := KeyCode.f10
+def keyF11 := KeyCode.f11
+def keyF12 := KeyCode.f12
+
 /-- Convert a keycode to its human-readable name (e.g. "Escape"). -/
 @[extern "allegro_al_keycode_to_name"]
-opaque keycodeToName : UInt32 → IO String
+private opaque keycodeToNameRaw : UInt32 → IO String
+
+@[inline] def keycodeToName (key : KeyCode) : IO String :=
+  keycodeToNameRaw key.val
 
 /-- Check if keyboard LED indicators can be set on this platform. Returns 1 if supported. -/
 @[extern "allegro_al_can_set_keyboard_leds"]
@@ -137,7 +318,10 @@ opaque getKeyboardState : KeyboardState → IO Unit
 
 /-- Check whether `keycode` is held down in the given state. Returns 1 if pressed. -/
 @[extern "allegro_al_key_down"]
-opaque keyDown : KeyboardState → UInt32 → IO UInt32
+private opaque keyDownRaw : KeyboardState → UInt32 → IO UInt32
+
+@[inline] def keyDown (ks : KeyboardState) (key : KeyCode) : IO UInt32 :=
+  keyDownRaw ks key.val
 
 -- ── Mouse state ──
 
@@ -195,9 +379,85 @@ opaque destroyMouseCursor : MouseCursor → IO Unit
 @[extern "allegro_al_set_mouse_cursor"]
 opaque setMouseCursor : UInt64 → MouseCursor → IO UInt32
 
+-- ── System mouse cursor constants ──
+
+/-- Allegro system (OS-native) mouse cursor identifier. -/
+structure SystemCursor where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace SystemCursor
+/-- No cursor (hidden). -/
+def none : SystemCursor := ⟨0⟩
+/-- Default operating system cursor. -/
+def default : SystemCursor := ⟨1⟩
+/-- Standard arrow cursor. -/
+def arrow : SystemCursor := ⟨2⟩
+/-- Busy / wait cursor. -/
+def busy : SystemCursor := ⟨3⟩
+/-- Help / question mark cursor. -/
+def question : SystemCursor := ⟨4⟩
+/-- Text edit / I-beam cursor. -/
+def edit : SystemCursor := ⟨5⟩
+/-- Move / drag cursor. -/
+def move : SystemCursor := ⟨6⟩
+/-- Resize north cursor. -/
+def resizeN : SystemCursor := ⟨7⟩
+/-- Resize west cursor. -/
+def resizeW : SystemCursor := ⟨8⟩
+/-- Resize south cursor. -/
+def resizeS : SystemCursor := ⟨9⟩
+/-- Resize east cursor. -/
+def resizeE : SystemCursor := ⟨10⟩
+/-- Resize north-west cursor. -/
+def resizeNW : SystemCursor := ⟨11⟩
+/-- Resize south-west cursor. -/
+def resizeSW : SystemCursor := ⟨12⟩
+/-- Resize south-east cursor. -/
+def resizeSE : SystemCursor := ⟨13⟩
+/-- Resize north-east cursor. -/
+def resizeNE : SystemCursor := ⟨14⟩
+/-- Background progress cursor (arrow + spinner). -/
+def progress : SystemCursor := ⟨15⟩
+/-- Precision / crosshair cursor. -/
+def precision : SystemCursor := ⟨16⟩
+/-- Hyperlink / hand cursor. -/
+def link : SystemCursor := ⟨17⟩
+/-- Alternate selection cursor. -/
+def altSelect : SystemCursor := ⟨18⟩
+/-- Unavailable / not-allowed cursor. -/
+def unavailable : SystemCursor := ⟨19⟩
+end SystemCursor
+
+-- Backward-compatible aliases
+def systemCursorNone := SystemCursor.none
+def systemCursorDefault := SystemCursor.default
+def systemCursorArrow := SystemCursor.arrow
+def systemCursorBusy := SystemCursor.busy
+def systemCursorQuestion := SystemCursor.question
+def systemCursorEdit := SystemCursor.edit
+def systemCursorMove := SystemCursor.move
+def systemCursorResizeN := SystemCursor.resizeN
+def systemCursorResizeW := SystemCursor.resizeW
+def systemCursorResizeS := SystemCursor.resizeS
+def systemCursorResizeE := SystemCursor.resizeE
+def systemCursorResizeNW := SystemCursor.resizeNW
+def systemCursorResizeSW := SystemCursor.resizeSW
+def systemCursorResizeSE := SystemCursor.resizeSE
+def systemCursorResizeNE := SystemCursor.resizeNE
+def systemCursorProgress := SystemCursor.progress
+def systemCursorPrecision := SystemCursor.precision
+def systemCursorLink := SystemCursor.link
+def systemCursorAltSelect := SystemCursor.altSelect
+def systemCursorUnavailable := SystemCursor.unavailable
+
 /-- Set a system (OS-native) mouse cursor for a display. Returns 1 on success. -/
 @[extern "allegro_al_set_system_mouse_cursor"]
-opaque setSystemMouseCursor : UInt64 → UInt32 → IO UInt32
+private opaque setSystemMouseCursorRaw : UInt64 → UInt32 → IO UInt32
+
+@[inline] def setSystemMouseCursor (display : UInt64) (cursor : SystemCursor) : IO UInt32 :=
+  setSystemMouseCursorRaw display cursor.val
 
 /-- Get the current global mouse cursor position as `(x, y)` in one call. -/
 @[extern "allegro_al_get_mouse_cursor_position"]
@@ -214,205 +474,6 @@ opaque grabMouse : UInt64 → IO UInt32
 /-- Release a grabbed mouse. Returns 1 on success. -/
 @[extern "allegro_al_ungrab_mouse"]
 opaque ungrabMouse : IO UInt32
-
--- ── System mouse cursor constants ──
-
-/-- No cursor (hidden). -/
-def systemCursorNone : UInt32 := 0
-/-- Default operating system cursor. -/
-def systemCursorDefault : UInt32 := 1
-/-- Standard arrow cursor. -/
-def systemCursorArrow : UInt32 := 2
-/-- Busy / wait cursor. -/
-def systemCursorBusy : UInt32 := 3
-/-- Help / question mark cursor. -/
-def systemCursorQuestion : UInt32 := 4
-/-- Text edit / I-beam cursor. -/
-def systemCursorEdit : UInt32 := 5
-/-- Move / drag cursor. -/
-def systemCursorMove : UInt32 := 6
-/-- Resize north cursor. -/
-def systemCursorResizeN : UInt32 := 7
-/-- Resize west cursor. -/
-def systemCursorResizeW : UInt32 := 8
-/-- Resize south cursor. -/
-def systemCursorResizeS : UInt32 := 9
-/-- Resize east cursor. -/
-def systemCursorResizeE : UInt32 := 10
-/-- Resize north-west cursor. -/
-def systemCursorResizeNW : UInt32 := 11
-/-- Resize south-west cursor. -/
-def systemCursorResizeSW : UInt32 := 12
-/-- Resize south-east cursor. -/
-def systemCursorResizeSE : UInt32 := 13
-/-- Resize north-east cursor. -/
-def systemCursorResizeNE : UInt32 := 14
-/-- Background progress cursor (arrow + spinner). -/
-def systemCursorProgress : UInt32 := 15
-/-- Precision / crosshair cursor. -/
-def systemCursorPrecision : UInt32 := 16
-/-- Hyperlink / hand cursor. -/
-def systemCursorLink : UInt32 := 17
-/-- Alternate selection cursor. -/
-def systemCursorAltSelect : UInt32 := 18
-/-- Unavailable / not-allowed cursor. -/
-def systemCursorUnavailable : UInt32 := 19
-
--- ── Key constants: letters ──
-
-/-- Keycode for A. -/
-def keyA : UInt32 := 1
-/-- Keycode for B. -/
-def keyB : UInt32 := 2
-/-- Keycode for C. -/
-def keyC : UInt32 := 3
-/-- Keycode for D. -/
-def keyD : UInt32 := 4
-/-- Keycode for E. -/
-def keyE : UInt32 := 5
-/-- Keycode for F. -/
-def keyF : UInt32 := 6
-/-- Keycode for G. -/
-def keyG : UInt32 := 7
-/-- Keycode for H. -/
-def keyH : UInt32 := 8
-/-- Keycode for I. -/
-def keyI : UInt32 := 9
-/-- Keycode for J. -/
-def keyJ : UInt32 := 10
-/-- Keycode for K. -/
-def keyK : UInt32 := 11
-/-- Keycode for L. -/
-def keyL : UInt32 := 12
-/-- Keycode for M. -/
-def keyM : UInt32 := 13
-/-- Keycode for N. -/
-def keyN : UInt32 := 14
-/-- Keycode for O. -/
-def keyO : UInt32 := 15
-/-- Keycode for P. -/
-def keyP : UInt32 := 16
-/-- Keycode for Q. -/
-def keyQ : UInt32 := 17
-/-- Keycode for R. -/
-def keyR : UInt32 := 18
-/-- Keycode for S. -/
-def keyS : UInt32 := 19
-/-- Keycode for T. -/
-def keyT : UInt32 := 20
-/-- Keycode for U. -/
-def keyU : UInt32 := 21
-/-- Keycode for V. -/
-def keyV : UInt32 := 22
-/-- Keycode for W. -/
-def keyW : UInt32 := 23
-/-- Keycode for X. -/
-def keyX : UInt32 := 24
-/-- Keycode for Y. -/
-def keyY : UInt32 := 25
-/-- Keycode for Z. -/
-def keyZ : UInt32 := 26
-
--- ── Key constants: digits ──
-
-/-- Keycode for 0. -/
-def key0 : UInt32 := 27
-/-- Keycode for 1. -/
-def key1 : UInt32 := 28
-/-- Keycode for 2. -/
-def key2 : UInt32 := 29
-/-- Keycode for 3. -/
-def key3 : UInt32 := 30
-/-- Keycode for 4. -/
-def key4 : UInt32 := 31
-/-- Keycode for 5. -/
-def key5 : UInt32 := 32
-/-- Keycode for 6. -/
-def key6 : UInt32 := 33
-/-- Keycode for 7. -/
-def key7 : UInt32 := 34
-/-- Keycode for 8. -/
-def key8 : UInt32 := 35
-/-- Keycode for 9. -/
-def key9 : UInt32 := 36
-
--- ── Key constants: special ──
-
-/-- Keycode for Escape. -/
-def keyEscape : UInt32 := 59
-/-- Keycode for Space. -/
-def keySpace : UInt32 := 75
-/-- Keycode for Enter / Return. -/
-def keyEnter : UInt32 := 67
-/-- Keycode for Tab. -/
-def keyTab : UInt32 := 64
-/-- Keycode for Backspace. -/
-def keyBackspace : UInt32 := 63
-/-- Keycode for Delete. -/
-def keyDelete : UInt32 := 77
-/-- Keycode for Insert. -/
-def keyInsert : UInt32 := 76
-/-- Keycode for Home. -/
-def keyHome : UInt32 := 78
-/-- Keycode for End. -/
-def keyEnd : UInt32 := 79
-/-- Keycode for Page Up. -/
-def keyPgUp : UInt32 := 80
-/-- Keycode for Page Down. -/
-def keyPgDn : UInt32 := 81
-
--- ── Key constants: arrows ──
-
-/-- Keycode for Left arrow. -/
-def keyLeft : UInt32 := 82
-/-- Keycode for Right arrow. -/
-def keyRight : UInt32 := 83
-/-- Keycode for Up arrow. -/
-def keyUp : UInt32 := 84
-/-- Keycode for Down arrow. -/
-def keyArrowDown : UInt32 := 85
-
--- ── Key constants: modifiers ──
-
-/-- Keycode for Left Shift. -/
-def keyLShift : UInt32 := 215
-/-- Keycode for Right Shift. -/
-def keyRShift : UInt32 := 216
-/-- Keycode for Left Control. -/
-def keyLCtrl : UInt32 := 217
-/-- Keycode for Right Control. -/
-def keyRCtrl : UInt32 := 218
-/-- Keycode for Alt. -/
-def keyAlt : UInt32 := 219
-/-- Keycode for AltGr (right Alt on international keyboards). -/
-def keyAltGr : UInt32 := 220
-
--- ── Key constants: function keys ──
-
-/-- Keycode for F1. -/
-def keyF1 : UInt32 := 47
-/-- Keycode for F2. -/
-def keyF2 : UInt32 := 48
-/-- Keycode for F3. -/
-def keyF3 : UInt32 := 49
-/-- Keycode for F4. -/
-def keyF4 : UInt32 := 50
-/-- Keycode for F5. -/
-def keyF5 : UInt32 := 51
-/-- Keycode for F6. -/
-def keyF6 : UInt32 := 52
-/-- Keycode for F7. -/
-def keyF7 : UInt32 := 53
-/-- Keycode for F8. -/
-def keyF8 : UInt32 := 54
-/-- Keycode for F9. -/
-def keyF9 : UInt32 := 55
-/-- Keycode for F10. -/
-def keyF10 : UInt32 := 56
-/-- Keycode for F11. -/
-def keyF11 : UInt32 := 57
-/-- Keycode for F12. -/
-def keyF12 : UInt32 := 58
 
 -- ── Option-returning variants ──
 

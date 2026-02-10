@@ -45,13 +45,13 @@ def main : IO Unit := do
   IO.println "Showing message box..."
   let btn ← showNativeMessageBox (0 : Display) "AllegroInLean"
     "Native Dialog Demo" "This is a test message box.\nClick OK to continue."
-    "" 0
+    "" MessageBoxFlags.none
   IO.println s!"Message box returned: {btn}"
 
   -- ── File chooser ──
   IO.println "Creating a file chooser dialog..."
   -- Create a small display so the file chooser has a parent window
-  setNewDisplayFlags 0
+  setNewDisplayFlags ⟨0⟩
   let display ← createDisplay 320 240
   if (display : UInt64) == 0 then
     IO.eprintln "createDisplay failed for file chooser parent"

@@ -20,7 +20,7 @@ def main : IO Unit := do
 
   IO.println "── Primitives Extras Demo ──"
 
-  Allegro.setNewDisplayFlags 0
+  Allegro.setNewDisplayFlags ⟨0⟩
   let display ← Allegro.createDisplay 640 480
   if display == 0 then
     IO.eprintln "  createDisplay failed"; Allegro.uninstallSystem; return
@@ -82,7 +82,7 @@ def main : IO Unit := do
   -- ── Vertex/Index buffer lifecycle ──
   let vb ← Allegro.createVertexBuffer 0 4 Allegro.primBufferStatic
   if vb != 0 then
-    let ptr ← vb.lock 0 4 0
+    let ptr ← vb.lock 0 4 ⟨0⟩
     IO.println s!"  lockVertexBuffer = {ptr}"
     if ptr != 0 then
       vb.unlock
@@ -95,7 +95,7 @@ def main : IO Unit := do
   -- ── Index buffer lifecycle ──
   let ib ← Allegro.createIndexBuffer (4 : UInt32) (6 : UInt32) Allegro.primBufferStatic
   if ib != 0 then
-    let iptr ← ib.lock (0 : UInt32) (6 : UInt32) 0
+    let iptr ← ib.lock (0 : UInt32) (6 : UInt32) ⟨0⟩
     IO.println s!"  lockIndexBuffer = {iptr}"
     if iptr != 0 then
       ib.unlock

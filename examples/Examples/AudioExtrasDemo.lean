@@ -46,19 +46,19 @@ def main : IO Unit := do
   IO.println s!"  isAcodecAddonInitialized = {acInit}"
 
   -- Channel / depth utilities
-  let chCnt ← Allegro.getChannelCount 0x10  -- ALLEGRO_CHANNEL_CONF_1
+  let chCnt ← Allegro.getChannelCount Allegro.channelConf1  -- ALLEGRO_CHANNEL_CONF_1
   IO.println s!"  getChannelCount(CONF_1) = {chCnt}"
-  let depSz ← Allegro.getAudioDepthSize 0  -- INT8
+  let depSz ← Allegro.getAudioDepthSize Allegro.audioDepthInt8  -- INT8
   IO.println s!"  getAudioDepthSize(INT8) = {depSz}"
 
   -- fillSilence — takes a raw UInt64 pointer; pass 0 to just test the call path
   -- (null pointer is safe — Allegro checks internally)
-  Allegro.fillSilence (0 : UInt64) 0 (0 : UInt32) (0x10 : UInt32)
+  Allegro.fillSilence (0 : UInt64) 0 Allegro.audioDepthInt8 Allegro.channelConf1
   IO.println "  fillSilence(null,0) — OK"
 
   -- createSampleRaw — takes a raw UInt64 pointer, so pass 0 (null) for demo
   -- We can't easily create a valid buffer pointer from Lean, so just test the call
-  let rawSpl : Sample ← Allegro.createSampleRaw (0 : UInt64) 256 44100 (0x02 : UInt32) (0x10 : UInt32) (0 : UInt32)
+  let rawSpl : Sample ← Allegro.createSampleRaw (0 : UInt64) 256 44100 Allegro.audioDepthInt24 Allegro.channelConf1 (0 : UInt32)
   IO.println s!"  createSampleRaw(null buf) = {rawSpl} (may be 0)"
   if rawSpl != 0 then
     let dataPtr ← rawSpl.sampleData
@@ -84,9 +84,9 @@ def main : IO Unit := do
       let att ← inst.isAttached
       IO.println s!"  getSampleInstanceAttached = {att}"
       let ch ← inst.channels
-      IO.println s!"  getSampleInstanceChannels = {ch}"
+      IO.println s!"  getSampleInstanceChannels = {ch.val}"
       let dep ← inst.audioDepth
-      IO.println s!"  getSampleInstanceDepth = {dep}"
+      IO.println s!"  getSampleInstanceDepth = {dep.val}"
       let tm ← inst.time
       IO.println s!"  getSampleInstanceTime = {tm}"
 
@@ -105,9 +105,9 @@ def main : IO Unit := do
   let mixer : Mixer ← Allegro.getDefaultMixer
   if mixer != 0 then
     let mch ← mixer.channels
-    IO.println s!"  getMixerChannels = {mch}"
+    IO.println s!"  getMixerChannels = {mch.val}"
     let mdp ← mixer.audioDepth
-    IO.println s!"  getMixerDepth = {mdp}"
+    IO.println s!"  getMixerDepth = {mdp.val}"
     let matt ← mixer.isAttached
     IO.println s!"  getMixerAttached = {matt}"
     let mhas ← mixer.hasAttachments
@@ -117,7 +117,7 @@ def main : IO Unit := do
   -- lockSampleId / unlockSampleId — need a valid SampleId from playSampleWithId
   let splLock : Sample ← Allegro.loadSample "data/beep.wav"
   if splLock != 0 then
-    let sid ← Allegro.playSampleWithId splLock 1.0 0.0 1.0 (0 : UInt32)
+    let sid ← Allegro.playSampleWithId splLock 1.0 0.0 1.0 ⟨0⟩
     if sid != 0 then
       let locked ← Allegro.lockSampleId sid
       IO.println s!"  lockSampleId = {locked}"
@@ -143,22 +143,22 @@ def main : IO Unit := do
 
   -- ── Audio stream + voice lifecycle ──
   -- Create a voice: 44100 Hz, INT16, 1-channel (mono)
-  let voice : Voice ← Allegro.createVoice 44100 (0x02 : UInt32) (0x10 : UInt32)
+  let voice : Voice ← Allegro.createVoice 44100 Allegro.audioDepthInt24 Allegro.channelConf1
   if voice != 0 then
     -- Voice getters
     let vpos ← voice.position
     IO.println s!"  getVoicePosition = {vpos}"
     let vch ← voice.channels
-    IO.println s!"  getVoiceChannels = {vch}"
+    IO.println s!"  getVoiceChannels = {vch.val}"
     let vdp ← voice.audioDepth
-    IO.println s!"  getVoiceDepth = {vdp}"
+    IO.println s!"  getVoiceDepth = {vdp.val}"
     let _ ← voice.setPosition 0
     IO.println "  setVoicePosition(0) — OK"
     let vha ← voice.hasAttachments
     IO.println s!"  voiceHasAttachments = {vha}"
 
     -- Create a raw audio stream: 4 buffers, 1024 samples, 44100Hz, INT16, mono
-    let stream : AudioStream ← Allegro.createAudioStreamRaw 4 1024 44100 (0x02 : UInt32) (0x10 : UInt32)
+    let stream : AudioStream ← Allegro.createAudioStreamRaw 4 1024 44100 Allegro.audioDepthInt24 Allegro.channelConf1
     if stream != 0 then
       let sFreq ← stream.frequency
       IO.println s!"  getAudioStreamFrequency = {sFreq}"
@@ -169,9 +169,9 @@ def main : IO Unit := do
       let sAvail ← stream.availableFragments
       IO.println s!"  getAvailableAudioStreamFragments = {sAvail}"
       let sCh ← stream.channels
-      IO.println s!"  getAudioStreamChannels = {sCh}"
+      IO.println s!"  getAudioStreamChannels = {sCh.val}"
       let sDep ← stream.audioDepth
-      IO.println s!"  getAudioStreamDepth = {sDep}"
+      IO.println s!"  getAudioStreamDepth = {sDep.val}"
       let sAtt ← stream.isAttached
       IO.println s!"  getAudioStreamAttached = {sAtt}"
       let sPlayed ← stream.playedSamples
@@ -259,7 +259,7 @@ def main : IO Unit := do
 
   -- ── Audio recorder (UNSTABLE) ──
   -- createAudioRecorder: fragCount=5, samples=1024, freq=44100, depth=INT16, chanConf=1
-  let rec : AudioRecorder ← Allegro.createAudioRecorder 5 1024 44100 (0x02 : UInt32) (0x10 : UInt32)
+  let rec : AudioRecorder ← Allegro.createAudioRecorder 5 1024 44100 Allegro.audioDepthInt24 Allegro.channelConf1
   if rec != 0 then
     let _ ← rec.start
     IO.println "  startAudioRecorder — OK"

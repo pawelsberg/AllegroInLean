@@ -29,47 +29,113 @@ namespace Allegro
 
 -- ── Blend operations ──
 
+/-- Allegro blend operation (how source and destination are combined). -/
+structure BlendOp where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace BlendOp
 /-- Blend operation: `result = src + dest`. -/
-def blendAdd : UInt32 := 0
-/-- Blend operation: `result = dest − src`. -/
-def blendDestMinusSrc : UInt32 := 2
+def add : BlendOp := ⟨0⟩
 /-- Blend operation: `result = src − dest`. -/
-def blendSrcMinusDest : UInt32 := 1
+def srcMinusDest : BlendOp := ⟨1⟩
+/-- Blend operation: `result = dest − src`. -/
+def destMinusSrc : BlendOp := ⟨2⟩
+end BlendOp
+
+-- Backward-compatible aliases
+def blendAdd := BlendOp.add
+def blendSrcMinusDest := BlendOp.srcMinusDest
+def blendDestMinusSrc := BlendOp.destMinusSrc
 
 -- ── Blend factors ──
 
+/-- Allegro blend factor (what each side is multiplied by). -/
+structure BlendFactor where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace BlendFactor
 /-- Blend factor: multiply by zero. -/
-def blendZero : UInt32 := 0
+def zero : BlendFactor := ⟨0⟩
 /-- Blend factor: multiply by one (no change). -/
-def blendOne : UInt32 := 1
+def one : BlendFactor := ⟨1⟩
 /-- Blend factor: multiply by source alpha. -/
-def blendAlpha : UInt32 := 2
+def alpha : BlendFactor := ⟨2⟩
 /-- Blend factor: multiply by (1 − source alpha). -/
-def blendInverseAlpha : UInt32 := 3
+def inverseAlpha : BlendFactor := ⟨3⟩
 /-- Blend factor: multiply by source colour. -/
-def blendSrcColor : UInt32 := 4
+def srcColor : BlendFactor := ⟨4⟩
 /-- Blend factor: multiply by destination colour. -/
-def blendDestColor : UInt32 := 5
+def destColor : BlendFactor := ⟨5⟩
 /-- Blend factor: multiply by (1 − source colour). -/
-def blendInverseSrcColor : UInt32 := 6
+def inverseSrcColor : BlendFactor := ⟨6⟩
 /-- Blend factor: multiply by (1 − destination colour). -/
-def blendInverseDestColor : UInt32 := 7
+def inverseDestColor : BlendFactor := ⟨7⟩
 /-- Blend factor: multiply by the constant colour set with `setBlendColor`. -/
-def blendConstColor : UInt32 := 8
+def constColor : BlendFactor := ⟨8⟩
 /-- Blend factor: multiply by (1 − constant colour). -/
-def blendInverseConstColor : UInt32 := 9
+def inverseConstColor : BlendFactor := ⟨9⟩
+end BlendFactor
+
+-- Backward-compatible aliases
+def blendZero := BlendFactor.zero
+def blendOne := BlendFactor.one
+def blendAlpha := BlendFactor.alpha
+def blendInverseAlpha := BlendFactor.inverseAlpha
+def blendSrcColor := BlendFactor.srcColor
+def blendDestColor := BlendFactor.destColor
+def blendInverseSrcColor := BlendFactor.inverseSrcColor
+def blendInverseDestColor := BlendFactor.inverseDestColor
+def blendConstColor := BlendFactor.constColor
+def blendInverseConstColor := BlendFactor.inverseConstColor
+
+-- ════════════════════════════════════════════════════════════════════
+-- Draw flip flags  (defined here so both Blending and Bitmap can use)
+-- ════════════════════════════════════════════════════════════════════
+
+/-- Allegro bitmap flip flags for drawing (bitfield). -/
+structure FlipFlags where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+instance : OrOp FlipFlags where or a b := ⟨a.val ||| b.val⟩
+instance : AndOp FlipFlags where and a b := ⟨a.val &&& b.val⟩
+
+namespace FlipFlags
+/-- No flipping. -/
+def none : FlipFlags := ⟨0⟩
+/-- Flip the bitmap horizontally when drawing. -/
+def horizontal : FlipFlags := ⟨1⟩
+/-- Flip the bitmap vertically when drawing. -/
+def vertical : FlipFlags := ⟨2⟩
+end FlipFlags
+
+-- Backward-compatible aliases
+def flipHorizontalFlag := FlipFlags.horizontal
+def flipVerticalFlag := FlipFlags.vertical
 
 -- ── Set / Get blender ──
 
 /-- Set the blender used for the current target bitmap.
     `setBlender op src dest` -/
 @[extern "allegro_al_set_blender"]
-opaque setBlender : UInt32 → UInt32 → UInt32 → IO Unit
+private opaque setBlenderRaw : UInt32 → UInt32 → UInt32 → IO Unit
+
+@[inline] def setBlender (op : BlendOp) (src dst : BlendFactor) : IO Unit :=
+  setBlenderRaw op.val src.val dst.val
 
 /-- Set a separate blender for colour and alpha channels.
     `setSeparateBlender op src dst alphaOp alphaSrc alphaDst` -/
 @[extern "allegro_al_set_separate_blender"]
-opaque setSeparateBlender : UInt32 → UInt32 → UInt32 → UInt32 → UInt32 → UInt32 → IO Unit
+private opaque setSeparateBlenderRaw : UInt32 → UInt32 → UInt32 → UInt32 → UInt32 → UInt32 → IO Unit
+
+@[inline] def setSeparateBlender (op : BlendOp) (src dst : BlendFactor)
+    (aop : BlendOp) (asrc adst : BlendFactor) : IO Unit :=
+  setSeparateBlenderRaw op.val src.val dst.val aop.val asrc.val adst.val
 
 -- ── RGBA helpers ──
 
@@ -79,7 +145,11 @@ opaque clearToColorRgba : UInt32 → UInt32 → UInt32 → UInt32 → IO Unit
 
 /-- Draw a bitmap tinted with an RGBA colour. -/
 @[extern "allegro_al_draw_tinted_bitmap_rgba"]
-opaque drawTintedBitmapRgba : UInt64 → UInt32 → UInt32 → UInt32 → UInt32 → Float → Float → UInt32 → IO Unit
+private opaque drawTintedBitmapRgbaRaw : UInt64 → UInt32 → UInt32 → UInt32 → UInt32 → Float → Float → UInt32 → IO Unit
+
+@[inline] def drawTintedBitmapRgba (bmp : UInt64) (r g b a : UInt32)
+    (dx dy : Float) (flags : FlipFlags) : IO Unit :=
+  drawTintedBitmapRgbaRaw bmp r g b a dx dy flags.val
 
 -- ════════════════════════════════════════════════════════════════════
 -- Tuple-returning queries  (single FFI call → full result)
@@ -87,11 +157,19 @@ opaque drawTintedBitmapRgba : UInt64 → UInt32 → UInt32 → UInt32 → UInt32
 
 /-- Get the current blender as `(op, src, dest)` in one call. -/
 @[extern "allegro_al_get_blender"]
-opaque getBlender : IO (UInt32 × UInt32 × UInt32)
+private opaque getBlenderRaw : IO (UInt32 × UInt32 × UInt32)
+
+@[inline] def getBlender : IO (BlendOp × BlendFactor × BlendFactor) := do
+  let (op, src, dst) ← getBlenderRaw
+  return (⟨op⟩, ⟨src⟩, ⟨dst⟩)
 
 /-- Get the current separate blender as `(op, src, dst, alphaOp, alphaSrc, alphaDst)`. -/
 @[extern "allegro_al_get_separate_blender"]
-opaque getSeparateBlender : IO (UInt32 × UInt32 × UInt32 × UInt32 × UInt32 × UInt32)
+private opaque getSeparateBlenderRaw : IO (UInt32 × UInt32 × UInt32 × UInt32 × UInt32 × UInt32)
+
+@[inline] def getSeparateBlender : IO (BlendOp × BlendFactor × BlendFactor × BlendOp × BlendFactor × BlendFactor) := do
+  let (op, src, dst, aop, asrc, adst) ← getSeparateBlenderRaw
+  return (⟨op⟩, ⟨src⟩, ⟨dst⟩, ⟨aop⟩, ⟨asrc⟩, ⟨adst⟩)
 
 /-- Get the current blend colour as `(r, g, b, a)` with components in 0.0…1.0.
     This is the constant colour used by `blendConstColor` / `blendInverseConstColor`. -/

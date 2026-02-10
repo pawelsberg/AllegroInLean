@@ -162,16 +162,16 @@ def main : IO Unit := do
       needsRedrawRef.set true
 
     else if evType == evKeyDown then do
-      let key ← event.keyboardKeycode
+      let key : KeyCode := ⟨← event.keyboardKeycode⟩
       let name ← Allegro.keycodeToName key
-      addLog s!"[{tsStr}] KEY_DOWN  keycode={key} ({name})"
+      addLog s!"[{tsStr}] KEY_DOWN  keycode={key.val} ({name})"
       if key == kEsc then doneRef.set true
       needsRedrawRef.set true
 
     else if evType == evKeyUp then do
-      let key ← event.keyboardKeycode
+      let key : KeyCode := ⟨← event.keyboardKeycode⟩
       let name ← Allegro.keycodeToName key
-      addLog s!"[{tsStr}] KEY_UP  keycode={key} ({name})"
+      addLog s!"[{tsStr}] KEY_UP  keycode={key.val} ({name})"
       needsRedrawRef.set true
 
     else if evType == evKeyChar then do
@@ -265,13 +265,13 @@ def main : IO Unit := do
     else do
       -- Unknown or user event
       -- User events have type ≥ 512 (ALLEGRO_GET_EVENT_TYPE('A','L','U','S'))
-      if evType >= 512 then do
+      if evType.val >= 512 then do
         let d1 ← event.userData1
         let d2 ← event.userData2
-        addLog s!"[{tsStr}] USER_EVENT  type={evType} data1={d1} data2={d2}"
+        addLog s!"[{tsStr}] USER_EVENT  type={evType.val} data1={d1} data2={d2}"
         needsRedrawRef.set true
       else do
-        addLog s!"[{tsStr}] event type={evType}"
+        addLog s!"[{tsStr}] event type={evType.val}"
         needsRedrawRef.set true
 
     -- ── Redraw when the queue is drained ──
@@ -284,7 +284,7 @@ def main : IO Unit := do
       -- Header bar
       Allegro.drawFilledRectangleRgb 0.0 0.0 800.0 22.0 35 42 58
       let evCount ← eventCountRef.get
-      font.drawTextRgb 200 210 230 10.0 6.0 0
+      font.drawTextRgb 200 210 230 10.0 6.0 TextAlign.left
         s!"Event Monitor   │   events received: {evCount}   │   Esc=quit"
 
       -- Scrolling log
@@ -300,14 +300,14 @@ def main : IO Unit := do
           else if hasSubstr line "TOUCH_" then (220, 120, 220)
           else if hasSubstr line "USER_EVENT" then (180, 255, 180)
           else (160, 160, 160)
-        font.drawTextRgb r g b 10.0 y 0 line
+        font.drawTextRgb r g b 10.0 y TextAlign.left line
         y := y + 18.0
 
       -- Footer
       Allegro.drawFilledRectangleRgb 0.0 576.0 800.0 600.0 35 42 58
       let joyStr := if joyOk != 0 then "joy:ON" else "joy:off"
       let touchStr := if touchOk != 0 then "touch:ON" else "touch:off"
-      font.drawTextRgb 140 140 140 10.0 582.0 0
+      font.drawTextRgb 140 140 140 10.0 582.0 TextAlign.left
         s!"{joyStr}  {touchStr}  user-src:ON  timer@30Hz"
 
       Allegro.flipDisplay

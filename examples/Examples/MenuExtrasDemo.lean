@@ -18,7 +18,7 @@ def main : IO Unit := do
   -- Menu structure: "File" (id 1), "->" submenu start, "Open" (id 2), "" end submenu
   let captions := #["File->", "Open", "Save", "", "Quit"]
   let ids      := #[(1 : UInt32), 2, 3, 0, 4]
-  let flags    := #[(0 : UInt32), 0, 0, 0, 0]
+  let flags    := #[MenuItemFlags.enabled, MenuItemFlags.enabled, MenuItemFlags.enabled, MenuItemFlags.enabled, MenuItemFlags.enabled]
   let icons    := #[(0 : UInt64), 0, 0, 0, 0]
   let menu ← Allegro.buildMenu captions ids flags icons
   IO.println s!"  buildMenu = {menu}"
@@ -34,12 +34,12 @@ def main : IO Unit := do
 
     -- toggleMenuItemFlags — toggle "disabled" flag on item id 3 (Save)
     -- ALLEGRO_MENU_ITEM_DISABLED = 0x08
-    let oldFlags ← menu.toggleItemFlags (3 : Int32) (0x08 : UInt32)
-    IO.println s!"  toggleMenuItemFlags(3, DISABLED) → old flags = {oldFlags}"
+    let oldFlags ← menu.toggleItemFlags (3 : Int32) MenuItemFlags.disabled
+    IO.println s!"  toggleMenuItemFlags(3, DISABLED) → old flags = {oldFlags.val}"
 
     -- toggle again to restore
-    let restored ← menu.toggleItemFlags (3 : Int32) (0x08 : UInt32)
-    IO.println s!"  toggleMenuItemFlags(3, DISABLED) again → flags = {restored}"
+    let restored ← menu.toggleItemFlags (3 : Int32) MenuItemFlags.disabled
+    IO.println s!"  toggleMenuItemFlags(3, DISABLED) again → flags = {restored.val}"
 
     menu.destroy
     IO.println "  destroyMenu — OK"

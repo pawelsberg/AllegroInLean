@@ -42,102 +42,184 @@ def Display.null : Display := (0 : UInt64)
 
 -- ── Display flag constants ──
 
-/-- Exclusive fullscreen mode. -/
-def fullscreenFlag : UInt32 := 2
-/-- Fullscreen window (borderless, desktop resolution). -/
-def fullscreenWindowFlag : UInt32 := 512
+/-- Allegro display creation flags (bitfield). -/
+structure DisplayFlags where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+instance : OrOp DisplayFlags where or a b := ⟨a.val ||| b.val⟩
+instance : AndOp DisplayFlags where and a b := ⟨a.val &&& b.val⟩
+
+namespace DisplayFlags
 /-- Windowed mode (default). -/
-def windowedFlag : UInt32 := 1
-/-- Allow the user to resize the window. -/
-def resizableFlag : UInt32 := 16
+def windowed : DisplayFlags := ⟨1⟩
+/-- Exclusive fullscreen mode. -/
+def fullscreen : DisplayFlags := ⟨2⟩
 /-- Require an OpenGL context. -/
-def openglFlag : UInt32 := 4
-/-- Require an OpenGL 3.0+ context. -/
-def opengl30Flag : UInt32 := 128
-/-- Require a forward-compatible OpenGL context. -/
-def openglForwardCompatibleFlag : UInt32 := 256
+def opengl : DisplayFlags := ⟨4⟩
+/-- Allow the user to resize the window. -/
+def resizable : DisplayFlags := ⟨16⟩
 /-- Remove the window frame/decorations. -/
-def noframeFlag : UInt32 := 32
+def noframe : DisplayFlags := ⟨32⟩
 /-- Generate expose events for the display. -/
-def generateExposeEventsFlag : UInt32 := 64
-/-- Create the window maximised. -/
-def maximizedFlag : UInt32 := 8192
+def generateExposeEvents : DisplayFlags := ⟨64⟩
+/-- Require an OpenGL 3.0+ context. -/
+def opengl30 : DisplayFlags := ⟨128⟩
+/-- Require a forward-compatible OpenGL context. -/
+def openglForwardCompatible : DisplayFlags := ⟨256⟩
+/-- Fullscreen window (borderless, desktop resolution). -/
+def fullscreenWindow : DisplayFlags := ⟨512⟩
 /-- Require the programmable pipeline (shaders). -/
-def programmablePipelineFlag : UInt32 := 2048
+def programmablePipeline : DisplayFlags := ⟨2048⟩
+/-- Create the window maximised. -/
+def maximized : DisplayFlags := ⟨8192⟩
+end DisplayFlags
+
+-- Backward-compatible aliases
+def fullscreenFlag := DisplayFlags.fullscreen
+def fullscreenWindowFlag := DisplayFlags.fullscreenWindow
+def windowedFlag := DisplayFlags.windowed
+def resizableFlag := DisplayFlags.resizable
+def openglFlag := DisplayFlags.opengl
+def opengl30Flag := DisplayFlags.opengl30
+def openglForwardCompatibleFlag := DisplayFlags.openglForwardCompatible
+def noframeFlag := DisplayFlags.noframe
+def generateExposeEventsFlag := DisplayFlags.generateExposeEvents
+def maximizedFlag := DisplayFlags.maximized
+def programmablePipelineFlag := DisplayFlags.programmablePipeline
 
 -- ── Display option constants ──
 
-/-- Option: total colour depth in bits. -/
-def displayOptionColorSize : UInt32 := 14
+/-- Allegro display option identifier. -/
+structure DisplayOption where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace DisplayOption
 /-- Option: red channel bits. -/
-def displayOptionRedSize : UInt32 := 0
+def redSize : DisplayOption := ⟨0⟩
 /-- Option: green channel bits. -/
-def displayOptionGreenSize : UInt32 := 1
+def greenSize : DisplayOption := ⟨1⟩
 /-- Option: blue channel bits. -/
-def displayOptionBlueSize : UInt32 := 2
+def blueSize : DisplayOption := ⟨2⟩
 /-- Option: alpha channel bits. -/
-def displayOptionAlphaSize : UInt32 := 3
+def alphaSize : DisplayOption := ⟨3⟩
+/-- Option: total colour depth in bits. -/
+def colorSize : DisplayOption := ⟨14⟩
 /-- Option: depth buffer bits. -/
-def displayOptionDepthSize : UInt32 := 15
+def depthSize : DisplayOption := ⟨15⟩
 /-- Option: stencil buffer bits. -/
-def displayOptionStencilSize : UInt32 := 16
+def stencilSize : DisplayOption := ⟨16⟩
 /-- Option: number of multisample buffers. -/
-def displayOptionSampleBuffers : UInt32 := 17
+def sampleBuffers : DisplayOption := ⟨17⟩
 /-- Option: number of multisample samples. -/
-def displayOptionSamples : UInt32 := 18
+def samples : DisplayOption := ⟨18⟩
 /-- Option: use floating-point colour buffer. -/
-def displayOptionFloatColor : UInt32 := 20
+def floatColor : DisplayOption := ⟨20⟩
 /-- Option: use floating-point depth buffer. -/
-def displayOptionFloatDepth : UInt32 := 21
+def floatDepth : DisplayOption := ⟨21⟩
 /-- Option: use single buffering. -/
-def displayOptionSingleBuffer : UInt32 := 22
+def singleBuffer : DisplayOption := ⟨22⟩
 /-- Option: swap method (0 = undefined, 1 = copy, 2 = flip). -/
-def displayOptionSwapMethod : UInt32 := 23
+def swapMethod : DisplayOption := ⟨23⟩
 /-- Option: require a compatible display. -/
-def displayOptionCompatibleDisplay : UInt32 := 24
+def compatibleDisplay : DisplayOption := ⟨24⟩
 /-- Option: support partial display updates. -/
-def displayOptionUpdateDisplayRegion : UInt32 := 25
+def updateDisplayRegion : DisplayOption := ⟨25⟩
 /-- Option: vertical sync (0 = off, 1 = on, 2 = adaptive). -/
-def displayOptionVsync : UInt32 := 26
+def vsync : DisplayOption := ⟨26⟩
 /-- Option: maximum bitmap texture size. -/
-def displayOptionMaxBitmapSize : UInt32 := 27
+def maxBitmapSize : DisplayOption := ⟨27⟩
 /-- Option: support non-power-of-two bitmaps. -/
-def displayOptionSupportNpotBitmap : UInt32 := 28
+def supportNpotBitmap : DisplayOption := ⟨28⟩
 /-- Option: support separate alpha blending. -/
-def displayOptionSupportSeparateAlpha : UInt32 := 30
+def supportSeparateAlpha : DisplayOption := ⟨30⟩
 /-- Option: auto-convert bitmaps to the display format. -/
-def displayOptionAutoConvertBitmaps : UInt32 := 31
+def autoConvertBitmaps : DisplayOption := ⟨31⟩
 /-- Option: required OpenGL major version. -/
-def displayOptionOpenglMajorVersion : UInt32 := 33
+def openglMajorVersion : DisplayOption := ⟨33⟩
 /-- Option: required OpenGL minor version. -/
-def displayOptionOpenglMinorVersion : UInt32 := 34
+def openglMinorVersion : DisplayOption := ⟨34⟩
+end DisplayOption
+
+-- Backward-compatible aliases
+def displayOptionColorSize := DisplayOption.colorSize
+def displayOptionRedSize := DisplayOption.redSize
+def displayOptionGreenSize := DisplayOption.greenSize
+def displayOptionBlueSize := DisplayOption.blueSize
+def displayOptionAlphaSize := DisplayOption.alphaSize
+def displayOptionDepthSize := DisplayOption.depthSize
+def displayOptionStencilSize := DisplayOption.stencilSize
+def displayOptionSampleBuffers := DisplayOption.sampleBuffers
+def displayOptionSamples := DisplayOption.samples
+def displayOptionFloatColor := DisplayOption.floatColor
+def displayOptionFloatDepth := DisplayOption.floatDepth
+def displayOptionSingleBuffer := DisplayOption.singleBuffer
+def displayOptionSwapMethod := DisplayOption.swapMethod
+def displayOptionCompatibleDisplay := DisplayOption.compatibleDisplay
+def displayOptionUpdateDisplayRegion := DisplayOption.updateDisplayRegion
+def displayOptionVsync := DisplayOption.vsync
+def displayOptionMaxBitmapSize := DisplayOption.maxBitmapSize
+def displayOptionSupportNpotBitmap := DisplayOption.supportNpotBitmap
+def displayOptionSupportSeparateAlpha := DisplayOption.supportSeparateAlpha
+def displayOptionAutoConvertBitmaps := DisplayOption.autoConvertBitmaps
+def displayOptionOpenglMajorVersion := DisplayOption.openglMajorVersion
+def displayOptionOpenglMinorVersion := DisplayOption.openglMinorVersion
 
 -- ── Display option importance ──
 
+/-- Allegro display option importance. -/
+structure DisplayOptionImportance where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace DisplayOptionImportance
 /-- Option importance: no preference. -/
-def importanceDontcare : UInt32 := 0
+def dontcare : DisplayOptionImportance := ⟨0⟩
 /-- Option importance: the option is required; fail if unavailable. -/
-def importanceRequire : UInt32 := 1
+def require : DisplayOptionImportance := ⟨1⟩
 /-- Option importance: prefer this value but fall back gracefully. -/
-def importanceSuggest : UInt32 := 2
+def suggest : DisplayOptionImportance := ⟨2⟩
+end DisplayOptionImportance
+
+-- Backward-compatible aliases
+def importanceDontcare := DisplayOptionImportance.dontcare
+def importanceRequire := DisplayOptionImportance.require
+def importanceSuggest := DisplayOptionImportance.suggest
 
 -- ── Display creation setup ──
 
-/-- Set flags for the next display to be created. -/
 @[extern "allegro_al_set_new_display_flags"]
-opaque setNewDisplayFlags : UInt32 → IO Unit
+private opaque setNewDisplayFlagsRaw : UInt32 → IO Unit
+
+/-- Set flags for the next display to be created. -/
+@[inline] def setNewDisplayFlags (flags : DisplayFlags) : IO Unit :=
+  setNewDisplayFlagsRaw flags.val
+
+@[extern "allegro_al_get_new_display_flags"]
+private opaque getNewDisplayFlagsRaw : IO UInt32
 
 /-- Get the flags that will be used for the next display creation. -/
-@[extern "allegro_al_get_new_display_flags"]
-opaque getNewDisplayFlags : IO UInt32
+@[inline] def getNewDisplayFlags : IO DisplayFlags := do
+  let v ← getNewDisplayFlagsRaw
+  return ⟨v⟩
+
+@[extern "allegro_al_set_new_display_option"]
+private opaque setNewDisplayOptionRaw : UInt32 → UInt32 → UInt32 → IO Unit
 
 /-- Set a display option hint. `setNewDisplayOption option value importance` -/
-@[extern "allegro_al_set_new_display_option"]
-opaque setNewDisplayOption : UInt32 → UInt32 → UInt32 → IO Unit
+@[inline] def setNewDisplayOption (option : DisplayOption) (value : UInt32) (importance : DisplayOptionImportance) : IO Unit :=
+  setNewDisplayOptionRaw option.val value importance.val
+
+@[extern "allegro_al_get_new_display_option"]
+private opaque getNewDisplayOptionRaw : UInt32 → IO UInt32
 
 /-- Get the current value of a display creation option. -/
-@[extern "allegro_al_get_new_display_option"]
-opaque getNewDisplayOption : UInt32 → IO UInt32
+@[inline] def getNewDisplayOption (option : DisplayOption) : IO UInt32 :=
+  getNewDisplayOptionRaw option.val
 
 /-- Reset all display options to defaults. -/
 @[extern "allegro_al_reset_new_display_options"]
@@ -215,17 +297,27 @@ opaque acknowledgeDrawingHalt : Display → IO Unit
 @[extern "allegro_al_acknowledge_drawing_resume"]
 opaque acknowledgeDrawingResume : Display → IO Unit
 
-/-- Get the flags of the display. -/
 @[extern "allegro_al_get_display_flags"]
-opaque getDisplayFlags : Display → IO UInt32
+private opaque getDisplayFlagsRaw : Display → IO UInt32
+
+/-- Get the flags of the display. -/
+@[inline] def getDisplayFlags (display : Display) : IO DisplayFlags := do
+  let v ← getDisplayFlagsRaw display
+  return ⟨v⟩
+
+@[extern "allegro_al_set_display_flag"]
+private opaque setDisplayFlagRaw : Display → UInt32 → UInt32 → IO UInt32
 
 /-- Toggle a display flag on/off. Returns 1 on success. -/
-@[extern "allegro_al_set_display_flag"]
-opaque setDisplayFlag : Display → UInt32 → UInt32 → IO UInt32
+@[inline] def setDisplayFlag (display : Display) (flag : DisplayFlags) (onoff : UInt32) : IO UInt32 :=
+  setDisplayFlagRaw display flag.val onoff
+
+@[extern "allegro_al_get_display_option"]
+private opaque getDisplayOptionRaw : Display → UInt32 → IO UInt32
 
 /-- Query a display option on a live display. -/
-@[extern "allegro_al_get_display_option"]
-opaque getDisplayOption : Display → UInt32 → IO UInt32
+@[inline] def getDisplayOption (display : Display) (option : DisplayOption) : IO UInt32 :=
+  getDisplayOptionRaw display option.val
 
 /-- Get the pixel format of a display. -/
 @[extern "allegro_al_get_display_format"]
@@ -235,17 +327,70 @@ opaque getDisplayFormat : Display → IO UInt32
 @[extern "allegro_al_get_display_refresh_rate"]
 opaque getDisplayRefreshRate : Display → IO UInt32
 
-/-- Get the orientation of a display (rotation). Returns one of the `displayOrientation*` constants. -/
+-- ── Display orientation constants ──
+
+/-- Allegro display orientation flags (bitfield). -/
+structure DisplayOrientation where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+instance : OrOp DisplayOrientation where or a b := ⟨a.val ||| b.val⟩
+instance : AndOp DisplayOrientation where and a b := ⟨a.val &&& b.val⟩
+
+namespace DisplayOrientation
+/-- Display orientation: unknown. -/
+def unknown : DisplayOrientation := ⟨0⟩
+/-- Display orientation: 0° (normal upright). -/
+def degrees0 : DisplayOrientation := ⟨1⟩
+/-- Display orientation: 90° clockwise. -/
+def degrees90 : DisplayOrientation := ⟨2⟩
+/-- Display orientation: 180° (upside down). -/
+def degrees180 : DisplayOrientation := ⟨4⟩
+/-- Display orientation: 270° clockwise. -/
+def degrees270 : DisplayOrientation := ⟨8⟩
+/-- Display orientation: portrait (0° or 180°). -/
+def portrait : DisplayOrientation := ⟨5⟩
+/-- Display orientation: landscape (90° or 270°). -/
+def landscape : DisplayOrientation := ⟨10⟩
+/-- Display orientation: all orientations. -/
+def all : DisplayOrientation := ⟨15⟩
+/-- Display orientation: face up (tablet lying flat, screen up). -/
+def faceUp : DisplayOrientation := ⟨16⟩
+/-- Display orientation: face down (tablet lying flat, screen down). -/
+def faceDown : DisplayOrientation := ⟨32⟩
+end DisplayOrientation
+
+-- Backward-compatible aliases
+def displayOrientationUnknown := DisplayOrientation.unknown
+def displayOrientation0Degrees := DisplayOrientation.degrees0
+def displayOrientation90Degrees := DisplayOrientation.degrees90
+def displayOrientation180Degrees := DisplayOrientation.degrees180
+def displayOrientation270Degrees := DisplayOrientation.degrees270
+def displayOrientationPortrait := DisplayOrientation.portrait
+def displayOrientationLandscape := DisplayOrientation.landscape
+def displayOrientationAll := DisplayOrientation.all
+def displayOrientationFaceUp := DisplayOrientation.faceUp
+def displayOrientationFaceDown := DisplayOrientation.faceDown
+
 @[extern "allegro_al_get_display_orientation"]
-opaque getDisplayOrientation : Display → IO UInt32
+private opaque getDisplayOrientationRaw : Display → IO UInt32
+
+/-- Get the orientation of a display (rotation). Returns one of the `displayOrientation*` constants. -/
+@[inline] def getDisplayOrientation (display : Display) : IO DisplayOrientation := do
+  let v ← getDisplayOrientationRaw display
+  return ⟨v⟩
 
 /-- Get the video adapter index of a display. -/
 @[extern "allegro_al_get_display_adapter"]
 opaque getDisplayAdapter : Display → IO UInt32
 
-/-- Set a display option on an existing display. -/
 @[extern "allegro_al_set_display_option_live"]
-opaque setDisplayOptionLive : Display → UInt32 → UInt32 → IO Unit
+private opaque setDisplayOptionLiveRaw : Display → UInt32 → UInt32 → IO Unit
+
+/-- Set a display option on an existing display. -/
+@[inline] def setDisplayOptionLive (display : Display) (option : DisplayOption) (value : UInt32) : IO Unit :=
+  setDisplayOptionLiveRaw display option.val value
 
 -- ── Window management ──
 
@@ -398,87 +543,124 @@ def getCurrentDisplay? : IO (Option Display) := liftOption getCurrentDisplay
 @[extern "allegro_al_clear_depth_buffer"]
 opaque clearDepthBuffer : Float → IO Unit
 
-/-- Get a render state value. See `renderState*` constants. -/
-@[extern "allegro_al_get_render_state"]
-opaque getRenderState : UInt32 → IO UInt32
-
-/-- Set a render state value. See `renderState*` and `renderFunction*` constants. -/
-@[extern "allegro_al_set_render_state"]
-opaque setRenderState : UInt32 → UInt32 → IO Unit
-
 -- ── Render state constants ──
 
+/-- Allegro render state identifier. -/
+structure RenderState where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace RenderState
 /-- Render state: enable/disable alpha testing (0 = off, 1 = on). -/
-def renderStateAlphaTest : UInt32 := 0x0010
-/-- Render state: set the write mask (bitmask of `writeMask*` flags). -/
-def renderStateWriteMask : UInt32 := 0x0011
+def alphaTest : RenderState := ⟨0x0010⟩
+/-- Render state: set the write mask (bitmask of `WriteMask` flags). -/
+def writeMask : RenderState := ⟨0x0011⟩
 /-- Render state: enable/disable depth testing (0 = off, 1 = on). -/
-def renderStateDepthTest : UInt32 := 0x0012
-/-- Render state: set the depth comparison function (`renderFunction*`). -/
-def renderStateDepthFunction : UInt32 := 0x0013
-/-- Render state: set the alpha comparison function (`renderFunction*`). -/
-def renderStateAlphaFunction : UInt32 := 0x0014
+def depthTest : RenderState := ⟨0x0012⟩
+/-- Render state: set the depth comparison function (`RenderFunction`). -/
+def depthFunction : RenderState := ⟨0x0013⟩
+/-- Render state: set the alpha comparison function (`RenderFunction`). -/
+def alphaFunction : RenderState := ⟨0x0014⟩
 /-- Render state: set the alpha test reference value (0–255). -/
-def renderStateAlphaTestValue : UInt32 := 0x0015
+def alphaTestValue : RenderState := ⟨0x0015⟩
+end RenderState
+
+-- Backward-compatible aliases
+def renderStateAlphaTest := RenderState.alphaTest
+def renderStateWriteMask := RenderState.writeMask
+def renderStateDepthTest := RenderState.depthTest
+def renderStateDepthFunction := RenderState.depthFunction
+def renderStateAlphaFunction := RenderState.alphaFunction
+def renderStateAlphaTestValue := RenderState.alphaTestValue
 
 -- ── Render function constants ──
 
+/-- Allegro render comparison function. -/
+structure RenderFunction where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace RenderFunction
 /-- Render function: never pass. -/
-def renderFunctionNever : UInt32 := 0
+def never : RenderFunction := ⟨0⟩
 /-- Render function: always pass. -/
-def renderFunctionAlways : UInt32 := 1
+def always : RenderFunction := ⟨1⟩
 /-- Render function: pass if less than. -/
-def renderFunctionLess : UInt32 := 2
+def less : RenderFunction := ⟨2⟩
 /-- Render function: pass if equal. -/
-def renderFunctionEqual : UInt32 := 3
+def equal : RenderFunction := ⟨3⟩
 /-- Render function: pass if less than or equal. -/
-def renderFunctionLessEqual : UInt32 := 4
+def lessEqual : RenderFunction := ⟨4⟩
 /-- Render function: pass if greater than. -/
-def renderFunctionGreater : UInt32 := 5
+def greater : RenderFunction := ⟨5⟩
 /-- Render function: pass if not equal. -/
-def renderFunctionNotEqual : UInt32 := 6
+def notEqual : RenderFunction := ⟨6⟩
 /-- Render function: pass if greater than or equal. -/
-def renderFunctionGreaterEqual : UInt32 := 7
+def greaterEqual : RenderFunction := ⟨7⟩
+end RenderFunction
+
+-- Backward-compatible aliases
+def renderFunctionNever := RenderFunction.never
+def renderFunctionAlways := RenderFunction.always
+def renderFunctionLess := RenderFunction.less
+def renderFunctionEqual := RenderFunction.equal
+def renderFunctionLessEqual := RenderFunction.lessEqual
+def renderFunctionGreater := RenderFunction.greater
+def renderFunctionNotEqual := RenderFunction.notEqual
+def renderFunctionGreaterEqual := RenderFunction.greaterEqual
 
 -- ── Write mask flags ──
 
+/-- Allegro write mask flags (bitfield). -/
+structure WriteMask where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+instance : OrOp WriteMask where or a b := ⟨a.val ||| b.val⟩
+instance : AndOp WriteMask where and a b := ⟨a.val &&& b.val⟩
+
+namespace WriteMask
 /-- Write mask: red channel. -/
-def writeMaskRed : UInt32 := 1
+def red : WriteMask := ⟨1⟩
 /-- Write mask: green channel. -/
-def writeMaskGreen : UInt32 := 2
+def green : WriteMask := ⟨2⟩
 /-- Write mask: blue channel. -/
-def writeMaskBlue : UInt32 := 4
+def blue : WriteMask := ⟨4⟩
 /-- Write mask: alpha channel. -/
-def writeMaskAlpha : UInt32 := 8
+def alpha : WriteMask := ⟨8⟩
 /-- Write mask: depth buffer. -/
-def writeMaskDepth : UInt32 := 16
+def depth : WriteMask := ⟨16⟩
 /-- Write mask: all RGB channels. -/
-def writeMaskRGB : UInt32 := 7
+def rgb : WriteMask := ⟨7⟩
 /-- Write mask: all RGBA channels. -/
-def writeMaskRGBA : UInt32 := 15
+def rgba : WriteMask := ⟨15⟩
+end WriteMask
 
--- ── Display orientation constants ──
+-- Backward-compatible aliases
+def writeMaskRed := WriteMask.red
+def writeMaskGreen := WriteMask.green
+def writeMaskBlue := WriteMask.blue
+def writeMaskAlpha := WriteMask.alpha
+def writeMaskDepth := WriteMask.depth
+def writeMaskRGB := WriteMask.rgb
+def writeMaskRGBA := WriteMask.rgba
 
-/-- Display orientation: unknown. -/
-def displayOrientationUnknown : UInt32 := 0
-/-- Display orientation: 0° (normal upright). -/
-def displayOrientation0Degrees : UInt32 := 1
-/-- Display orientation: 90° clockwise. -/
-def displayOrientation90Degrees : UInt32 := 2
-/-- Display orientation: 180° (upside down). -/
-def displayOrientation180Degrees : UInt32 := 4
-/-- Display orientation: 270° clockwise. -/
-def displayOrientation270Degrees : UInt32 := 8
-/-- Display orientation: portrait (0° or 180°). -/
-def displayOrientationPortrait : UInt32 := 5
-/-- Display orientation: landscape (90° or 270°). -/
-def displayOrientationLandscape : UInt32 := 10
-/-- Display orientation: all orientations. -/
-def displayOrientationAll : UInt32 := 15
-/-- Display orientation: face up (tablet lying flat, screen up). -/
-def displayOrientationFaceUp : UInt32 := 16
-/-- Display orientation: face down (tablet lying flat, screen down). -/
-def displayOrientationFaceDown : UInt32 := 32
+@[extern "allegro_al_get_render_state"]
+private opaque getRenderStateRaw : UInt32 → IO UInt32
+
+/-- Get a render state value. See `renderState*` constants. -/
+@[inline] def getRenderState (state : RenderState) : IO UInt32 :=
+  getRenderStateRaw state.val
+
+@[extern "allegro_al_set_render_state"]
+private opaque setRenderStateRaw : UInt32 → UInt32 → IO Unit
+
+/-- Set a render state value. See `renderState*` and `renderFunction*` constants. -/
+@[inline] def setRenderState (state : RenderState) (value : UInt32) : IO Unit :=
+  setRenderStateRaw state.val value
 
 -- ── Monitor extras ──
 

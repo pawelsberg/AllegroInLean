@@ -164,10 +164,10 @@ def main : IO Unit := do
       let identity ← Allegro.createTransform
       identity.use
       Allegro.setBlender bAdd bAlpha bInvAlpha
-      builtinFont.drawTextRgb 220 220 220 10.0 10.0 0
+      builtinFont.drawTextRgb 220 220 220 10.0 10.0 TextAlign.left
         "Arrows=pan  W/S=zoom  Esc=quit"
       let zoomStr := s!"zoom: {zoom}"
-      builtinFont.drawTextRgb 220 220 220 10.0 26.0 0 zoomStr
+      builtinFont.drawTextRgb 220 220 220 10.0 26.0 TextAlign.left zoomStr
       identity.destroy
       camera.destroy
 

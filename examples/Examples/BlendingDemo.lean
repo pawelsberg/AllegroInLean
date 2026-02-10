@@ -66,9 +66,9 @@ def main : IO Unit := do
 
     else if evType == evKeyDown then
       let key ← event.keyboardKeycode
-      if key == Allegro.keyEscape then
+      if key == Allegro.keyEscape.val then
         doneRef.set true
-      else if key == Allegro.keySpace then
+      else if key == Allegro.keySpace.val then
         modeRef.modify (· + 1)
 
     else if evType == evTimer then
@@ -103,13 +103,13 @@ def main : IO Unit := do
 
       -- Query and display the current blender
       let (op, src, dst) ← Allegro.getBlender
-      let blenderInfo := s!"blender: op={op} src={src} dst={dst}"
+      let blenderInfo := s!"blender: op={op.val} src={src.val} dst={dst.val}"
 
       -- Reset to normal blending for HUD text
       Allegro.setBlender bAdd bAlpha bInvAlpha
-      font.drawTextRgb 255 255 255 10.0 10.0 0 label
-      font.drawTextRgb 200 200 200 10.0 26.0 0 blenderInfo
-      font.drawTextRgb 180 180 180 10.0 450.0 0
+      font.drawTextRgb 255 255 255 10.0 10.0 alignLeft label
+      font.drawTextRgb 200 200 200 10.0 26.0 alignLeft blenderInfo
+      font.drawTextRgb 180 180 180 10.0 450.0 alignLeft
         "Space = cycle blend mode   Esc = quit"
 
       Allegro.flipDisplay

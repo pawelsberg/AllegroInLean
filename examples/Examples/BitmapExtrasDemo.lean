@@ -32,13 +32,15 @@ def main : IO Unit := do
   IO.println s!"  setNewBitmapSamples(4) → getNewBitmapSamples = {s}"
   Allegro.setNewBitmapSamples 0
 
-  Allegro.setNewBitmapWrap 1 1  -- REPEAT, REPEAT
-  let (wu, wv) ← Allegro.getNewBitmapWrap
-  IO.println s!"  setNewBitmapWrap(1,1) → getNewBitmapWrap = ({wu},{wv})"
-  Allegro.setNewBitmapWrap 0 0
+  Allegro.setNewBitmapWrap (⟨1⟩ : BitmapWrapMode) (⟨1⟩ : BitmapWrapMode)  -- REPEAT, REPEAT
+  let wrapResult ← Allegro.getNewBitmapWrap
+  let wu : Allegro.BitmapWrapMode := wrapResult.1
+  let wv : Allegro.BitmapWrapMode := wrapResult.2
+  IO.println s!"  setNewBitmapWrap(1,1) → getNewBitmapWrap = ({wu.val},{wv.val})"
+  Allegro.setNewBitmapWrap (⟨0⟩ : BitmapWrapMode) (⟨0⟩ : BitmapWrapMode)
 
   -- Create display + bitmap
-  Allegro.setNewDisplayFlags 0
+  Allegro.setNewDisplayFlags ⟨0⟩
   let display ← Allegro.createDisplay 320 200
   if display == 0 then
     IO.eprintln "  createDisplay failed"; Allegro.uninstallSystem; return
@@ -68,13 +70,13 @@ def main : IO Unit := do
   IO.println "  convertMaskToAlpha — OK"
 
   -- Per-bitmap blender
-  Allegro.setBitmapBlender 1 4 5  -- ADD, SRC_ALPHA, INV_SRC_ALPHA
+  Allegro.setBitmapBlender ⟨1⟩ ⟨4⟩ ⟨5⟩  -- ADD, SRC_ALPHA, INV_SRC_ALPHA
   let (op, src, dst) ← Allegro.getBitmapBlender
-  IO.println s!"  setBitmapBlender → getBitmapBlender = ({op},{src},{dst})"
+  IO.println s!"  setBitmapBlender → getBitmapBlender = ({op.val},{src.val},{dst.val})"
 
-  Allegro.setSeparateBitmapBlender 1 4 5 1 1 1
+  Allegro.setSeparateBitmapBlender ⟨1⟩ ⟨4⟩ ⟨5⟩ ⟨1⟩ ⟨1⟩ ⟨1⟩
   let (op2, s2, d2, aop, asrc, adst) ← Allegro.getSeparateBitmapBlender
-  IO.println s!"  getSeparateBitmapBlender = ({op2},{s2},{d2},{aop},{asrc},{adst})"
+  IO.println s!"  getSeparateBitmapBlender = ({op2.val},{s2.val},{d2.val},{aop.val},{asrc.val},{adst.val})"
 
   Allegro.setBitmapBlendColor 1.0 0.5 0.25 0.78
   let (cr, cg, cb, ca) ← Allegro.getBitmapBlendColor
@@ -87,19 +89,19 @@ def main : IO Unit := do
   Allegro.setTargetBitmap (← display.backbuffer)
 
   -- drawTintedBitmapRegionRgb
-  bmp.drawTintedRegionRgb 255 255 255 0 0 32 32 10 10 (0 : UInt32)
+  bmp.drawTintedRegionRgb 255 255 255 0 0 32 32 10 10 FlipFlags.none
   IO.println "  drawTintedBitmapRegionRgb — OK"
 
   -- drawTintedScaledRotatedBitmapRgb
-  bmp.drawTintedScaledRotatedRgb 255 255 255 32 32 160 100 1.0 1.0 0.0 (0 : UInt32)
+  bmp.drawTintedScaledRotatedRgb 255 255 255 32 32 160 100 1.0 1.0 0.0 FlipFlags.none
   IO.println "  drawTintedScaledRotatedBitmapRgb — OK"
 
   -- drawTintedScaledRotatedBitmapRegionRgb
-  bmp.drawTintedScaledRotatedRegionRgb 0 0 64 64 255 255 255 32 32 160 100 1.0 1.0 0.0 (0 : UInt32)
+  bmp.drawTintedScaledRotatedRegionRgb 0 0 64 64 255 255 255 32 32 160 100 1.0 1.0 0.0 FlipFlags.none
   IO.println "  drawTintedScaledRotatedBitmapRegionRgb — OK"
 
   -- lockBitmapBlocked (may fail for non-block formats)
-  let lbk ← bmp.lockBlocked (0 : UInt32)
+  let lbk ← bmp.lockBlocked LockMode.readwrite
   IO.println s!"  lockBitmapBlocked = {lbk}"
   if lbk != 0 then
     bmp.unlock

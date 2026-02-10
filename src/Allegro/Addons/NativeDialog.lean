@@ -98,64 +98,141 @@ def Menu.null : Menu := (0 : UInt64)
 -- Constants — file chooser mode flags
 -- ════════════════════════════════════════════════════════════════════════════
 
+/-- Allegro file chooser mode flags (bitfield). -/
+structure FileChooserFlags where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+instance : OrOp FileChooserFlags where or a b := ⟨a.val ||| b.val⟩
+instance : AndOp FileChooserFlags where and a b := ⟨a.val &&& b.val⟩
+
+namespace FileChooserFlags
 /-- The file must already exist (for open dialogs). -/
-def filechooserFileMustExist : UInt32 := 1
+def fileMustExist : FileChooserFlags := ⟨1⟩
 /-- Show a "Save" dialog instead of "Open". -/
-def filechooserSave           : UInt32 := 2
+def save : FileChooserFlags := ⟨2⟩
 /-- Select folders instead of files. -/
-def filechooserFolder         : UInt32 := 4
+def folder : FileChooserFlags := ⟨4⟩
 /-- Show a pictures-only filter. -/
-def filechooserPictures       : UInt32 := 8
+def pictures : FileChooserFlags := ⟨8⟩
 /-- Show hidden files. -/
-def filechooserShowHidden     : UInt32 := 16
+def showHidden : FileChooserFlags := ⟨16⟩
 /-- Allow selecting multiple files. -/
-def filechooserMultiple       : UInt32 := 32
+def multiple : FileChooserFlags := ⟨32⟩
+end FileChooserFlags
+
+-- Backward-compatible aliases
+def filechooserFileMustExist := FileChooserFlags.fileMustExist
+def filechooserSave := FileChooserFlags.save
+def filechooserFolder := FileChooserFlags.folder
+def filechooserPictures := FileChooserFlags.pictures
+def filechooserShowHidden := FileChooserFlags.showHidden
+def filechooserMultiple := FileChooserFlags.multiple
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- Constants — message box flags
 -- ════════════════════════════════════════════════════════════════════════════
 
+/-- Allegro message box flags (bitfield). -/
+structure MessageBoxFlags where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+instance : OrOp MessageBoxFlags where or a b := ⟨a.val ||| b.val⟩
+instance : AndOp MessageBoxFlags where and a b := ⟨a.val &&& b.val⟩
+
+namespace MessageBoxFlags
+/-- No flags (plain informational dialog). -/
+def none : MessageBoxFlags := ⟨0⟩
 /-- Show a warning icon. -/
-def messageboxWarn       : UInt32 := 1
+def warn : MessageBoxFlags := ⟨1⟩
 /-- Show an error icon. -/
-def messageboxError      : UInt32 := 2
+def error : MessageBoxFlags := ⟨2⟩
 /-- Show OK and Cancel buttons (returns 1 for OK, 2 for Cancel). -/
-def messageboxOkCancel   : UInt32 := 4
+def okCancel : MessageBoxFlags := ⟨4⟩
 /-- Show Yes and No buttons (returns 1 for Yes, 2 for No). -/
-def messageboxYesNo      : UInt32 := 8
+def yesNo : MessageBoxFlags := ⟨8⟩
 /-- Show a question icon. -/
-def messageboxQuestion   : UInt32 := 16
+def question : MessageBoxFlags := ⟨16⟩
+end MessageBoxFlags
+
+-- Backward-compatible aliases
+def messageboxWarn := MessageBoxFlags.warn
+def messageboxError := MessageBoxFlags.error
+def messageboxOkCancel := MessageBoxFlags.okCancel
+def messageboxYesNo := MessageBoxFlags.yesNo
+def messageboxQuestion := MessageBoxFlags.question
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- Constants — text log flags
 -- ════════════════════════════════════════════════════════════════════════════
 
+/-- Allegro text log flags (bitfield). -/
+structure TextLogFlags where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+instance : OrOp TextLogFlags where or a b := ⟨a.val ||| b.val⟩
+instance : AndOp TextLogFlags where and a b := ⟨a.val &&& b.val⟩
+
+namespace TextLogFlags
+/-- No flags. -/
+def none : TextLogFlags := ⟨0⟩
 /-- Do not show a close button on the text log window. -/
-def textlogNoClose   : UInt32 := 1
+def noClose : TextLogFlags := ⟨1⟩
 /-- Use a monospace font in the text log. -/
-def textlogMonospace : UInt32 := 2
+def monospace : TextLogFlags := ⟨2⟩
+end TextLogFlags
+
+-- Backward-compatible aliases
+def textlogNoClose := TextLogFlags.noClose
+def textlogMonospace := TextLogFlags.monospace
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- Constants — menu item flags
 -- ════════════════════════════════════════════════════════════════════════════
 
+/-- Allegro menu item flags (bitfield). -/
+structure MenuItemFlags where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+instance : OrOp MenuItemFlags where or a b := ⟨a.val ||| b.val⟩
+instance : AndOp MenuItemFlags where and a b := ⟨a.val &&& b.val⟩
+
+namespace MenuItemFlags
 /-- Menu item is enabled (default). -/
-def menuItemEnabled   : UInt32 := 0
+def enabled : MenuItemFlags := ⟨0⟩
 /-- Menu item has a checkbox. -/
-def menuItemCheckbox  : UInt32 := 1
+def checkbox : MenuItemFlags := ⟨1⟩
 /-- Menu item checkbox is checked. -/
-def menuItemChecked   : UInt32 := 2
+def checked : MenuItemFlags := ⟨2⟩
 /-- Menu item is disabled (greyed out). -/
-def menuItemDisabled  : UInt32 := 4
+def disabled : MenuItemFlags := ⟨4⟩
+end MenuItemFlags
+
+-- Backward-compatible aliases
+def menuItemEnabled := MenuItemFlags.enabled
+def menuItemCheckbox := MenuItemFlags.checkbox
+def menuItemChecked := MenuItemFlags.checked
+def menuItemDisabled := MenuItemFlags.disabled
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- Constants — event types
 -- ════════════════════════════════════════════════════════════════════════════
 
 /-- Fired when the user closes a native text log window. -/
-def eventNativeDialogClose : UInt32 := 600
+def EventType.nativeDialogClose : EventType := ⟨600⟩
 /-- Fired when the user clicks a menu item. -/
-def eventMenuClick         : UInt32 := 601
+def EventType.menuClick : EventType := ⟨601⟩
+
+-- Backward-compatible aliases
+def eventNativeDialogClose := EventType.nativeDialogClose
+def eventMenuClick := EventType.menuClick
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- Addon lifecycle
@@ -181,16 +258,19 @@ opaque getNativeDialogVersion : IO UInt32
 -- File chooser
 -- ════════════════════════════════════════════════════════════════════════════
 
+@[extern "allegro_al_create_native_file_dialog"]
+private opaque createNativeFileDialogRaw : String → String → String → UInt32 → IO FileChooser
+
 /-- Create a native file chooser dialog.
     - `initialPath`: starting directory or file (use `""` for default)
     - `title`: dialog title
     - `patterns`: semicolon-separated file patterns, e.g. `"*.png;*.jpg"`
     - `mode`: combination of `filechooser*` flags -/
-@[extern "allegro_al_create_native_file_dialog"]
-opaque createNativeFileDialog : String → String → String → UInt32 → IO FileChooser
+@[inline] def createNativeFileDialog (initialPath title patterns : String) (mode : FileChooserFlags) : IO FileChooser :=
+  createNativeFileDialogRaw initialPath title patterns mode.val
 
 /-- Create a native file chooser, returning `none` on failure. -/
-def createNativeFileDialog? (initialPath title patterns : String) (mode : UInt32) :
+def createNativeFileDialog? (initialPath title patterns : String) (mode : FileChooserFlags) :
     IO (Option FileChooser) :=
   liftOption (createNativeFileDialog initialPath title patterns mode)
 
@@ -215,27 +295,33 @@ opaque destroyNativeFileDialog : FileChooser → IO Unit
 -- Message box
 -- ════════════════════════════════════════════════════════════════════════════
 
+@[extern "allegro_al_show_native_message_box"]
+private opaque showNativeMessageBoxRaw : Display → String → String → String → String → UInt32 → IO UInt32
+
 /-- Show a native message box. Blocks until the user dismisses it.
     - `display`: parent display (use 0 for no parent)
     - `title`, `heading`, `text`: the message content
     - `buttons`: custom button labels separated by `|`, or `""` for default OK
     - `flags`: combination of `messagebox*` flags
     Returns the 1-based index of the button pressed (0 if dialog was closed). -/
-@[extern "allegro_al_show_native_message_box"]
-opaque showNativeMessageBox : Display → String → String → String → String → UInt32 → IO UInt32
+@[inline] def showNativeMessageBox (display : Display) (title heading text buttons : String) (flags : MessageBoxFlags) : IO UInt32 :=
+  showNativeMessageBoxRaw display title heading text buttons flags.val
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- Text log
 -- ════════════════════════════════════════════════════════════════════════════
 
+@[extern "allegro_al_open_native_text_log"]
+private opaque openNativeTextLogRaw : String → UInt32 → IO TextLog
+
 /-- Open a native text log window.
     - `title`: window title
     - `flags`: combination of `textlog*` flags -/
-@[extern "allegro_al_open_native_text_log"]
-opaque openNativeTextLog : String → UInt32 → IO TextLog
+@[inline] def openNativeTextLog (title : String) (flags : TextLogFlags) : IO TextLog :=
+  openNativeTextLogRaw title flags.val
 
 /-- Open a native text log, returning `none` on failure. -/
-def openNativeTextLog? (title : String) (flags : UInt32) : IO (Option TextLog) :=
+def openNativeTextLog? (title : String) (flags : TextLogFlags) : IO (Option TextLog) :=
   liftOption (openNativeTextLog title flags)
 
 /-- Close and destroy a text log window. -/
@@ -278,6 +364,9 @@ opaque cloneMenuForPopup : Menu → IO Menu
 -- Menu — items
 -- ════════════════════════════════════════════════════════════════════════════
 
+@[extern "allegro_al_append_menu_item"]
+private opaque appendMenuItemRaw : Menu → String → UInt32 → UInt32 → Bitmap → Menu → IO UInt32
+
 /-- Append an item to a menu. Pass `""` as title for a separator.
     - `parent`: the menu to append to
     - `title`: item label (use `""` for separator)
@@ -286,13 +375,16 @@ opaque cloneMenuForPopup : Menu → IO Menu
     - `icon`: bitmap icon (use 0 for none)
     - `submenu`: child menu (use 0 for none)
     Returns the index of the new item, or -1 on failure. -/
-@[extern "allegro_al_append_menu_item"]
-opaque appendMenuItem : Menu → String → UInt32 → UInt32 → Bitmap → Menu → IO UInt32
+@[inline] def appendMenuItem (parent : Menu) (title : String) (id : UInt32) (flags : MenuItemFlags) (icon : Bitmap) (submenu : Menu) : IO UInt32 :=
+  appendMenuItemRaw parent title id flags.val icon submenu
+
+@[extern "allegro_al_insert_menu_item"]
+private opaque insertMenuItemRaw : Menu → UInt32 → String → UInt32 → UInt32 → Bitmap → Menu → IO UInt32
 
 /-- Insert an item into a menu at position `pos` (0-based).
     Same parameters as `appendMenuItem`. -/
-@[extern "allegro_al_insert_menu_item"]
-opaque insertMenuItem : Menu → UInt32 → String → UInt32 → UInt32 → Bitmap → Menu → IO UInt32
+@[inline] def insertMenuItem (parent : Menu) (pos : UInt32) (title : String) (id : UInt32) (flags : MenuItemFlags) (icon : Bitmap) (submenu : Menu) : IO UInt32 :=
+  insertMenuItemRaw parent pos title id flags.val icon submenu
 
 /-- Remove the item at position `pos`. Returns 1 on success. -/
 @[extern "allegro_al_remove_menu_item"]
@@ -310,13 +402,20 @@ opaque getMenuItemCaption : Menu → UInt32 → IO String
 @[extern "allegro_al_set_menu_item_caption"]
 opaque setMenuItemCaption : Menu → UInt32 → String → IO Unit
 
-/-- Get the flags of the item at position `pos`. -/
 @[extern "allegro_al_get_menu_item_flags"]
-opaque getMenuItemFlags : Menu → UInt32 → IO UInt32
+private opaque getMenuItemFlagsRaw : Menu → UInt32 → IO UInt32
+
+/-- Get the flags of the item at position `pos`. -/
+@[inline] def getMenuItemFlags (menu : Menu) (pos : UInt32) : IO MenuItemFlags := do
+  let v ← getMenuItemFlagsRaw menu pos
+  return ⟨v⟩
+
+@[extern "allegro_al_set_menu_item_flags"]
+private opaque setMenuItemFlagsRaw : Menu → UInt32 → UInt32 → IO Unit
 
 /-- Set the flags of the item at position `pos`. -/
-@[extern "allegro_al_set_menu_item_flags"]
-opaque setMenuItemFlags : Menu → UInt32 → UInt32 → IO Unit
+@[inline] def setMenuItemFlags (menu : Menu) (pos : UInt32) (flags : MenuItemFlags) : IO Unit :=
+  setMenuItemFlagsRaw menu pos flags.val
 
 /-- Get the icon bitmap of the item at position `pos`. Returns 0 if none. -/
 @[extern "allegro_al_get_menu_item_icon"]
@@ -377,10 +476,14 @@ opaque removeDisplayMenu : Display → IO Menu
 
 -- ── Menu item flag toggling ──
 
+@[extern "allegro_al_toggle_menu_item_flags"]
+private opaque toggleMenuItemFlagsRaw : Menu → Int32 → UInt32 → IO UInt32
+
 /-- Toggle flags on a menu item at position `pos`.
     Returns the *old* flags that were changed, or negative on error. -/
-@[extern "allegro_al_toggle_menu_item_flags"]
-opaque toggleMenuItemFlags : Menu → Int32 → UInt32 → IO UInt32
+@[inline] def toggleMenuItemFlags (menu : Menu) (pos : Int32) (flags : MenuItemFlags) : IO MenuItemFlags := do
+  let v ← toggleMenuItemFlagsRaw menu pos flags.val
+  return ⟨v⟩
 
 -- ── Find menu item ──
 
@@ -398,6 +501,9 @@ def findMenuItem (menu : Menu) (id : UInt32) : IO (Option (Menu × UInt32)) := d
 
 -- ── Build menu from info array ──
 
+@[extern "allegro_al_build_menu"]
+private opaque buildMenuRaw : @&Array String → @&Array UInt32 → @&Array UInt32 → @&Array UInt64 → IO Menu
+
 /-- Build a complete menu tree from a flat array of `ALLEGRO_MENU_INFO` entries.
     The four parallel arrays encode each entry:
     - `captions`: item text (`""` for end-of-submenu marker, append `"->"` suffix for submenu start)
@@ -405,11 +511,11 @@ def findMenuItem (menu : Menu) (id : UInt32) : IO (Option (Menu × UInt32)) := d
     - `flags`: item flags (e.g. `0` for enabled)
     - `icons`: bitmap handles (`0` for no icon)
     The array is automatically null-terminated. -/
-@[extern "allegro_al_build_menu"]
-opaque buildMenu : @&Array String → @&Array UInt32 → @&Array UInt32 → @&Array UInt64 → IO Menu
+@[inline] def buildMenu (captions : @&Array String) (ids : @&Array UInt32) (flags : @&Array MenuItemFlags) (icons : @&Array UInt64) : IO Menu :=
+  buildMenuRaw captions ids (flags.map (·.val)) icons
 
 /-- Build a menu, returning `none` on failure. -/
-def buildMenu? (captions : @&Array String) (ids flags : @&Array UInt32) (icons : @&Array UInt64) : IO (Option Menu) :=
+def buildMenu? (captions : @&Array String) (ids : @&Array UInt32) (flags : @&Array MenuItemFlags) (icons : @&Array UInt64) : IO (Option Menu) :=
   liftOption (buildMenu captions ids flags icons)
 
 end Allegro

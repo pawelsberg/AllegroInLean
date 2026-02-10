@@ -33,7 +33,7 @@ def main : IO Unit := do
       break
     else if evType == evTimer then
       Allegro.clearToColorRgb 10 10 30
-      font.drawTextRgb 255 255 255 20 80 0 "Hello from Allegro Font addon"
+      font.drawTextRgb 255 255 255 20 80 TextAlign.left "Hello from Allegro Font addon"
       Allegro.flipDisplay
 
   font.destroy

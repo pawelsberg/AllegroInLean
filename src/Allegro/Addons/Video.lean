@@ -37,19 +37,36 @@ def Video.null : Video := (0 : UInt64)
 
 -- ── Position type constants ──
 
+/-- Allegro video position type. -/
+structure VideoPosition where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace VideoPosition
 /-- Actual playback position. -/
-def videoPositionActual : UInt32 := 0
+def actual : VideoPosition := ⟨0⟩
 /-- Video decode position (may differ from actual). -/
-def videoPositionVideoDecode : UInt32 := 1
+def videoDecode : VideoPosition := ⟨1⟩
 /-- Audio decode position (may differ from actual). -/
-def videoPositionAudioDecode : UInt32 := 2
+def audioDecode : VideoPosition := ⟨2⟩
+end VideoPosition
+
+-- Backward-compatible aliases
+def videoPositionActual := VideoPosition.actual
+def videoPositionVideoDecode := VideoPosition.videoDecode
+def videoPositionAudioDecode := VideoPosition.audioDecode
 
 -- ── Event type constants ──
 
 /-- Event: a new video frame is ready to show. -/
-def videoEventFrameShow : UInt32 := 550
+def EventType.videoFrameShow : EventType := ⟨550⟩
 /-- Event: the video has finished playing. -/
-def videoEventFinished : UInt32 := 551
+def EventType.videoFinished : EventType := ⟨551⟩
+
+-- Backward-compatible aliases
+def videoEventFrameShow := EventType.videoFrameShow
+def videoEventFinished := EventType.videoFinished
 
 -- ── Addon lifecycle ──
 
@@ -130,7 +147,10 @@ opaque getVideoFrame : Video → IO Bitmap
 /-- Get the playback position in seconds.
     Use `videoPositionActual`, `videoPositionVideoDecode`, or `videoPositionAudioDecode`. -/
 @[extern "allegro_al_get_video_position"]
-opaque getVideoPosition : Video → UInt32 → IO Float
+private opaque getVideoPositionRaw : Video → UInt32 → IO Float
+
+@[inline] def getVideoPosition (v : Video) (which : VideoPosition) : IO Float :=
+  getVideoPositionRaw v which.val
 
 -- ── Identification ──
 

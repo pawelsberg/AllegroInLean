@@ -40,7 +40,7 @@ def main : IO Unit := do
     else if evType == evTimer then
       Allegro.clearToColorRgb 20 10 10
       if hasFont then
-        font.drawTextRgb 255 255 0 20 80 0 "Hello from Allegro TTF"
+        font.drawTextRgb 255 255 0 20 80 TextAlign.left "Hello from Allegro TTF"
       Allegro.flipDisplay
 
   if hasFont then

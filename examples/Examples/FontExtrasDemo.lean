@@ -16,7 +16,7 @@ def main : IO Unit := do
 
   IO.println "── Font Extras Demo ──"
 
-  Allegro.setNewDisplayFlags 0
+  Allegro.setNewDisplayFlags ⟨0⟩
   let display ← Allegro.createDisplay 640 480
   if display == 0 then
     IO.eprintln "  createDisplay failed"; Allegro.uninstallSystem; return
@@ -76,7 +76,7 @@ def main : IO Unit := do
   Allegro.clearToColorRgb 30 30 50
   let mut yPos : Float := 20.0
   for line in lines do
-    font.drawTextRgb 255 255 200 20.0 yPos (0 : UInt32) line
+    font.drawTextRgb 255 255 200 20.0 yPos Allegro.alignLeft line
     yPos := yPos + 22.0
   Allegro.flipDisplay
   IO.println "  Rendered multiline text — visible for 1 second"

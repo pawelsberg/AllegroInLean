@@ -40,9 +40,9 @@ def main : IO Unit := do
   IO.println s!"  getMonitorRefreshRate(0) = {rate}"
 
   -- Render state (headless = no-op but shouldn't crash)
-  let rs ← Allegro.getRenderState (0 : UInt32)
+  let rs ← Allegro.getRenderState Allegro.renderStateAlphaTest
   IO.println s!"  getRenderState(ALPHA_TEST) = {rs}"
-  Allegro.setRenderState (0 : UInt32) (0 : UInt32)
+  Allegro.setRenderState Allegro.renderStateAlphaTest 0
   IO.println "  setRenderState — OK"
 
   -- clearDepthBuffer (needs a display context — skipped in headless)

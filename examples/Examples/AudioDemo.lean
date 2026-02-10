@@ -21,7 +21,7 @@ def main : IO Unit := do
   if sample == 0 then
     IO.eprintln "audio sample not found: data/beep.wav"
   else
-    let _ <- sample.play 1.0 0.0 1.0 0
+    let _ <- sample.play 1.0 0.0 1.0 Playmode.once
     Allegro.rest 0.5
     sample.destroy
 

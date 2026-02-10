@@ -16,7 +16,7 @@ def main : IO Unit := do
 
   IO.println "── Transform Extras (3D) Demo ──"
 
-  Allegro.setNewDisplayFlags 0
+  Allegro.setNewDisplayFlags ⟨0⟩
   let display ← Allegro.createDisplay 320 200
   if display == 0 then
     IO.eprintln "  createDisplay failed"; Allegro.uninstallSystem; return

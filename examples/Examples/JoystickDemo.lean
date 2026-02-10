@@ -79,7 +79,7 @@ def main : IO Unit := do
       doneRef.set true
 
     else if evType == evKeyDown then do
-      let key ← event.keyboardKeycode
+      let key : KeyCode := ⟨← event.keyboardKeycode⟩
       if key == kEsc then doneRef.set true
 
     else if evType == evJoyConfig then do
@@ -118,9 +118,9 @@ def main : IO Unit := do
 
       let numJoys ← Allegro.getNumJoysticks
       if numJoys == 0 then do
-        font.drawTextRgb 220 220 220 20.0 20.0 0
+        font.drawTextRgb 220 220 220 20.0 20.0 TextAlign.left
           "No joystick detected."
-        font.drawTextRgb 160 160 160 20.0 40.0 0
+        font.drawTextRgb 160 160 160 20.0 40.0 TextAlign.left
           "Connect a gamepad / joystick and it will appear here."
       else do
         -- Show info for joystick 0
@@ -130,7 +130,7 @@ def main : IO Unit := do
           let name ← joy.name
           let numSticks ← joy.numSticks
           let numButtons ← joy.numButtons
-          font.drawTextRgb 220 220 220 20.0 20.0 0
+          font.drawTextRgb 220 220 220 20.0 20.0 TextAlign.left
             s!"Joystick: {name}   sticks={numSticks}  buttons={numButtons}"
 
           -- Snapshot current state
@@ -150,7 +150,7 @@ def main : IO Unit := do
               80 80 80 1.0
 
             -- Label
-            font.drawTextRgb 140 140 140 boxX (boxY + boxSize + 4.0) 0
+            font.drawTextRgb 140 140 140 boxX (boxY + boxSize + 4.0) TextAlign.left
               s!"{sName} ({numAxes} axes)"
 
             -- Read axis values and draw crosshair
@@ -179,13 +179,13 @@ def main : IO Unit := do
             let axStr := if numAxes > 1 then s!"x={axisX} y={axisY}"
                           else if numAxes > 0 then s!"val={axisX}"
                           else "(no axes)"
-            font.drawTextRgb 100 100 100 boxX (boxY + boxSize + 18.0) 0 axStr
+            font.drawTextRgb 100 100 100 boxX (boxY + boxSize + 18.0) TextAlign.left axStr
 
             boxX := boxX + boxSize + 20.0
 
           -- Draw buttons as coloured squares
           let btnY : Float := boxY + boxSize + 50.0
-          font.drawTextRgb 180 180 180 20.0 btnY 0 "Buttons:"
+          font.drawTextRgb 180 180 180 20.0 btnY TextAlign.left "Buttons:"
 
           let mut bx : Float := 90.0
           for bi in List.range numButtons.toNat do
@@ -197,16 +197,16 @@ def main : IO Unit := do
             else
               Allegro.drawRectangleRgb bx (btnY - 1.0) (bx + 18.0) (btnY + 13.0)
                 60 60 60 1.0
-            font.drawTextRgb 200 200 200 (bx + 2.0) btnY 0 s!"{bi}"
+            font.drawTextRgb 200 200 200 (bx + 2.0) btnY TextAlign.left s!"{bi}"
             bx := bx + 24.0
 
           joy.release
         else
-          font.drawTextRgb 220 180 60 20.0 20.0 0 "Joystick inactive."
+          font.drawTextRgb 220 180 60 20.0 20.0 TextAlign.left "Joystick inactive."
 
       -- Status line at the bottom
       let status ← statusRef.get
-      font.drawTextRgb 160 160 160 20.0 460.0 0 status
+      font.drawTextRgb 160 160 160 20.0 460.0 TextAlign.left status
 
       Allegro.flipDisplay
 

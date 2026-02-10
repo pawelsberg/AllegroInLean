@@ -53,17 +53,31 @@ opaque isFontAddonInitialized : IO UInt32
 
 -- ── Alignment constants ──
 
-/-- Left-align text (default). Value: 0. -/
-def alignLeft : UInt32 := 0
+/-- Allegro text alignment flags (bitfield — can combine `integer` with others). -/
+structure TextAlign where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
 
-/-- Centre-align text. Value: 1. -/
-def alignCentre : UInt32 := 1
+instance : OrOp TextAlign where or a b := ⟨a.val ||| b.val⟩
+instance : AndOp TextAlign where and a b := ⟨a.val &&& b.val⟩
 
-/-- Right-align text. Value: 2. -/
-def alignRight : UInt32 := 2
+namespace TextAlign
+/-- Left-align text (default). -/
+def left : TextAlign := ⟨0⟩
+/-- Centre-align text. -/
+def centre : TextAlign := ⟨1⟩
+/-- Right-align text. -/
+def right : TextAlign := ⟨2⟩
+/-- Snap text drawing to integer coordinates. Combine with `|||`. -/
+def integer : TextAlign := ⟨4⟩
+end TextAlign
 
-/-- Snap text drawing to integer coordinates. Combine with `|||`. Value: 4. -/
-def alignInteger : UInt32 := 4
+-- Backward-compatible aliases
+def alignLeft := TextAlign.left
+def alignCentre := TextAlign.centre
+def alignRight := TextAlign.right
+def alignInteger := TextAlign.integer
 
 -- ── Font creation / loading / destruction ──
 
@@ -89,26 +103,41 @@ opaque destroyFont : Font → IO Unit
 
 -- ── Text drawing ──
 
-/-- Draw text at (x, y) with an RGB colour and alignment flags. -/
 @[extern "allegro_al_draw_text_rgb"]
-opaque drawTextRgb : Font → UInt32 → UInt32 → UInt32 → Float → Float → UInt32 → String → IO Unit
+private opaque drawTextRgbRaw : Font → UInt32 → UInt32 → UInt32 → Float → Float → UInt32 → String → IO Unit
+
+/-- Draw text at (x, y) with an RGB colour and alignment flags. -/
+@[inline] def drawTextRgb (font : Font) (r g b : UInt32) (x y : Float) (align : TextAlign) (text : String) : IO Unit :=
+  drawTextRgbRaw font r g b x y align.val text
+
+@[extern "allegro_al_draw_text_rgba"]
+private opaque drawTextRgbaRaw : Font → UInt32 → UInt32 → UInt32 → UInt32 → Float → Float → UInt32 → String → IO Unit
 
 /-- Draw text at (x, y) with an RGBA colour and alignment flags. -/
-@[extern "allegro_al_draw_text_rgba"]
-opaque drawTextRgba : Font → UInt32 → UInt32 → UInt32 → UInt32 → Float → Float → UInt32 → String → IO Unit
+@[inline] def drawTextRgba (font : Font) (r g b a : UInt32) (x y : Float) (align : TextAlign) (text : String) : IO Unit :=
+  drawTextRgbaRaw font r g b a x y align.val text
+
+@[extern "allegro_al_draw_ustr_rgb"]
+private opaque drawUstrRgbRaw : Font → UInt32 → UInt32 → UInt32 → Float → Float → UInt32 → UInt64 → IO Unit
 
 /-- Draw a ALLEGRO_USTR with an RGB colour. -/
-@[extern "allegro_al_draw_ustr_rgb"]
-opaque drawUstrRgb : Font → UInt32 → UInt32 → UInt32 → Float → Float → UInt32 → UInt64 → IO Unit
+@[inline] def drawUstrRgb (font : Font) (r g b : UInt32) (x y : Float) (align : TextAlign) (ustr : UInt64) : IO Unit :=
+  drawUstrRgbRaw font r g b x y align.val ustr
+
+@[extern "allegro_al_draw_justified_text_rgb"]
+private opaque drawJustifiedTextRgbRaw : Font → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → UInt32 → String → IO Unit
 
 /-- Draw justified (stretched) text between x1 and x2. -/
-@[extern "allegro_al_draw_justified_text_rgb"]
-opaque drawJustifiedTextRgb : Font → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → UInt32 → String → IO Unit
+@[inline] def drawJustifiedTextRgb (font : Font) (r g b : UInt32) (x1 x2 y diff : Float) (align : TextAlign) (text : String) : IO Unit :=
+  drawJustifiedTextRgbRaw font r g b x1 x2 y diff align.val text
+
+@[extern "allegro_al_draw_multiline_text_rgb"]
+private opaque drawMultilineTextRgbRaw : Font → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → UInt32 → String → IO Unit
 
 /-- Draw multiline text, wrapping at maxWidth pixels.
     Set lineHeight to 0 to use the font's default line height. -/
-@[extern "allegro_al_draw_multiline_text_rgb"]
-opaque drawMultilineTextRgb : Font → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → UInt32 → String → IO Unit
+@[inline] def drawMultilineTextRgb (font : Font) (r g b : UInt32) (x y maxWidth lineHeight : Float) (align : TextAlign) (text : String) : IO Unit :=
+  drawMultilineTextRgbRaw font r g b x y maxWidth lineHeight align.val text
 
 -- ── Glyph drawing ──
 
@@ -192,13 +221,19 @@ opaque getUstrDimensions : Font → UInt64 → IO (UInt32 × UInt32 × UInt32 ×
 @[extern "allegro_al_get_glyph_dimensions"]
 opaque getGlyphDimensions : Font → Int32 → IO (UInt32 × UInt32 × UInt32 × UInt32)
 
-/-- Draw justified (stretched) text from a USTR between x1 and x2. -/
 @[extern "allegro_al_draw_justified_ustr_rgb"]
-opaque drawJustifiedUstrRgb : Font → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → UInt32 → UInt64 → IO Unit
+private opaque drawJustifiedUstrRgbRaw : Font → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → UInt32 → UInt64 → IO Unit
+
+/-- Draw justified (stretched) text from a USTR between x1 and x2. -/
+@[inline] def drawJustifiedUstrRgb (font : Font) (r g b : UInt32) (x1 x2 y diff : Float) (align : TextAlign) (ustr : UInt64) : IO Unit :=
+  drawJustifiedUstrRgbRaw font r g b x1 x2 y diff align.val ustr
+
+@[extern "allegro_al_draw_multiline_ustr_rgb"]
+private opaque drawMultilineUstrRgbRaw : Font → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → UInt32 → UInt64 → IO Unit
 
 /-- Draw multiline text from a USTR, wrapping at maxWidth pixels. -/
-@[extern "allegro_al_draw_multiline_ustr_rgb"]
-opaque drawMultilineUstrRgb : Font → UInt32 → UInt32 → UInt32 → Float → Float → Float → Float → UInt32 → UInt64 → IO Unit
+@[inline] def drawMultilineUstrRgb (font : Font) (r g b : UInt32) (x y maxWidth lineHeight : Float) (align : TextAlign) (ustr : UInt64) : IO Unit :=
+  drawMultilineUstrRgbRaw font r g b x y maxWidth lineHeight align.val ustr
 
 /-- Create a font from a bitmap with specified Unicode ranges.
     `ranges` is a flat array of pairs `[start₁, end₁, start₂, end₂, …]`.

@@ -56,53 +56,116 @@ def IndexBuffer.null : IndexBuffer := (0 : UInt64)
 
 -- ── Prim type constants ──
 
+/-- Allegro primitive type (how vertices are interpreted). -/
+structure PrimType where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace PrimType
 /-- Draw vertices as a list of separate lines (pairs). -/
-def primTypeLineList : UInt32 := 0
+def lineList : PrimType := ⟨0⟩
 /-- Draw vertices as a connected line strip. -/
-def primTypeLineStrip : UInt32 := 1
+def lineStrip : PrimType := ⟨1⟩
 /-- Draw vertices as a closed line loop. -/
-def primTypeLineLoop : UInt32 := 2
+def lineLoop : PrimType := ⟨2⟩
 /-- Draw vertices as a list of separate triangles (triples). -/
-def primTypeTriangleList : UInt32 := 3
+def triangleList : PrimType := ⟨3⟩
 /-- Draw vertices as a connected triangle strip. -/
-def primTypeTriangleStrip : UInt32 := 4
+def triangleStrip : PrimType := ⟨4⟩
 /-- Draw vertices as a triangle fan. -/
-def primTypeTriangleFan : UInt32 := 5
+def triangleFan : PrimType := ⟨5⟩
 /-- Draw vertices as separate points. -/
-def primTypePointList : UInt32 := 6
+def pointList : PrimType := ⟨6⟩
+end PrimType
+
+-- Backward-compatible aliases
+def primTypeLineList := PrimType.lineList
+def primTypeLineStrip := PrimType.lineStrip
+def primTypeLineLoop := PrimType.lineLoop
+def primTypeTriangleList := PrimType.triangleList
+def primTypeTriangleStrip := PrimType.triangleStrip
+def primTypeTriangleFan := PrimType.triangleFan
+def primTypePointList := PrimType.pointList
 
 -- ── Buffer flags ──
 
-/-- Vertex/index buffer contents may be updated. -/
-def primBufferStream : UInt32 := 0x01
-/-- Vertex/index buffer contents are fixed after creation. -/
-def primBufferStatic : UInt32 := 0x02
-/-- Vertex/index buffer is dynamic but updated less frequently. -/
-def primBufferDynamic : UInt32 := 0x04
+/-- Allegro vertex/index buffer flags (bitfield). -/
+structure PrimBufferFlags where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+instance : OrOp PrimBufferFlags where or a b := ⟨a.val ||| b.val⟩
+instance : AndOp PrimBufferFlags where and a b := ⟨a.val &&& b.val⟩
+
+namespace PrimBufferFlags
+/-- Buffer contents may be updated. -/
+def stream : PrimBufferFlags := ⟨0x01⟩
+/-- Buffer contents are fixed after creation. -/
+def static : PrimBufferFlags := ⟨0x02⟩
+/-- Buffer is dynamic but updated less frequently. -/
+def dynamic : PrimBufferFlags := ⟨0x04⟩
 /-- Buffer data can be read back (combine with |). -/
-def primBufferReadwrite : UInt32 := 0x08
+def readwrite : PrimBufferFlags := ⟨0x08⟩
+end PrimBufferFlags
+
+-- Backward-compatible aliases
+def primBufferStream := PrimBufferFlags.stream
+def primBufferStatic := PrimBufferFlags.static
+def primBufferDynamic := PrimBufferFlags.dynamic
+def primBufferReadwrite := PrimBufferFlags.readwrite
 
 -- ── Line join / cap constants ──
 
-/-- No joining between line segments. -/
-def lineJoinNone : UInt32 := 0
-/-- Bevel join — straight cut at the joint. -/
-def lineJoinBevel : UInt32 := 1
-/-- Round join. -/
-def lineJoinRound : UInt32 := 2
-/-- Miter join — sharp corner. -/
-def lineJoinMiter : UInt32 := 3
+/-- Allegro line join style. -/
+structure LineJoin where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
 
+namespace LineJoin
+/-- No joining between line segments. -/
+def none : LineJoin := ⟨0⟩
+/-- Bevel join — straight cut at the joint. -/
+def bevel : LineJoin := ⟨1⟩
+/-- Round join. -/
+def round : LineJoin := ⟨2⟩
+/-- Miter join — sharp corner. -/
+def miter : LineJoin := ⟨3⟩
+end LineJoin
+
+-- Backward-compatible aliases
+def lineJoinNone := LineJoin.none
+def lineJoinBevel := LineJoin.bevel
+def lineJoinRound := LineJoin.round
+def lineJoinMiter := LineJoin.miter
+
+/-- Allegro line cap style. -/
+structure LineCap where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace LineCap
 /-- No line cap. -/
-def lineCapNone : UInt32 := 0
+def none : LineCap := ⟨0⟩
 /-- Square cap — extends line by half-thickness. -/
-def lineCapSquare : UInt32 := 1
+def square : LineCap := ⟨1⟩
 /-- Round cap. -/
-def lineCapRound : UInt32 := 2
+def round : LineCap := ⟨2⟩
 /-- Triangle cap. -/
-def lineCapTriangle : UInt32 := 3
+def triangle : LineCap := ⟨3⟩
 /-- Closed cap — joins first and last vertex. -/
-def lineCapClosed : UInt32 := 4
+def closed : LineCap := ⟨4⟩
+end LineCap
+
+-- Backward-compatible aliases
+def lineCapNone := LineCap.none
+def lineCapSquare := LineCap.square
+def lineCapRound := LineCap.round
+def lineCapTriangle := LineCap.triangle
+def lineCapClosed := LineCap.closed
 
 -- ── Addon lifecycle ──
 
@@ -218,18 +281,24 @@ opaque drawRibbonRgb : ByteArray → UInt32 → UInt32 → UInt32 → Float → 
 
 -- ── Polyline ──
 
+@[extern "allegro_al_draw_polyline_rgb"]
+private opaque drawPolylineRgbRaw : ByteArray → UInt32 → UInt32 → UInt32 → UInt32 → UInt32 → Float → Float → IO Unit
+
 /-- Draw a polyline through the given points.
     `points` is a `ByteArray` of packed 32-bit floats `[x₁, y₁, x₂, y₂, …]`.
     Use `lineJoin*` and `lineCap*` constants for join/cap styles. -/
-@[extern "allegro_al_draw_polyline_rgb"]
-opaque drawPolylineRgb : ByteArray → UInt32 → UInt32 → UInt32 → UInt32 → UInt32 → Float → Float → IO Unit
+@[inline] def drawPolylineRgb (points : ByteArray) (r g b : UInt32) (join : LineJoin) (cap : LineCap) (thickness miterLimit : Float) : IO Unit :=
+  drawPolylineRgbRaw points r g b join.val cap.val thickness miterLimit
 
 -- ── Polygon ──
 
+@[extern "allegro_al_draw_polygon_rgb"]
+private opaque drawPolygonRgbRaw : ByteArray → UInt32 → UInt32 → UInt32 → UInt32 → Float → Float → IO Unit
+
 /-- Draw an outlined polygon. `points` is a `ByteArray` of packed 32-bit floats
     `[x₁, y₁, x₂, y₂, …]`. Uses `lineJoin*` for the join style. -/
-@[extern "allegro_al_draw_polygon_rgb"]
-opaque drawPolygonRgb : ByteArray → UInt32 → UInt32 → UInt32 → UInt32 → Float → Float → IO Unit
+@[inline] def drawPolygonRgb (points : ByteArray) (r g b : UInt32) (join : LineJoin) (thickness miterLimit : Float) : IO Unit :=
+  drawPolygonRgbRaw points r g b join.val thickness miterLimit
 
 /-- Draw a filled polygon. `points` is a `ByteArray` of packed 32-bit floats
     `[x₁, y₁, x₂, y₂, …]`. -/
@@ -238,10 +307,13 @@ opaque drawFilledPolygonRgb : ByteArray → UInt32 → UInt32 → UInt32 → IO 
 
 -- ── Vertex buffer management ──
 
+@[extern "allegro_al_create_vertex_buffer"]
+private opaque createVertexBufferRaw : UInt64 → UInt32 → UInt32 → IO VertexBuffer
+
 /-- Create a vertex buffer. `decl` is a vertex declaration handle (0 for default ALLEGRO_VERTEX).
     Returns 0 on failure. -/
-@[extern "allegro_al_create_vertex_buffer"]
-opaque createVertexBuffer : UInt64 → UInt32 → UInt32 → IO VertexBuffer
+@[inline] def createVertexBuffer (decl : UInt64) (numVerts : UInt32) (flags : PrimBufferFlags) : IO VertexBuffer :=
+  createVertexBufferRaw decl numVerts flags.val
 
 /-- Destroy a vertex buffer. -/
 @[extern "allegro_al_destroy_vertex_buffer"]
@@ -253,10 +325,13 @@ opaque getVertexBufferSize : VertexBuffer → IO UInt32
 
 -- ── Index buffer management ──
 
+@[extern "allegro_al_create_index_buffer"]
+private opaque createIndexBufferRaw : UInt32 → UInt32 → UInt32 → IO IndexBuffer
+
 /-- Create an index buffer. `indexSize` is the byte size per index (2 or 4).
     Returns 0 on failure. -/
-@[extern "allegro_al_create_index_buffer"]
-opaque createIndexBuffer : UInt32 → UInt32 → UInt32 → IO IndexBuffer
+@[inline] def createIndexBuffer (indexSize numIndices : UInt32) (flags : PrimBufferFlags) : IO IndexBuffer :=
+  createIndexBufferRaw indexSize numIndices flags.val
 
 /-- Destroy an index buffer. -/
 @[extern "allegro_al_destroy_index_buffer"]
@@ -268,31 +343,43 @@ opaque getIndexBufferSize : IndexBuffer → IO UInt32
 
 -- ── Drawing from buffers ──
 
+@[extern "allegro_al_draw_vertex_buffer"]
+private opaque drawVertexBufferRaw : VertexBuffer → UInt64 → UInt32 → UInt32 → UInt32 → IO UInt32
+
 /-- Draw primitives from a vertex buffer.
     `drawVertexBuffer vb texture start end type` -/
-@[extern "allegro_al_draw_vertex_buffer"]
-opaque drawVertexBuffer : VertexBuffer → UInt64 → UInt32 → UInt32 → UInt32 → IO UInt32
+@[inline] def drawVertexBuffer (vb : VertexBuffer) (texture : UInt64) (start stop : UInt32) (primType : PrimType) : IO UInt32 :=
+  drawVertexBufferRaw vb texture start stop primType.val
+
+@[extern "allegro_al_draw_indexed_buffer"]
+private opaque drawIndexedBufferRaw : VertexBuffer → UInt64 → IndexBuffer → UInt32 → UInt32 → UInt32 → IO UInt32
 
 /-- Draw indexed primitives from vertex + index buffers.
     `drawIndexedBuffer vb texture ib start end type` -/
-@[extern "allegro_al_draw_indexed_buffer"]
-opaque drawIndexedBuffer : VertexBuffer → UInt64 → IndexBuffer → UInt32 → UInt32 → UInt32 → IO UInt32
+@[inline] def drawIndexedBuffer (vb : VertexBuffer) (texture : UInt64) (ib : IndexBuffer) (start stop : UInt32) (primType : PrimType) : IO UInt32 :=
+  drawIndexedBufferRaw vb texture ib start stop primType.val
 
 -- ── Vertex / index buffer locking ──
 
+@[extern "allegro_al_lock_vertex_buffer"]
+private opaque lockVertexBufferRaw : VertexBuffer → UInt32 → UInt32 → UInt32 → IO UInt64
+
 /-- Lock a region of a vertex buffer for CPU access. Returns a raw pointer (0 on failure).
     `lockVertexBuffer vb offset length flags` -/
-@[extern "allegro_al_lock_vertex_buffer"]
-opaque lockVertexBuffer : VertexBuffer → UInt32 → UInt32 → UInt32 → IO UInt64
+@[inline] def lockVertexBuffer (vb : VertexBuffer) (offset length : UInt32) (flags : PrimBufferFlags) : IO UInt64 :=
+  lockVertexBufferRaw vb offset length flags.val
 
 /-- Unlock a previously locked vertex buffer. -/
 @[extern "allegro_al_unlock_vertex_buffer"]
 opaque unlockVertexBuffer : VertexBuffer → IO Unit
 
+@[extern "allegro_al_lock_index_buffer"]
+private opaque lockIndexBufferRaw : IndexBuffer → UInt32 → UInt32 → UInt32 → IO UInt64
+
 /-- Lock a region of an index buffer for CPU access. Returns a raw pointer (0 on failure).
     `lockIndexBuffer ib offset length flags` -/
-@[extern "allegro_al_lock_index_buffer"]
-opaque lockIndexBuffer : IndexBuffer → UInt32 → UInt32 → UInt32 → IO UInt64
+@[inline] def lockIndexBuffer (ib : IndexBuffer) (offset length : UInt32) (flags : PrimBufferFlags) : IO UInt64 :=
+  lockIndexBufferRaw ib offset length flags.val
 
 /-- Unlock a previously locked index buffer. -/
 @[extern "allegro_al_unlock_index_buffer"]
@@ -301,11 +388,11 @@ opaque unlockIndexBuffer : IndexBuffer → IO Unit
 -- ── Option-returning variants ──
 
 /-- Create a vertex buffer, returning `none` on failure. -/
-def createVertexBuffer? (decl : UInt64) (numVerts flags : UInt32) : IO (Option VertexBuffer) :=
+def createVertexBuffer? (decl : UInt64) (numVerts : UInt32) (flags : PrimBufferFlags) : IO (Option VertexBuffer) :=
   liftOption (createVertexBuffer decl numVerts flags)
 
 /-- Create an index buffer, returning `none` on failure. -/
-def createIndexBuffer? (indexSize numIndices flags : UInt32) : IO (Option IndexBuffer) :=
+def createIndexBuffer? (indexSize numIndices : UInt32) (flags : PrimBufferFlags) : IO (Option IndexBuffer) :=
   liftOption (createIndexBuffer indexSize numIndices flags)
 
 -- ════════════════════════════════════════════════════════════════════
@@ -321,42 +408,86 @@ instance : OfNat VertexDecl 0 := inferInstanceAs (OfNat UInt64 0)
 instance : ToString VertexDecl := ⟨fun (h : UInt64) => s!"VertexDecl#{h}"⟩
 instance : Repr VertexDecl := ⟨fun (h : UInt64) _ => .text s!"VertexDecl#{repr h}"⟩
 
+-- ── Vertex attribute constants ──
+
+/-- Allegro vertex attribute type. -/
+structure PrimAttr where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace PrimAttr
+def position : PrimAttr := ⟨1⟩
+def color : PrimAttr := ⟨2⟩
+def texCoord : PrimAttr := ⟨3⟩
+def texCoordPixel : PrimAttr := ⟨4⟩
+end PrimAttr
+
+-- Backward-compatible aliases
+def primAttrPosition := PrimAttr.position
+def primAttrColor := PrimAttr.color
+def primAttrTexCoord := PrimAttr.texCoord
+def primAttrTexCoordPixel := PrimAttr.texCoordPixel
+
+-- ── Vertex storage constants ──
+
+/-- Allegro vertex storage format. -/
+structure PrimStorage where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace PrimStorage
+def float2 : PrimStorage := ⟨0⟩
+def float3 : PrimStorage := ⟨1⟩
+def short2 : PrimStorage := ⟨2⟩
+def float1 : PrimStorage := ⟨3⟩
+def float4 : PrimStorage := ⟨4⟩
+def ubyte4 : PrimStorage := ⟨5⟩
+def short4 : PrimStorage := ⟨6⟩
+def normalizedUbyte4 : PrimStorage := ⟨7⟩
+def normalizedShort2 : PrimStorage := ⟨8⟩
+def normalizedShort4 : PrimStorage := ⟨9⟩
+def normalizedUshort2 : PrimStorage := ⟨10⟩
+def normalizedUshort4 : PrimStorage := ⟨11⟩
+def halfFloat2 : PrimStorage := ⟨12⟩
+def halfFloat4 : PrimStorage := ⟨13⟩
+end PrimStorage
+
+-- Backward-compatible aliases
+def primStorageFloat2 := PrimStorage.float2
+def primStorageFloat3 := PrimStorage.float3
+def primStorageShort2 := PrimStorage.short2
+def primStorageFloat1 := PrimStorage.float1
+def primStorageFloat4 := PrimStorage.float4
+def primStorageUbyte4 := PrimStorage.ubyte4
+def primStorageShort4 := PrimStorage.short4
+def primStorageNormalizedUbyte4 := PrimStorage.normalizedUbyte4
+def primStorageNormalizedShort2 := PrimStorage.normalizedShort2
+def primStorageNormalizedShort4 := PrimStorage.normalizedShort4
+def primStorageNormalizedUshort2 := PrimStorage.normalizedUshort2
+def primStorageNormalizedUshort4 := PrimStorage.normalizedUshort4
+def primStorageHalfFloat2 := PrimStorage.halfFloat2
+def primStorageHalfFloat4 := PrimStorage.halfFloat4
+
+@[extern "allegro_al_create_vertex_decl"]
+private opaque createVertexDeclRaw : @&Array (UInt32 × UInt32 × UInt32) → UInt32 → IO VertexDecl
+
 /-- Create a custom vertex declaration from an array of `(attribute, storage, offset)` triples
     and a stride (bytes per vertex). Returns 0 on failure. -/
-@[extern "allegro_al_create_vertex_decl"]
-opaque createVertexDecl : @&Array (UInt32 × UInt32 × UInt32) → UInt32 → IO VertexDecl
+@[inline] def createVertexDecl (elems : Array (PrimAttr × PrimStorage × UInt32)) (stride : UInt32) : IO VertexDecl :=
+  createVertexDeclRaw (elems.map fun (a, s, o) => (a.val, s.val, o)) stride
 
 /-- Destroy a custom vertex declaration. -/
 @[extern "allegro_al_destroy_vertex_decl"]
 opaque destroyVertexDecl : VertexDecl → IO Unit
 
--- ── Vertex attribute constants ──
-
-def primAttrPosition : UInt32 := 1
-def primAttrColor : UInt32 := 2
-def primAttrTexCoord : UInt32 := 3
-def primAttrTexCoordPixel : UInt32 := 4
-
--- ── Vertex storage constants ──
-
-def primStorageFloat2 : UInt32 := 0
-def primStorageFloat3 : UInt32 := 1
-def primStorageShort2 : UInt32 := 2
-def primStorageFloat1 : UInt32 := 3
-def primStorageFloat4 : UInt32 := 4
-def primStorageUbyte4 : UInt32 := 5
-def primStorageShort4 : UInt32 := 6
-def primStorageNormalizedUbyte4 : UInt32 := 7
-def primStorageNormalizedShort2 : UInt32 := 8
-def primStorageNormalizedShort4 : UInt32 := 9
-def primStorageNormalizedUshort2 : UInt32 := 10
-def primStorageNormalizedUshort4 : UInt32 := 11
-def primStorageHalfFloat2 : UInt32 := 12
-def primStorageHalfFloat4 : UInt32 := 13
-
 -- ════════════════════════════════════════════════════════════════════
 -- Drawing raw primitives
 -- ════════════════════════════════════════════════════════════════════
+
+@[extern "allegro_al_draw_prim"]
+private opaque drawPrimRaw : UInt64 → VertexDecl → UInt64 → UInt32 → UInt32 → UInt32 → IO UInt32
 
 /-- Draw primitives from a vertex buffer.
     - `vtxs`: pointer to vertex data
@@ -365,8 +496,11 @@ def primStorageHalfFloat4 : UInt32 := 13
     - `start`, `end`: vertex range
     - `primType`: one of `primType*` constants
     Returns number of primitives drawn. -/
-@[extern "allegro_al_draw_prim"]
-opaque drawPrim : UInt64 → VertexDecl → UInt64 → UInt32 → UInt32 → UInt32 → IO UInt32
+@[inline] def drawPrim (vtxs : UInt64) (decl : VertexDecl) (texture : UInt64) (start stop : UInt32) (primType : PrimType) : IO UInt32 :=
+  drawPrimRaw vtxs decl texture start stop primType.val
+
+@[extern "allegro_al_draw_indexed_prim"]
+private opaque drawIndexedPrimRaw : UInt64 → VertexDecl → UInt64 → UInt64 → UInt32 → UInt32 → IO UInt32
 
 /-- Draw indexed primitives from a vertex buffer.
     - `vtxs`: pointer to vertex data
@@ -376,8 +510,11 @@ opaque drawPrim : UInt64 → VertexDecl → UInt64 → UInt32 → UInt32 → UIn
     - `numVtx`: number of indices
     - `primType`: one of `primType*` constants
     Returns number of primitives drawn. -/
-@[extern "allegro_al_draw_indexed_prim"]
-opaque drawIndexedPrim : UInt64 → VertexDecl → UInt64 → UInt64 → UInt32 → UInt32 → IO UInt32
+@[inline] def drawIndexedPrim (vtxs : UInt64) (decl : VertexDecl) (texture : UInt64) (indices : UInt64) (numVtx : UInt32) (primType : PrimType) : IO UInt32 :=
+  drawIndexedPrimRaw vtxs decl texture indices numVtx primType.val
+
+@[extern "allegro_al_draw_prim_ba"]
+private opaque drawPrimBARaw : @&ByteArray → VertexDecl → UInt64 → UInt32 → UInt32 → UInt32 → IO UInt32
 
 /-- Draw primitives from a ByteArray of vertex data (packed floats).
     When `decl` is 0, the built-in ALLEGRO_VERTEX format is used
@@ -385,14 +522,17 @@ opaque drawIndexedPrim : UInt64 → VertexDecl → UInt64 → UInt64 → UInt32 
     - `start`, `end`: vertex range
     - `primType`: one of `primType*` constants
     Returns the number of primitives drawn. -/
-@[extern "allegro_al_draw_prim_ba"]
-opaque drawPrimBA : @&ByteArray → VertexDecl → UInt64 → UInt32 → UInt32 → UInt32 → IO UInt32
+@[inline] def drawPrimBA (data : ByteArray) (decl : VertexDecl) (texture : UInt64) (start stop : UInt32) (primType : PrimType) : IO UInt32 :=
+  drawPrimBARaw data decl texture start stop primType.val
+
+@[extern "allegro_al_draw_indexed_prim_ba"]
+private opaque drawIndexedPrimBARaw : @&ByteArray → VertexDecl → UInt64 → @&Array UInt32 → UInt32 → UInt32 → IO UInt32
 
 /-- Draw indexed primitives from a ByteArray of vertex data and an Array of indices.
     Uses the same vertex format as `drawPrimBA`.
     Returns the number of primitives drawn. -/
-@[extern "allegro_al_draw_indexed_prim_ba"]
-opaque drawIndexedPrimBA : @&ByteArray → VertexDecl → UInt64 → @&Array UInt32 → UInt32 → UInt32 → IO UInt32
+@[inline] def drawIndexedPrimBA (data : ByteArray) (decl : VertexDecl) (texture : UInt64) (indices : Array UInt32) (numVtx : UInt32) (primType : PrimType) : IO UInt32 :=
+  drawIndexedPrimBARaw data decl texture indices numVtx primType.val
 
 -- ══════════════════════════════════════════════════════════════════
 -- Calculation functions (return ByteArray of packed floats)

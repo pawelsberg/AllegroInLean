@@ -39,7 +39,7 @@ def main : IO Unit := do
     IO.eprintln "Failed to initialise video addon"
     return
 
-  Allegro.setNewDisplayFlags 0
+  Allegro.setNewDisplayFlags ⟨0⟩
   let display ← Allegro.createDisplay screenW screenH
   if display == 0 then
     IO.eprintln "Failed to create display"
@@ -103,9 +103,9 @@ def main : IO Unit := do
       running := false
     else if eType == evtKeyDown then
       let kc ← evt.keyboardKeycode
-      if kc == keyEsc then
+      if kc == keyEsc.val then
         running := false
-      else if kc == keySpace then
+      else if kc == keySpace.val then
         paused := !paused
         video.setPlaying (if paused then 0 else 1)
     else if eType == evtFrameShow then
@@ -137,14 +137,14 @@ def main : IO Unit := do
         let dh := fhf * scale
         let dx := (sw - dw) / 2.0
         let dy := (sh - dh) / 2.0
-        frame.drawScaled 0 0 fwf fhf dx dy dw dh 0
+        frame.drawScaled 0 0 fwf fhf dx dy dw dh FlipFlags.none
 
       -- Position overlay
       let pos ← video.position Allegro.videoPositionActual
       let posStr := if finished then "Finished"
                     else if paused then s!"Paused  {pos.toString.take 5}s"
                     else s!"Playing {pos.toString.take 5}s"
-      font.drawTextRgb 255 255 100 8 8 0 posStr
+      font.drawTextRgb 255 255 100 8 8 Allegro.alignLeft posStr
 
       if finished then
         font.drawTextRgb 200 200 200 (screenW.toFloat / 2) (screenH.toFloat / 2)

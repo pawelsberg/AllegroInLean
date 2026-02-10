@@ -27,8 +27,8 @@ namespace Display
 @[inline] def ackDrawingHalt     (d : Display) := acknowledgeDrawingHalt d
 @[inline] def ackDrawingResume   (d : Display) := acknowledgeDrawingResume d
 @[inline] def flags              (d : Display) := getDisplayFlags d
-@[inline] def setFlag            (d : Display) (flag onOff : UInt32) := setDisplayFlag d flag onOff
-@[inline] def option             (d : Display) (opt : UInt32) := getDisplayOption d opt
+@[inline] def setFlag            (d : Display) (flag : DisplayFlags) (onOff : UInt32) := setDisplayFlag d flag onOff
+@[inline] def option             (d : Display) (opt : DisplayOption) := getDisplayOption d opt
 @[inline] def setTitle           (d : Display) (title : String) := setWindowTitle d title
 @[inline] def setPosition        (d : Display) (x y : UInt32) := setWindowPosition d x y
 @[inline] def setConstraints     (d : Display) (minW minH maxW maxH : UInt32) := setWindowConstraints d minW minH maxW maxH
@@ -43,17 +43,17 @@ namespace Display
 @[inline] def hideMouseCursor    (d : Display) := Allegro.hideMouseCursor d
 @[inline] def showMouseCursor    (d : Display) := Allegro.showMouseCursor d
 @[inline] def setMouseCursor     (d : Display) (c : MouseCursor) := Allegro.setMouseCursor d c
-@[inline] def setSystemCursor    (d : Display) (id : UInt32) := setSystemMouseCursor d id
+@[inline] def setSystemCursor    (d : Display) (id : SystemCursor) := setSystemMouseCursor d id
 @[inline] def setMouseXy         (d : Display) (x y : Int32) := Allegro.setMouseXy d x y
 @[inline] def grabMouse          (d : Display) := Allegro.grabMouse d
 @[inline] def pixelFormat        (d : Display) := getDisplayFormat d
 @[inline] def refreshRate        (d : Display) := getDisplayRefreshRate d
-@[inline] def orientation        (d : Display) := getDisplayOrientation d
+@[inline] def orientation        (d : Display) : IO DisplayOrientation := getDisplayOrientation d
 @[inline] def adapter            (d : Display) := getDisplayAdapter d
 @[inline] def windowBorders      (d : Display) := getWindowBorders d
 @[inline] def getConstraints     (d : Display) := getWindowConstraints d
 @[inline] def applyConstraints   (d : Display) (onOff : UInt32) := applyWindowConstraints d onOff
-@[inline] def setOptionLive      (d : Display) (opt val : UInt32) := setDisplayOptionLive d opt val
+@[inline] def setOptionLive      (d : Display) (opt : DisplayOption) (val : UInt32) := setDisplayOptionLive d opt val
 @[inline] def setIcons           (d : Display) (icons : @&Array Bitmap) := setDisplayIcons d icons
 @[inline] def backupDirtyBitmaps (d : Display) := Allegro.backupDirtyBitmaps d
 
@@ -80,31 +80,31 @@ namespace Bitmap
 @[inline] def reparent            (b : Bitmap) (p : UInt64) (x y w h : Int32) := reparentBitmap b p x y w h
 @[inline] def isLocked            (b : Bitmap) := isBitmapLocked b
 @[inline] def setAsTarget         (b : Bitmap) := setTargetBitmap b
-@[inline] def lock                (b : Bitmap) (fmt fl : UInt32) := lockBitmap b fmt fl
-@[inline] def lock?               (b : Bitmap) (fmt fl : UInt32) := lockBitmap? b fmt fl
-@[inline] def lockRegion          (b : Bitmap) (x y w h : Int32) (fmt fl : UInt32) := lockBitmapRegion b x y w h fmt fl
+@[inline] def lock                (b : Bitmap) (fmt : PixelFormat) (fl : LockMode) := lockBitmap b fmt fl
+@[inline] def lock?               (b : Bitmap) (fmt : PixelFormat) (fl : LockMode) := lockBitmap? b fmt fl
+@[inline] def lockRegion          (b : Bitmap) (x y w h : Int32) (fmt : PixelFormat) (fl : LockMode) := lockBitmapRegion b x y w h fmt fl
 @[inline] def unlock              (b : Bitmap) := unlockBitmap b
 @[inline] def getPixelRgba        (b : Bitmap) (x y : Int32) := Allegro.getPixelRgba b x y
-@[inline] def draw                (b : Bitmap) (dx dy : Float) (fl : UInt32) := drawBitmap b dx dy fl
-@[inline] def drawScaled          (b : Bitmap) (sx sy sw sh dx dy dw dh : Float) (fl : UInt32) := drawScaledBitmap b sx sy sw sh dx dy dw dh fl
-@[inline] def drawRegion          (b : Bitmap) (sx sy sw sh dx dy : Float) (fl : UInt32) := drawBitmapRegion b sx sy sw sh dx dy fl
-@[inline] def drawRotated         (b : Bitmap) (cx cy dx dy angle : Float) (fl : UInt32) := drawRotatedBitmap b cx cy dx dy angle fl
-@[inline] def drawScaledRotated   (b : Bitmap) (cx cy dx dy xsc ysc angle : Float) (fl : UInt32) := drawScaledRotatedBitmap b cx cy dx dy xsc ysc angle fl
-@[inline] def drawTintedRgb       (b : Bitmap) (r g bl : UInt32) (dx dy : Float) (fl : UInt32) := drawTintedBitmapRgb b r g bl dx dy fl
-@[inline] def drawTintedScaledRgb (b : Bitmap) (r g bl : UInt32) (sx sy sw sh dx dy dw dh : Float) (fl : UInt32) := drawTintedScaledBitmapRgb b r g bl sx sy sw sh dx dy dw dh fl
-@[inline] def drawTintedRotatedRgb (b : Bitmap) (r g bl : UInt32) (cx cy dx dy angle : Float) (fl : UInt32) := drawTintedRotatedBitmapRgb b r g bl cx cy dx dy angle fl
-@[inline] def drawTintedRgba      (b : Bitmap) (r g bl a : UInt32) (dx dy : Float) (fl : UInt32) := drawTintedBitmapRgba b r g bl a dx dy fl
+@[inline] def draw                (b : Bitmap) (dx dy : Float) (fl : FlipFlags) := drawBitmap b dx dy fl
+@[inline] def drawScaled          (b : Bitmap) (sx sy sw sh dx dy dw dh : Float) (fl : FlipFlags) := drawScaledBitmap b sx sy sw sh dx dy dw dh fl
+@[inline] def drawRegion          (b : Bitmap) (sx sy sw sh dx dy : Float) (fl : FlipFlags) := drawBitmapRegion b sx sy sw sh dx dy fl
+@[inline] def drawRotated         (b : Bitmap) (cx cy dx dy angle : Float) (fl : FlipFlags) := drawRotatedBitmap b cx cy dx dy angle fl
+@[inline] def drawScaledRotated   (b : Bitmap) (cx cy dx dy xsc ysc angle : Float) (fl : FlipFlags) := drawScaledRotatedBitmap b cx cy dx dy xsc ysc angle fl
+@[inline] def drawTintedRgb       (b : Bitmap) (r g bl : UInt32) (dx dy : Float) (fl : FlipFlags) := drawTintedBitmapRgb b r g bl dx dy fl
+@[inline] def drawTintedScaledRgb (b : Bitmap) (r g bl : UInt32) (sx sy sw sh dx dy dw dh : Float) (fl : FlipFlags) := drawTintedScaledBitmapRgb b r g bl sx sy sw sh dx dy dw dh fl
+@[inline] def drawTintedRotatedRgb (b : Bitmap) (r g bl : UInt32) (cx cy dx dy angle : Float) (fl : FlipFlags) := drawTintedRotatedBitmapRgb b r g bl cx cy dx dy angle fl
+@[inline] def drawTintedRgba      (b : Bitmap) (r g bl a : UInt32) (dx dy : Float) (fl : FlipFlags) := drawTintedBitmapRgba b r g bl a dx dy fl
 @[inline] def save                (b : Bitmap) (filename : String) := saveBitmap filename b
 @[inline] def depth               (b : Bitmap) := getBitmapDepth b
 @[inline] def samples             (b : Bitmap) := getBitmapSamples b
 @[inline] def x                   (b : Bitmap) := getBitmapX b
 @[inline] def y                   (b : Bitmap) := getBitmapY b
 @[inline] def convertMaskToAlpha  (b : Bitmap) (r g bl : UInt32) := Allegro.convertMaskToAlpha b r g bl
-@[inline] def drawTintedRegionRgb (b : Bitmap) (r g bl : UInt32) (sx sy sw sh dx dy : Float) (fl : UInt32) := drawTintedBitmapRegionRgb b r g bl sx sy sw sh dx dy fl
-@[inline] def drawTintedScaledRotatedRgb (b : Bitmap) (r g bl : UInt32) (cx cy dx dy xsc ysc angle : Float) (fl : UInt32) := drawTintedScaledRotatedBitmapRgb b r g bl cx cy dx dy xsc ysc angle fl
-@[inline] def drawTintedScaledRotatedRegionRgb (b : Bitmap) (sx sy sw sh : Float) (r g bl : UInt32) (cx cy dx dy xsc ysc angle : Float) (fl : UInt32) := drawTintedScaledRotatedBitmapRegionRgb b sx sy sw sh r g bl cx cy dx dy xsc ysc angle fl
-@[inline] def lockBlocked         (b : Bitmap) (fl : UInt32) := lockBitmapBlocked b fl
-@[inline] def lockRegionBlocked   (b : Bitmap) (x y w h : Int32) (fl : UInt32) := lockBitmapRegionBlocked b x y w h fl
+@[inline] def drawTintedRegionRgb (b : Bitmap) (r g bl : UInt32) (sx sy sw sh dx dy : Float) (fl : FlipFlags) := drawTintedBitmapRegionRgb b r g bl sx sy sw sh dx dy fl
+@[inline] def drawTintedScaledRotatedRgb (b : Bitmap) (r g bl : UInt32) (cx cy dx dy xsc ysc angle : Float) (fl : FlipFlags) := drawTintedScaledRotatedBitmapRgb b r g bl cx cy dx dy xsc ysc angle fl
+@[inline] def drawTintedScaledRotatedRegionRgb (b : Bitmap) (sx sy sw sh : Float) (r g bl : UInt32) (cx cy dx dy xsc ysc angle : Float) (fl : FlipFlags) := drawTintedScaledRotatedBitmapRegionRgb b sx sy sw sh r g bl cx cy dx dy xsc ysc angle fl
+@[inline] def lockBlocked         (b : Bitmap) (fl : LockMode) := lockBitmapBlocked b fl
+@[inline] def lockRegionBlocked   (b : Bitmap) (x y w h : Int32) (fl : LockMode) := lockBitmapRegionBlocked b x y w h fl
 @[inline] def isCompatible        (b : Bitmap) := isCompatibleBitmap b
 
 end Bitmap
@@ -169,7 +169,7 @@ end EventSource
 namespace Event
 
 @[inline] def destroy              (e : Event) := destroyEvent e
-@[inline] def type                 (e : Event) := eventGetType e
+@[inline] def type                 (e : Event) : IO EventType := eventGetType e
 @[inline] def timestamp            (e : Event) := eventGetTimestamp e
 @[inline] def source               (e : Event) := eventGetSource e
 @[inline] def keyboardKeycode      (e : Event) := eventGetKeyboardKeycode e
@@ -423,7 +423,7 @@ namespace KeyboardState
 
 @[inline] def destroy (ks : KeyboardState) := destroyKeyboardState ks
 @[inline] def get     (ks : KeyboardState) := getKeyboardState ks
-@[inline] def keyDown (ks : KeyboardState) (keycode : UInt32) := Allegro.keyDown ks keycode
+@[inline] def keyDown (ks : KeyboardState) (keycode : KeyCode) := Allegro.keyDown ks keycode
 
 end KeyboardState
 
@@ -457,7 +457,7 @@ end MouseCursor
 namespace State
 
 @[inline] def destroy (s : State) := destroyState s
-@[inline] def store   (s : State) (flags : UInt32) := storeState s flags
+@[inline] def store   (s : State) (flags : StateFlags) := storeState s flags
 @[inline] def restore (s : State) := restoreState s
 
 end State
@@ -469,11 +469,11 @@ end State
 namespace Font
 
 @[inline] def destroy              (f : Font) := destroyFont f
-@[inline] def drawTextRgb          (f : Font) (r g b : UInt32) (x y : Float) (fl : UInt32) (text : String) := Allegro.drawTextRgb f r g b x y fl text
-@[inline] def drawTextRgba         (f : Font) (r g b a : UInt32) (x y : Float) (fl : UInt32) (text : String) := Allegro.drawTextRgba f r g b a x y fl text
-@[inline] def drawUstrRgb          (f : Font) (r g b : UInt32) (x y : Float) (fl : UInt32) (u : UInt64) := Allegro.drawUstrRgb f r g b x y fl u
-@[inline] def drawJustifiedTextRgb (f : Font) (r g b : UInt32) (x1 x2 y diff : Float) (fl : UInt32) (text : String) := Allegro.drawJustifiedTextRgb f r g b x1 x2 y diff fl text
-@[inline] def drawMultilineTextRgb (f : Font) (r g b : UInt32) (x y maxW lineH : Float) (fl : UInt32) (text : String) := Allegro.drawMultilineTextRgb f r g b x y maxW lineH fl text
+@[inline] def drawTextRgb          (f : Font) (r g b : UInt32) (x y : Float) (fl : TextAlign) (text : String) := Allegro.drawTextRgb f r g b x y fl text
+@[inline] def drawTextRgba         (f : Font) (r g b a : UInt32) (x y : Float) (fl : TextAlign) (text : String) := Allegro.drawTextRgba f r g b a x y fl text
+@[inline] def drawUstrRgb          (f : Font) (r g b : UInt32) (x y : Float) (fl : TextAlign) (u : UInt64) := Allegro.drawUstrRgb f r g b x y fl u
+@[inline] def drawJustifiedTextRgb (f : Font) (r g b : UInt32) (x1 x2 y diff : Float) (fl : TextAlign) (text : String) := Allegro.drawJustifiedTextRgb f r g b x1 x2 y diff fl text
+@[inline] def drawMultilineTextRgb (f : Font) (r g b : UInt32) (x y maxW lineH : Float) (fl : TextAlign) (text : String) := Allegro.drawMultilineTextRgb f r g b x y maxW lineH fl text
 @[inline] def drawGlyphRgb         (f : Font) (r g b : UInt32) (x y : Float) (cp : Int32) := Allegro.drawGlyphRgb f r g b x y cp
 @[inline] def glyphWidth           (f : Font) (cp : Int32) := getGlyphWidth f cp
 @[inline] def glyphAdvance         (f : Font) (cp1 cp2 : Int32) := getGlyphAdvance f cp1 cp2
@@ -500,11 +500,11 @@ end Font
 namespace Sample
 
 @[inline] def destroy   (s : Sample) := destroySample s
-@[inline] def play      (s : Sample) (gain pan speed : Float) (loop : UInt32) := playSample s gain pan speed loop
+@[inline] def play      (s : Sample) (gain pan speed : Float) (loop : Playmode) := playSample s gain pan speed loop
 @[inline] def frequency (s : Sample) := getSampleFrequency s
 @[inline] def length    (s : Sample) := getSampleLength s
-@[inline] def depth     (s : Sample) := getSampleDepth s
-@[inline] def channels   (s : Sample) := getSampleChannels s
+@[inline] def depth     (s : Sample) : IO AudioDepth := getSampleDepth s
+@[inline] def channels   (s : Sample) : IO ChannelConf := getSampleChannels s
 @[inline] def sampleData (s : Sample) := getSampleData s
 
 end Sample
@@ -529,13 +529,13 @@ namespace SampleInstance
 @[inline] def position     (si : SampleInstance) := getSampleInstancePosition si
 @[inline] def setPosition  (si : SampleInstance) (v : UInt32) := setSampleInstancePosition si v
 @[inline] def length       (si : SampleInstance) := getSampleInstanceLength si
-@[inline] def playmode     (si : SampleInstance) := getSampleInstancePlaymode si
-@[inline] def setPlaymode  (si : SampleInstance) (v : UInt32) := setSampleInstancePlaymode si v
+@[inline] def playmode     (si : SampleInstance) : IO Playmode := getSampleInstancePlaymode si
+@[inline] def setPlaymode  (si : SampleInstance) (v : Playmode) := setSampleInstancePlaymode si v
 @[inline] def detach           (si : SampleInstance) := detachSampleInstance si
 @[inline] def attachToMixer     (si : SampleInstance) (m : Mixer) := attachSampleInstanceToMixer si m
 @[inline] def frequency         (si : SampleInstance) := getSampleInstanceFrequency si
-@[inline] def channels          (si : SampleInstance) := getSampleInstanceChannels si
-@[inline] def audioDepth        (si : SampleInstance) := getSampleInstanceDepth si
+@[inline] def channels          (si : SampleInstance) : IO ChannelConf := getSampleInstanceChannels si
+@[inline] def audioDepth        (si : SampleInstance) : IO AudioDepth := getSampleInstanceDepth si
 @[inline] def isAttached        (si : SampleInstance) := getSampleInstanceAttached si
 @[inline] def time              (si : SampleInstance) := getSampleInstanceTime si
 @[inline] def setLength         (si : SampleInstance) (v : UInt32) := setSampleInstanceLength si v
@@ -563,8 +563,8 @@ namespace AudioStream
 @[inline] def setPan        (s : AudioStream) (v : Float) := setAudioStreamPan s v
 @[inline] def speed         (s : AudioStream) := getAudioStreamSpeed s
 @[inline] def setSpeed      (s : AudioStream) (v : Float) := setAudioStreamSpeed s v
-@[inline] def playmode      (s : AudioStream) := getAudioStreamPlaymode s
-@[inline] def setPlaymode   (s : AudioStream) (v : UInt32) := setAudioStreamPlaymode s v
+@[inline] def playmode      (s : AudioStream) : IO Playmode := getAudioStreamPlaymode s
+@[inline] def setPlaymode   (s : AudioStream) (v : Playmode) := setAudioStreamPlaymode s v
 @[inline] def seekSecs      (s : AudioStream) (secs : Float) := seekAudioStreamSecs s secs
 @[inline] def positionSecs  (s : AudioStream) := getAudioStreamPositionSecs s
 @[inline] def lengthSecs    (s : AudioStream) := getAudioStreamLengthSecs s
@@ -576,8 +576,8 @@ namespace AudioStream
 @[inline] def streamLength     (s : AudioStream) := getAudioStreamLength s
 @[inline] def fragments        (s : AudioStream) := getAudioStreamFragments s
 @[inline] def availableFragments (s : AudioStream) := getAvailableAudioStreamFragments s
-@[inline] def channels         (s : AudioStream) := getAudioStreamChannels s
-@[inline] def audioDepth       (s : AudioStream) := getAudioStreamDepth s
+@[inline] def channels         (s : AudioStream) : IO ChannelConf := getAudioStreamChannels s
+@[inline] def audioDepth       (s : AudioStream) : IO AudioDepth := getAudioStreamDepth s
 @[inline] def isAttached       (s : AudioStream) := getAudioStreamAttached s
 @[inline] def playedSamples    (s : AudioStream) := getAudioStreamPlayedSamples s
 @[inline] def getFragment      (s : AudioStream) := getAudioStreamFragment s
@@ -601,13 +601,13 @@ namespace Mixer
 @[inline] def setFrequency  (m : Mixer) (v : UInt32) := setMixerFrequency m v
 @[inline] def gain          (m : Mixer) := getMixerGain m
 @[inline] def setGain       (m : Mixer) (v : Float) := setMixerGain m v
-@[inline] def quality       (m : Mixer) := getMixerQuality m
-@[inline] def setQuality    (m : Mixer) (v : UInt32) := setMixerQuality m v
+@[inline] def quality       (m : Mixer) : IO MixerQuality := getMixerQuality m
+@[inline] def setQuality    (m : Mixer) (v : MixerQuality) := setMixerQuality m v
 @[inline] def isPlaying     (m : Mixer) := getMixerPlaying m
 @[inline] def setPlaying      (m : Mixer) (v : UInt32) := setMixerPlaying m v
 @[inline] def attachToVoice   (m : Mixer) (v : Voice) := attachMixerToVoice m v
-@[inline] def channels        (m : Mixer) := getMixerChannels m
-@[inline] def audioDepth      (m : Mixer) := getMixerDepth m
+@[inline] def channels        (m : Mixer) : IO ChannelConf := getMixerChannels m
+@[inline] def audioDepth      (m : Mixer) : IO AudioDepth := getMixerDepth m
 @[inline] def isAttached      (m : Mixer) := getMixerAttached m
 @[inline] def hasAttachments  (m : Mixer) := mixerHasAttachments m
 
@@ -626,8 +626,8 @@ namespace Voice
 @[inline] def setPlaying     (v : Voice) (val : UInt32) := setVoicePlaying v val
 @[inline] def position       (v : Voice) := getVoicePosition v
 @[inline] def setPosition    (v : Voice) (pos : UInt32) := setVoicePosition v pos
-@[inline] def channels       (v : Voice) := getVoiceChannels v
-@[inline] def audioDepth     (v : Voice) := getVoiceDepth v
+@[inline] def channels       (v : Voice) : IO ChannelConf := getVoiceChannels v
+@[inline] def audioDepth     (v : Voice) : IO AudioDepth := getVoiceDepth v
 @[inline] def hasAttachments (v : Voice) := voiceHasAttachments v
 
 end Voice
@@ -692,18 +692,18 @@ namespace Menu
 @[inline] def destroy          (m : Menu) := destroyMenu m
 @[inline] def clone            (m : Menu) := cloneMenu m
 @[inline] def cloneForPopup    (m : Menu) := cloneMenuForPopup m
-@[inline] def appendItem       (m : Menu) (title : String) (id flags : UInt32) (icon : Bitmap) (sub : Menu) := appendMenuItem m title id flags icon sub
-@[inline] def insertItem       (m : Menu) (pos : UInt32) (title : String) (id flags : UInt32) (icon : Bitmap) (sub : Menu) := insertMenuItem m pos title id flags icon sub
+@[inline] def appendItem       (m : Menu) (title : String) (id : UInt32) (flags : MenuItemFlags) (icon : Bitmap) (sub : Menu) := appendMenuItem m title id flags icon sub
+@[inline] def insertItem       (m : Menu) (pos : UInt32) (title : String) (id : UInt32) (flags : MenuItemFlags) (icon : Bitmap) (sub : Menu) := insertMenuItem m pos title id flags icon sub
 @[inline] def removeItem       (m : Menu) (pos : UInt32) := removeMenuItem m pos
 @[inline] def itemCaption      (m : Menu) (pos : UInt32) := getMenuItemCaption m pos
 @[inline] def setItemCaption   (m : Menu) (pos : UInt32) (cap : String) := setMenuItemCaption m pos cap
 @[inline] def itemFlags        (m : Menu) (pos : UInt32) := getMenuItemFlags m pos
-@[inline] def setItemFlags     (m : Menu) (pos flags : UInt32) := setMenuItemFlags m pos flags
+@[inline] def setItemFlags     (m : Menu) (pos : UInt32) (flags : MenuItemFlags) := setMenuItemFlags m pos flags
 @[inline] def itemIcon         (m : Menu) (pos : UInt32) := getMenuItemIcon m pos
 @[inline] def setItemIcon      (m : Menu) (pos : UInt32) (icon : Bitmap) := setMenuItemIcon m pos icon
 @[inline] def find             (m : Menu) (id : UInt32) := findMenu m id
 @[inline] def find?            (m : Menu) (id : UInt32) := Allegro.findMenu? m id
-@[inline] def toggleItemFlags  (m : Menu) (pos : Int32) (fl : UInt32) := toggleMenuItemFlags m pos fl
+@[inline] def toggleItemFlags  (m : Menu) (pos : Int32) (fl : MenuItemFlags) := toggleMenuItemFlags m pos fl
 @[inline] def enableEvents     (m : Menu) := enableMenuEventSource m
 @[inline] def disableEvents    (m : Menu) := disableMenuEventSource m
 @[inline] def popup            (m : Menu) (d : Display) := popupMenu m d
@@ -728,7 +728,7 @@ namespace Video
 @[inline] def scaledWidth     (v : Video) := getVideoScaledWidth v
 @[inline] def scaledHeight    (v : Video) := getVideoScaledHeight v
 @[inline] def frame           (v : Video) := getVideoFrame v
-@[inline] def position        (v : Video) (which : UInt32) := getVideoPosition v which
+@[inline] def position        (v : Video) (which : VideoPosition) := getVideoPosition v which
 
 end Video
 
@@ -740,7 +740,7 @@ namespace VertexBuffer
 
 @[inline] def destroy (vb : VertexBuffer) := destroyVertexBuffer vb
 @[inline] def size    (vb : VertexBuffer) := getVertexBufferSize vb
-@[inline] def lock    (vb : VertexBuffer) (offset length flags : UInt32) := lockVertexBuffer vb offset length flags
+@[inline] def lock    (vb : VertexBuffer) (offset length : UInt32) (flags : PrimBufferFlags) := lockVertexBuffer vb offset length flags
 @[inline] def unlock  (vb : VertexBuffer) := unlockVertexBuffer vb
 
 end VertexBuffer
@@ -753,7 +753,7 @@ namespace IndexBuffer
 
 @[inline] def destroy (ib : IndexBuffer) := destroyIndexBuffer ib
 @[inline] def size    (ib : IndexBuffer) := getIndexBufferSize ib
-@[inline] def lock    (ib : IndexBuffer) (offset length flags : UInt32) := lockIndexBuffer ib offset length flags
+@[inline] def lock    (ib : IndexBuffer) (offset length : UInt32) (flags : PrimBufferFlags) := lockIndexBuffer ib offset length flags
 @[inline] def unlock  (ib : IndexBuffer) := unlockIndexBuffer ib
 
 end IndexBuffer
@@ -848,8 +848,8 @@ end FsEntry
 namespace Shader
 
 @[inline] def destroy           (s : Shader) := destroyShader s
-@[inline] def attachSource      (s : Shader) (type : UInt32) (src : String) := attachShaderSource s type src
-@[inline] def attachSourceFile  (s : Shader) (type : UInt32) (fn : String) := attachShaderSourceFile s type fn
+@[inline] def attachSource      (s : Shader) (type : ShaderType) (src : String) := attachShaderSource s type src
+@[inline] def attachSourceFile  (s : Shader) (type : ShaderType) (fn : String) := attachShaderSourceFile s type fn
 @[inline] def build             (s : Shader) := buildShader s
 @[inline] def log               (s : Shader) := getShaderLog s
 @[inline] def platform          (s : Shader) := getShaderPlatform s

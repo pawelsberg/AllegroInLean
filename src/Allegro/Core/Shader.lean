@@ -35,29 +35,62 @@ def Shader.null : Shader := (0 : UInt64)
 
 -- ── Shader type constants ──
 
-/-- Vertex shader type. -/
-def shaderTypeVertex : UInt32 := 1
-/-- Fragment / pixel shader type. -/
-def shaderTypePixel  : UInt32 := 2
+/-- Allegro shader stage. -/
+structure ShaderType where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
 
+namespace ShaderType
+/-- Vertex shader type. -/
+def vertex : ShaderType := ⟨1⟩
+/-- Fragment / pixel shader type. -/
+def pixel : ShaderType := ⟨2⟩
+end ShaderType
+
+-- Backward-compatible aliases
+def shaderTypeVertex := ShaderType.vertex
+def shaderTypePixel := ShaderType.pixel
+
+-- ── Shader platform constants ──
+
+/-- Allegro shader platform. -/
+structure ShaderPlatform where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+namespace ShaderPlatform
 /-- Auto-detect shader platform. -/
-def shaderPlatformAuto         : UInt32 := 0
+def auto : ShaderPlatform := ⟨0⟩
 /-- OpenGL GLSL. -/
-def shaderPlatformGlsl         : UInt32 := 1
+def glsl : ShaderPlatform := ⟨1⟩
 /-- Direct3D HLSL. -/
-def shaderPlatformHlsl         : UInt32 := 2
+def hlsl : ShaderPlatform := ⟨2⟩
 /-- Auto-detect, minimal feature set. -/
-def shaderPlatformAutoMinimal  : UInt32 := 3
+def autoMinimal : ShaderPlatform := ⟨3⟩
 /-- GLSL, minimal feature set. -/
-def shaderPlatformGlslMinimal  : UInt32 := 4
+def glslMinimal : ShaderPlatform := ⟨4⟩
 /-- HLSL, minimal feature set. -/
-def shaderPlatformHlslMinimal  : UInt32 := 5
+def hlslMinimal : ShaderPlatform := ⟨5⟩
+end ShaderPlatform
+
+-- Backward-compatible aliases
+def shaderPlatformAuto := ShaderPlatform.auto
+def shaderPlatformGlsl := ShaderPlatform.glsl
+def shaderPlatformHlsl := ShaderPlatform.hlsl
+def shaderPlatformAutoMinimal := ShaderPlatform.autoMinimal
+def shaderPlatformGlslMinimal := ShaderPlatform.glslMinimal
+def shaderPlatformHlslMinimal := ShaderPlatform.hlslMinimal
 
 -- ── Lifecycle ──
 
-/-- Create a shader for the given platform. Returns `Shader.null` (0) on failure. -/
 @[extern "allegro_al_create_shader"]
-opaque createShader : UInt32 → IO Shader
+private opaque createShaderRaw : UInt32 → IO Shader
+
+/-- Create a shader for the given platform. Returns `Shader.null` (0) on failure. -/
+@[inline] def createShader (platform : ShaderPlatform) : IO Shader :=
+  createShaderRaw platform.val
 
 /-- Destroy a shader. -/
 @[extern "allegro_al_destroy_shader"]
@@ -65,14 +98,20 @@ opaque destroyShader : Shader → IO Unit
 
 -- ── Shader source ──
 
+@[extern "allegro_al_attach_shader_source"]
+private opaque attachShaderSourceRaw : Shader → UInt32 → String → IO UInt32
+
 /-- Attach shader source code. `type` is `AllegroShaderType.vertex` or `.pixel`.
     Returns 1 on success, 0 on failure (check `getShaderLog`). -/
-@[extern "allegro_al_attach_shader_source"]
-opaque attachShaderSource : Shader → UInt32 → String → IO UInt32
+@[inline] def attachShaderSource (s : Shader) (t : ShaderType) (src : String) : IO UInt32 :=
+  attachShaderSourceRaw s t.val src
+
+@[extern "allegro_al_attach_shader_source_file"]
+private opaque attachShaderSourceFileRaw : Shader → UInt32 → String → IO UInt32
 
 /-- Attach shader source from a file. Returns 1 on success. -/
-@[extern "allegro_al_attach_shader_source_file"]
-opaque attachShaderSourceFile : Shader → UInt32 → String → IO UInt32
+@[inline] def attachShaderSourceFile (s : Shader) (t : ShaderType) (path : String) : IO UInt32 :=
+  attachShaderSourceFileRaw s t.val path
 
 /-- Compile / link the shader. Returns 1 on success. -/
 @[extern "allegro_al_build_shader"]
@@ -82,9 +121,13 @@ opaque buildShader : Shader → IO UInt32
 @[extern "allegro_al_get_shader_log"]
 opaque getShaderLog : Shader → IO String
 
-/-- Get the platform of a shader. -/
 @[extern "allegro_al_get_shader_platform"]
-opaque getShaderPlatform : Shader → IO UInt32
+private opaque getShaderPlatformRaw : Shader → IO UInt32
+
+/-- Get the platform of a shader. -/
+@[inline] def getShaderPlatform (s : Shader) : IO ShaderPlatform := do
+  let v ← getShaderPlatformRaw s
+  return ⟨v⟩
 
 -- ── Shader usage ──
 
@@ -128,19 +171,22 @@ opaque setShaderFloatVector : String → UInt32 → FloatArray → UInt32 → IO
 
 -- ── Default shader source ──
 
-/-- Get the built-in default shader source for the given platform and type. -/
 @[extern "allegro_al_get_default_shader_source"]
-opaque getDefaultShaderSource : UInt32 → UInt32 → IO String
+private opaque getDefaultShaderSourceRaw : UInt32 → UInt32 → IO String
+
+/-- Get the built-in default shader source for the given platform and type. -/
+@[inline] def getDefaultShaderSource (platform : ShaderPlatform) (t : ShaderType) : IO String :=
+  getDefaultShaderSourceRaw platform.val t.val
 
 -- ── Option-returning variant ──
 
 /-- Create a shader, returning `none` on failure. -/
-def createShader? (platform : UInt32) : IO (Option Shader) := liftOption (createShader platform)
+def createShader? (platform : ShaderPlatform) : IO (Option Shader) := liftOption (createShader platform)
 
 -- ── RAII wrapper ──
 
 /-- Create a shader, run `f`, then destroy it. -/
-def withShader (platform : UInt32) (f : Shader → IO α) : IO α := do
+def withShader (platform : ShaderPlatform) (f : Shader → IO α) : IO α := do
   let s ← createShader platform
   try f s finally destroyShader s
 

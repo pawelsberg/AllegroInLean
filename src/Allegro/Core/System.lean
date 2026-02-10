@@ -118,37 +118,54 @@ opaque createState : IO State
 @[extern "allegro_al_destroy_state"]
 opaque destroyState : State → IO Unit
 
+-- ── State flag constants ──
+
+/-- Bitmask of Allegro state flags for `storeState`/`restoreState`.
+    Combine with `|||` (e.g. `.blender ||| .targetBitmap`). -/
+structure StateFlags where
+  /-- Raw Allegro constant value. -/
+  val : UInt32
+  deriving BEq, Repr
+
+instance : OrOp StateFlags where or a b := ⟨a.val ||| b.val⟩
+instance : AndOp StateFlags where and a b := ⟨a.val &&& b.val⟩
+
+namespace StateFlags
+def newDisplayParameters : StateFlags := ⟨0x0001⟩
+def newBitmapParameters : StateFlags := ⟨0x0002⟩
+def display : StateFlags := ⟨0x0004⟩
+def targetBitmap : StateFlags := ⟨0x0008⟩
+def blender : StateFlags := ⟨0x0010⟩
+def newFileInterface : StateFlags := ⟨0x0020⟩
+def transform : StateFlags := ⟨0x0040⟩
+def projectionTransform : StateFlags := ⟨0x0100⟩
+def bitmap : StateFlags := ⟨0x000A⟩
+def all : StateFlags := ⟨0xFFFF⟩
+end StateFlags
+
+-- Backward-compatible aliases
+def stateNewDisplayParameters := StateFlags.newDisplayParameters
+def stateNewBitmapParameters := StateFlags.newBitmapParameters
+def stateDisplay := StateFlags.display
+def stateTargetBitmap := StateFlags.targetBitmap
+def stateBlender := StateFlags.blender
+def stateNewFileInterface := StateFlags.newFileInterface
+def stateTransform := StateFlags.transform
+def stateProjectionTransform := StateFlags.projectionTransform
+def stateBitmap := StateFlags.bitmap
+def stateAll := StateFlags.all
+
 /-- Capture the indicated state into the state buffer.
-    `flags` is a bitmask of `state*` constants. -/
+    `flags` is a bitmask of `StateFlags` values (combine with `|||`). -/
 @[extern "allegro_al_store_state"]
-opaque storeState : State → UInt32 → IO Unit
+private opaque storeStateRaw : State → UInt32 → IO Unit
+
+@[inline] def storeState (state : State) (flags : StateFlags) : IO Unit :=
+  storeStateRaw state flags.val
 
 /-- Restore the state previously captured with `storeState`. -/
 @[extern "allegro_al_restore_state"]
 opaque restoreState : State → IO Unit
-
--- ── State flag constants ──
-
-/-- Save/restore new-display creation parameters. -/
-def stateNewDisplayParameters : UInt32 := 0x0001
-/-- Save/restore new-bitmap creation parameters. -/
-def stateNewBitmapParameters : UInt32 := 0x0002
-/-- Save/restore the current display. -/
-def stateDisplay : UInt32 := 0x0004
-/-- Save/restore the current target bitmap. -/
-def stateTargetBitmap : UInt32 := 0x0008
-/-- Save/restore the current blender. -/
-def stateBlender : UInt32 := 0x0010
-/-- Save/restore the new-file-interface settings. -/
-def stateNewFileInterface : UInt32 := 0x0020
-/-- Save/restore the current transform. -/
-def stateTransform : UInt32 := 0x0040
-/-- Save/restore the current projection transform. -/
-def stateProjectionTransform : UInt32 := 0x0100
-/-- Save/restore target bitmap and new-bitmap parameters. -/
-def stateBitmap : UInt32 := 0x000A
-/-- Save/restore all supported state. -/
-def stateAll : UInt32 := 0xFFFF
 
 -- ── Errno ──
 
