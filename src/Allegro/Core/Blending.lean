@@ -8,20 +8,20 @@ existing pixels in the target bitmap. Allegro's default is
 ## Constants
 
 ### Blend operations
-* `blendAdd` — `src + dest`
-* `blendDestMinusSrc` — `dest − src`
-* `blendSrcMinusDest` — `src − dest`
+* `BlendOp.add` — `src + dest`
+* `BlendOp.destMinusSrc` — `dest − src`
+* `BlendOp.srcMinusDest` — `src − dest`
 
 ### Blend factors
-* `blendZero`, `blendOne`
-* `blendAlpha`, `blendInverseAlpha`
-* `blendSrcColor`, `blendDestColor`
-* `blendInverseSrcColor`, `blendInverseDestColor`
-* `blendConstColor`, `blendInverseConstColor`
+* `BlendFactor.zero`, `BlendFactor.one`
+* `BlendFactor.alpha`, `BlendFactor.inverseAlpha`
+* `BlendFactor.srcColor`, `BlendFactor.destColor`
+* `BlendFactor.inverseSrcColor`, `BlendFactor.inverseDestColor`
+* `BlendFactor.constColor`, `BlendFactor.inverseConstColor`
 
 ## Typical usage
 ```
-Allegro.setBlender Allegro.blendAdd Allegro.blendAlpha Allegro.blendInverseAlpha
+Allegro.setBlender Allegro.BlendOp.add Allegro.BlendFactor.alpha Allegro.BlendFactor.inverseAlpha
 -- draw semi-transparent geometry --
 ```
 -/

@@ -12,15 +12,19 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 - **New core subsystems:** File I/O (31 bindings), Filesystem (20), Haptic (26), Shader (17) — with C shims, Lean modules, tests, and demos for each.
 - **Gap-fill bindings:** ~320 additional functions across all existing modules (System, Display, Bitmap, Events, Input, Timer, Transforms, Path, Joystick, Touch, Blending, Ustr, Audio, Color, Font, Primitives, TTF, Native Dialog, Video). Coverage rose from ~579 to ~900 bindings.
 - **42 handle types** (up from 24): added `AllegroFile`, `FsEntry`, `Haptic`, `HapticEffectId`, `Shader`, `Menu`, `VertexDecl`, `VertexBuffer`, `IndexBuffer`, `AudioRecorder`, `SampleId`, `Timeout`, `TouchInputState`, `TtfFont`, plus `LockedRegion`.
-- **54 Option-returning wrappers** (up from 28).
+- **56 Option-returning wrappers** (up from 28).
 - **533 Compat dot-notation wrappers** covering all handle types.
 - **18 new extras/thematic demos:** SystemExtras, DisplayExtras, BitmapExtras, EventExtras, TransformExtras, PathExtras, UstrExtras, ColorExtras, AudioExtras, PrimitivesExtras, ConfigExtras, FontExtras, JoystickExtras, MenuExtras, FileIO, Shader, Haptic, VideoFile. Total demo count: 37.
-- **Tests:** 626 functional + 212 error-path = 838 assertions (up from 423).
+- **Tests:** 621 functional + 212 error-path = 833 assertions (up from 423).
 - **`scripts/build-allegro.sh --clean`** option to remove source and install dirs.
 
+### Fixed
+- `allegro_al_play_sample` C shim treated the `Playmode` value as a boolean (`loop ? LOOP : ONCE`); since `Playmode.once` = 0x100 (non-zero), it was always interpreted as `LOOP`. Changed to `(ALLEGRO_PLAYMODE)playmode` to pass the actual enum value through.
+
 ### Changed
+- Removed all 337 backward-compatible `def` aliases from 13 `src/` modules; migrated all examples and tests to typed enum constructors (e.g. `EventType.keyDown` instead of `eventTypeKeyDown`).
 - All 37 demos and 3 test suites migrated from `Allegro.functionName handle args` to dot-notation via `Allegro.Compat`.
-- All markdown documentation updated to reflect current project state (31 modules, 27 C shims, 37 demos, 838 assertions, 42 handle types).
+- All markdown documentation updated to reflect current project state (31 modules, 27 C shims, 37 demos, 833 assertions, 42 handle types).
 
 ---
 
@@ -37,9 +41,6 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 - **Examples:** standalone demos for Config, Color, Ustr, Path, Blending, and Video subsystems.
 - **VideoDemo:** video playback example using the Video addon (`data/sample.ogv`).
 - **Docs:** `CONTRIBUTING.md`, `CHANGELOG.md`, test execution guide in `docs/Build.md`.
-
-### Fixed
-- GameLoopDemo star-catch sound played with `ALLEGRO_PLAYMODE_LOOP` instead of `ALLEGRO_PLAYMODE_ONCE`.
 
 ### Changed
 - Vendored `allegro-5.2.11.2/` tree removed (116 MB); replaced by `scripts/build-allegro.sh` and `scripts/build-allegro.ps1`.

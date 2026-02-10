@@ -7,7 +7,7 @@ layer.
 📖 **[API Documentation](https://pawelsberg.github.io/AllegroInLean/)**
 
 **31 Lean modules** · **27 C shim files** · **37 demo programs** · **3 test
-suites (838 assertions)**
+suites (833 assertions)**
 
 ## Quick start
 

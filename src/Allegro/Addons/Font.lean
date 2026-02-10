@@ -8,7 +8,7 @@ Font loading, text drawing, glyph queries, and metrics for Allegro 5.
 ## Text alignment
 Use the alignment constants directly (pure values, no IO needed):
 ```
-Allegro.drawTextRgb font 255 255 255 (screenW / 2) 10 Allegro.alignCentre "Centred!"
+Allegro.drawTextRgb font 255 255 255 (screenW / 2) 10 Allegro.TextAlign.centre "Centred!"
 ```
 
 ## Multiline text

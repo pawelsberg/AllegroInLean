@@ -9,7 +9,7 @@ This library provides low-level Lean bindings to Allegro 5 with a small C shim a
 - Modules that map closely to Allegro addons
 - A focused, documented surface for building small games/tools in Lean
 - **Type safety**: all 42 handle types (Display, Bitmap, Timer, AllegroFile, Shader, Haptic, etc.) are opaque newtypes with `BEq`, `Inhabited`, `DecidableEq`, `OfNat 0`, `ToString`, and `Repr` instances — the compiler prevents mixing handle types
-- **Option-returning variants**: 54 `?`-suffixed wrappers (e.g. `createTimer?`, `loadBitmap?`, `loadFont?`) return `Option α` instead of raw `0` on failure, plus `getErrno`/`setErrno` for error context
+- **Option-returning variants**: 56 `?`-suffixed wrappers (e.g. `createTimer?`, `loadBitmap?`, `loadFont?`) return `Option α` instead of raw `0` on failure, plus `getErrno`/`setErrno` for error context
 
 ## Mission
 

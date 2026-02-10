@@ -14,7 +14,7 @@ let _ ← Allegro.installAudio
 let _ ← Allegro.initAcodecAddon
 let _ ← Allegro.reserveSamples 4
 let spl ← Allegro.loadSample "beep.wav"
-let _ ← Allegro.playSample spl 1.0 0.0 1.0 0  -- gain pan speed loop?
+let _ ← Allegro.playSample spl 1.0 0.0 1.0 Playmode.once
 Allegro.rest 0.5
 Allegro.destroySample spl
 ```
@@ -33,7 +33,7 @@ let _ ← Allegro.playSampleInstance inst
 let stream ← Allegro.loadAudioStream "music.ogg" 4 2048
 let mixer ← Allegro.getDefaultMixer
 let _ ← Allegro.attachAudioStreamToMixer stream mixer
-let _ ← Allegro.setAudioStreamPlaymode stream Allegro.playmodeLoop
+let _ ← Allegro.setAudioStreamPlaymode stream Allegro.Playmode.loop
 ```
 -/
 namespace Allegro

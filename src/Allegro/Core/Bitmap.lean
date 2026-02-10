@@ -7,19 +7,19 @@ Bitmap creation, format, locking, pixel access, and drawing for Allegro 5.
 ## Pixel formats
 Use format constants directly (pure values, no IO needed):
 ```
-Allegro.setNewBitmapFormat Allegro.pixelFormatRgba8888
+Allegro.setNewBitmapFormat Allegro.PixelFormat.rgba8888
 ```
 
 ## Bitmap flags
 Control bitmap type before creation:
 ```
-Allegro.setNewBitmapFlags Allegro.bitmapFlagMemory
+Allegro.setNewBitmapFlags Allegro.BitmapFlags.memory
 ```
 
 ## Locking
 Lock a bitmap for direct pixel access, then unlock:
 ```
-let lr ← Allegro.lockBitmap bmp Allegro.pixelFormatAny Allegro.lockReadwrite
+let lr ← Allegro.lockBitmap bmp Allegro.PixelFormat.any Allegro.LockMode.readwrite
 -- use putPixel / getPixel while locked --
 Allegro.unlockBitmap bmp
 ```

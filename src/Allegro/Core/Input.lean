@@ -10,7 +10,7 @@ Key constants are pure `def` values (no IO needed):
 ```
 let kbState ← Allegro.createKeyboardState
 Allegro.getKeyboardState kbState
-let isDown ← Allegro.keyDown kbState Allegro.keyEscape
+let isDown ← Allegro.keyDown kbState Allegro.KeyCode.escape
 Allegro.destroyKeyboardState kbState
 ```
 -/

@@ -13,7 +13,7 @@ Allegro.registerEventSource queue displaySrc
 while true do
   Allegro.waitForEvent queue event
   let evType ← Allegro.eventGetType event
-  if evType == Allegro.eventTypeDisplayClose then break
+  if evType == Allegro.EventType.displayClose then break
 Allegro.destroyEvent event
 Allegro.destroyEventQueue queue
 ```

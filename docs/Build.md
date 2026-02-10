@@ -77,8 +77,8 @@ lake build -K allegroPrefix=/path/to/your/prefix
 The build resolves the Allegro prefix in this order:
 
 1. **Explicit flag** — `lake build -K allegroPrefix=/opt/allegro`
-2. **System pkg-config** — queries `pkg-config` on the default `PKG_CONFIG_PATH`
-3. **Local build** — probes `allegro-local/` (produced by `scripts/build-allegro.sh`)
+2. **Local build** — probes `allegro-local/` via `pkg-config` (produced by `scripts/build-allegro.sh`)
+3. **System pkg-config** — queries `pkg-config` on the default `PKG_CONFIG_PATH`
 4. **Common prefixes** — probes `/usr/local`, `/opt/homebrew` (useful on RHEL/Rocky, macOS)
 5. If none succeed, the link step will fail with "unable to find library".
 

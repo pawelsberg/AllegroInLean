@@ -8,13 +8,13 @@ Create and manage windows, display properties, options, flags, and render state.
 ## Display flags
 Combine flags with bitwise OR before passing to `setNewDisplayFlags`:
 ```
-Allegro.setNewDisplayFlags (Allegro.fullscreenWindowFlag ||| Allegro.resizableFlag)
+Allegro.setNewDisplayFlags (Allegro.DisplayFlags.fullscreenWindow ||| Allegro.DisplayFlags.resizable)
 ```
 
 ## Display options
 Set hints before display creation:
 ```
-Allegro.setNewDisplayOption Allegro.displayOptionVsync 1 Allegro.importanceSuggest
+Allegro.setNewDisplayOption Allegro.DisplayOption.vsync 1 Allegro.DisplayOptionImportance.suggest
 ```
 
 ## Clipping
