@@ -177,4 +177,51 @@ opaque getSystemDriver : IO UInt64
   let v ← act
   pure (if v == (0 : α) then none else some v)
 
+
+-- ════════════════════════════════════════
+-- Color
+-- ════════════════════════════════════════
+
+/-- An RGBA colour with components in the 0–255 range.
+    Use Color.rgb / Color.rgba to construct, then pass to any
+    colour-accepting function (e.g. drawFilledRectangle, drawText). -/
+structure Color where
+  /-- Red component (0–255). -/
+  r : UInt32 := 0
+  /-- Green component (0–255). -/
+  g : UInt32 := 0
+  /-- Blue component (0–255). -/
+  b : UInt32 := 0
+  /-- Alpha component (0–255, 255 = fully opaque). -/
+  a : UInt32 := 255
+  deriving BEq, Repr, Inhabited
+
+namespace Color
+
+/-- Construct an opaque RGB colour. `Color.rgb 255 100 50` -/
+@[inline] def rgb (r g b : UInt32) : Color := { r, g, b, a := 255 }
+
+/-- Construct an RGBA colour. `Color.rgba 255 100 50 128` -/
+@[inline] def rgba (r g b a : UInt32) : Color := { r, g, b, a }
+
+/-- White (255, 255, 255). -/
+def white : Color := rgb 255 255 255
+/-- Black (0, 0, 0). -/
+def black : Color := rgb 0 0 0
+/-- Red (255, 0, 0). -/
+def red : Color := rgb 255 0 0
+/-- Green (0, 255, 0). -/
+def green : Color := rgb 0 255 0
+/-- Blue (0, 0, 255). -/
+def blue : Color := rgb 0 0 255
+/-- Yellow (255, 255, 0). -/
+def yellow : Color := rgb 255 255 0
+/-- Cyan (0, 255, 255). -/
+def cyan : Color := rgb 0 255 255
+/-- Magenta (255, 0, 255). -/
+def magenta : Color := rgb 255 0 255
+/-- Transparent (0, 0, 0, 0). -/
+def transparent : Color := rgba 0 0 0 0
+
+end Color
 end Allegro

@@ -44,7 +44,7 @@ def main : IO Unit := do
       break
     else if evType == evKeyDown then
       let key <- event.keyboardKeycode
-      IO.println s!"KEY_DOWN:{key}"
+      IO.println s!"KEY_DOWN:{key.val}"
     else if evType == evMouseButtonDown then
       let btn <- event.mouseButton
       IO.println s!"MOUSE_BUTTON_DOWN:{btn}"

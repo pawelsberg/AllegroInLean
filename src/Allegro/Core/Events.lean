@@ -1,3 +1,5 @@
+import Allegro.Core.Input
+
 /-!
 Event queue, event type constants, and event field accessors for Allegro 5.
 
@@ -210,7 +212,12 @@ opaque eventGetSource : Event → IO UInt64
 
 /-- Get the keycode from a keyboard event. -/
 @[extern "allegro_al_event_get_keyboard_keycode"]
-opaque eventGetKeyboardKeycode : Event → IO UInt32
+private opaque eventGetKeyboardKeycodeRaw : Event → IO UInt32
+
+/-- Get the keyboard keycode from a KEY_DOWN / KEY_UP / KEY_CHAR event. -/
+@[inline] def eventGetKeyboardKeycode (ev : Event) : IO KeyCode := do
+  let v ← eventGetKeyboardKeycodeRaw ev
+  return ⟨v⟩
 
 /-- Get the Unicode character from a KEY_CHAR event. -/
 @[extern "allegro_al_event_get_keyboard_unichar"]
@@ -264,7 +271,11 @@ opaque eventGetMousePressure : Event → IO Float
 
 /-- Get the mouse button number from a mouse event (1-based). -/
 @[extern "allegro_al_event_get_mouse_button"]
-opaque eventGetMouseButton : Event → IO UInt32
+private opaque eventGetMouseButtonRaw : Event → IO UInt32
+
+/-- Get the mouse button number (1-based) from a mouse button event. -/
+@[inline] def eventGetMouseButton (ev : Event) : IO UInt32 := do
+  eventGetMouseButtonRaw ev
 
 -- ── Display event fields ──
 
@@ -454,7 +465,7 @@ instance : BEq EventData where
 -- ── Convenience accessors ──
 
 /-- Keyboard keycode (valid for keyboard events). -/
-abbrev EventData.keycode (ed : EventData) : UInt32 := ed.a
+abbrev EventData.keycode (ed : EventData) : KeyCode := ⟨ed.a⟩
 /-- Keyboard unichar (valid for KEY_CHAR events). -/
 abbrev EventData.unichar (ed : EventData) : UInt32 := ed.b
 /-- Keyboard modifiers (valid for keyboard events). -/

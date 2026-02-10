@@ -62,6 +62,9 @@ structure KeyCode where
   val : UInt32
   deriving BEq, Repr
 
+instance : ToString KeyCode where
+  toString kc := toString kc.val
+
 namespace KeyCode
 -- Letters
 def a : KeyCode := ⟨1⟩

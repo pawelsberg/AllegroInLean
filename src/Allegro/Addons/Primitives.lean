@@ -540,4 +540,52 @@ def packPoints (pts : List (Float × Float)) : ByteArray :=
   let arr := pts.foldl (fun acc (x, y) => acc.push x |>.push y) #[]
   packFloats arr
 
+
+-- 
+-- Color-accepting overloads
+-- 
+
+/-- Draw a line with a Color and thickness. -/
+@[inline] def drawLine (x1 y1 x2 y2 : Float) (c : Color) (thickness : Float) : IO Unit :=
+  drawLineRgb x1 y1 x2 y2 c.r c.g c.b thickness
+
+/-- Draw an outlined rectangle with a Color and thickness. -/
+@[inline] def drawRectangle (x1 y1 x2 y2 : Float) (c : Color) (thickness : Float) : IO Unit :=
+  drawRectangleRgb x1 y1 x2 y2 c.r c.g c.b thickness
+
+/-- Draw a filled rectangle with a Color. -/
+@[inline] def drawFilledRectangle (x1 y1 x2 y2 : Float) (c : Color) : IO Unit :=
+  drawFilledRectangleRgb x1 y1 x2 y2 c.r c.g c.b
+
+/-- Draw an outlined circle with a Color and thickness. -/
+@[inline] def drawCircle (cx cy radius : Float) (c : Color) (thickness : Float) : IO Unit :=
+  drawCircleRgb cx cy radius c.r c.g c.b thickness
+
+/-- Draw a filled circle with a Color. -/
+@[inline] def drawFilledCircle (cx cy radius : Float) (c : Color) : IO Unit :=
+  drawFilledCircleRgb cx cy radius c.r c.g c.b
+
+/-- Draw an outlined triangle with a Color and thickness. -/
+@[inline] def drawTriangle (x1 y1 x2 y2 x3 y3 : Float) (c : Color) (thickness : Float) : IO Unit :=
+  drawTriangleRgb x1 y1 x2 y2 x3 y3 c.r c.g c.b thickness
+
+/-- Draw a filled triangle with a Color. -/
+@[inline] def drawFilledTriangle (x1 y1 x2 y2 x3 y3 : Float) (c : Color) : IO Unit :=
+  drawFilledTriangleRgb x1 y1 x2 y2 x3 y3 c.r c.g c.b
+
+/-- Draw an outlined ellipse with a Color and thickness. -/
+@[inline] def drawEllipse (cx cy rx ry : Float) (c : Color) (thickness : Float) : IO Unit :=
+  drawEllipseRgb cx cy rx ry c.r c.g c.b thickness
+
+/-- Draw a filled ellipse with a Color. -/
+@[inline] def drawFilledEllipse (cx cy rx ry : Float) (c : Color) : IO Unit :=
+  drawFilledEllipseRgb cx cy rx ry c.r c.g c.b
+
+/-- Draw an outlined rounded rectangle with a Color and thickness. -/
+@[inline] def drawRoundedRectangle (x1 y1 x2 y2 rx ry : Float) (c : Color) (thickness : Float) : IO Unit :=
+  drawRoundedRectangleRgb x1 y1 x2 y2 rx ry c.r c.g c.b thickness
+
+/-- Draw a filled rounded rectangle with a Color. -/
+@[inline] def drawFilledRoundedRectangle (x1 y1 x2 y2 rx ry : Float) (c : Color) : IO Unit :=
+  drawFilledRoundedRectangleRgb x1 y1 x2 y2 rx ry c.r c.g c.b
 end Allegro

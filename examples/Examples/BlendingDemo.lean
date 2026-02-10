@@ -66,9 +66,9 @@ def main : IO Unit := do
 
     else if evType == evKeyDown then
       let key ← event.keyboardKeycode
-      if key == Allegro.KeyCode.escape.val then
+      if key == Allegro.KeyCode.escape then
         doneRef.set true
-      else if key == Allegro.KeyCode.space.val then
+      else if key == Allegro.KeyCode.space then
         modeRef.modify (· + 1)
 
     else if evType == evTimer then

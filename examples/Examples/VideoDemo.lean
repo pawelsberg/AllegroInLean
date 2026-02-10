@@ -103,9 +103,9 @@ def main : IO Unit := do
       running := false
     else if eType == evtKeyDown then
       let kc ← evt.keyboardKeycode
-      if kc == keyEsc.val then
+      if kc == keyEsc then
         running := false
-      else if kc == keySpace.val then
+      else if kc == keySpace then
         paused := !paused
         video.setPlaying (if paused then 0 else 1)
     else if eType == evtFrameShow then

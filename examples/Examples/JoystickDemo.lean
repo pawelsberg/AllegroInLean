@@ -79,7 +79,7 @@ def main : IO Unit := do
       doneRef.set true
 
     else if evType == evKeyDown then do
-      let key : KeyCode := ⟨← event.keyboardKeycode⟩
+      let key ← event.keyboardKeycode
       if key == kEsc then doneRef.set true
 
     else if evType == evJoyConfig then do

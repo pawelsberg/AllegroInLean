@@ -162,14 +162,14 @@ def main : IO Unit := do
       needsRedrawRef.set true
 
     else if evType == evKeyDown then do
-      let key : KeyCode := ⟨← event.keyboardKeycode⟩
+      let key ← event.keyboardKeycode
       let name ← Allegro.keycodeToName key
       addLog s!"[{tsStr}] KEY_DOWN  keycode={key.val} ({name})"
       if key == kEsc then doneRef.set true
       needsRedrawRef.set true
 
     else if evType == evKeyUp then do
-      let key : KeyCode := ⟨← event.keyboardKeycode⟩
+      let key ← event.keyboardKeycode
       let name ← Allegro.keycodeToName key
       addLog s!"[{tsStr}] KEY_UP  keycode={key.val} ({name})"
       needsRedrawRef.set true
@@ -179,7 +179,7 @@ def main : IO Unit := do
       let uc ← event.keyboardUnichar
       let mods ← event.keyboardModifiers
       let rep ← event.keyboardRepeat
-      addLog s!"[{tsStr}] KEY_CHAR  key={key} unichar={uc} mods={mods} repeat={rep}"
+      addLog s!"[{tsStr}] KEY_CHAR  key={key.val} unichar={uc} mods={mods} repeat={rep}"
       needsRedrawRef.set true
 
     else if evType == evMouseAxes then do

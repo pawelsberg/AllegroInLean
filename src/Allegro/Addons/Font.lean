@@ -260,4 +260,16 @@ opaque doMultilineText : Font → Float → String → IO (Array String)
 @[extern "allegro_al_do_multiline_ustr"]
 opaque doMultilineUstr : Font → Float → UInt64 → IO (Array String)
 
+
+-- 
+-- Color-accepting overloads
+-- 
+
+/-- Draw text with a Color. -/
+@[inline] def drawText (f : Font) (c : Color) (x y : Float) (fl : TextAlign) (text : String) : IO Unit :=
+  drawTextRgb f c.r c.g c.b x y fl text
+
+/-- Draw text with a Color (RGBA). -/
+@[inline] def drawTextRgba' (f : Font) (c : Color) (x y : Float) (fl : TextAlign) (text : String) : IO Unit :=
+  drawTextRgba f c.r c.g c.b c.a x y fl text
 end Allegro

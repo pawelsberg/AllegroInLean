@@ -82,11 +82,11 @@ def main : IO Unit := do
     let evType <- event.type
     if evType == evKeyDown then
       let key <- event.keyboardKeycode
-      IO.println s!"KEY_DOWN:{key}"
+      IO.println s!"KEY_DOWN:{key.val}"
       pure false
     else if evType == evKeyUp then
       let key <- event.keyboardKeycode
-      IO.println s!"KEY_UP:{key}"
+      IO.println s!"KEY_UP:{key.val}"
       pure false
     else if evType == evDisplayClose then
       pure true

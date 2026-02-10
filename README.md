@@ -6,8 +6,7 @@ layer.
 
 📖 **[API Documentation](https://pawelsberg.github.io/AllegroInLean/)**
 
-**31 Lean modules** · **27 C shim files** · **37 demo programs** · **3 test
-suites (833 assertions)**
+**Lean modules** · **C shim files** · **demo programs** · **test suites**
 
 ## Quick start
 
@@ -111,12 +110,65 @@ allegroPrefix = "/opt/allegro"
 
 ## Tests
 
+**Linux / macOS:**
 ```bash
-lake build allegroSmoke allegroFuncTest allegroErrorTest
-.lake/build/bin/allegroSmoke
-.lake/build/bin/allegroFuncTest
-.lake/build/bin/allegroErrorTest
+lake build allegroSmoke allegroFuncTest allegroErrorTest && \
+  .lake/build/bin/allegroSmoke && \
+  .lake/build/bin/allegroFuncTest && \
+  .lake/build/bin/allegroErrorTest
 ```
+
+**Windows (PowerShell):**
+```powershell
+lake build allegroSmoke allegroFuncTest allegroErrorTest
+.lake\build\bin\allegroSmoke.exe
+.lake\build\bin\allegroFuncTest.exe
+.lake\build\bin\allegroErrorTest.exe
+```
+
+## Using as a dependency
+
+To use AllegroInLean in your own Lean 4 project, add it as a dependency in your `lakefile.lean`:
+
+```lean
+import Lake
+open Lake DSL
+
+require AllegroInLean from git
+  "https://github.com/pawelsberg/AllegroInLean" @ "main"
+
+package my_game where
+  moreLeanArgs := #["-DautoImplicit=false"]
+
+-- Use the same link arguments as AllegroInLean
+def allegroLibDirs : Array String :=
+  if System.Platform.isWindows then
+    #["-LC:/msys64/mingw64/lib"]
+  else if System.Platform.isOSX then
+    #["-L/opt/homebrew/lib"]
+  else
+    #[]
+
+def allegroLinkArgs : Array String :=
+  allegroLibDirs ++ #["-lallegro", "-lallegro_image", "-lallegro_font",
+    "-lallegro_ttf", "-lallegro_primitives", "-lallegro_audio", "-lallegro_acodec",
+    "-lallegro_color", "-lallegro_dialog", "-lallegro_video",
+    "-lallegro_memfile"]
+
+@[default_target]
+lean_exe my_game where
+  root := `Main`
+  moreLinkArgs := allegroLinkArgs
+```
+
+Then import the library in your Lean files:
+
+```lean
+import Allegro
+open Allegro
+```
+
+On Windows make sure the Allegro DLLs are on your `PATH` (e.g. `C:\msys64\mingw64\bin`).
 
 ## Layout
 

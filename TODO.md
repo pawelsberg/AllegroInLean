@@ -49,7 +49,8 @@ Known Allegro bugs (re-check after Allegro update):
 - **`al_play_audio_stream_f` double-free** (Allegro 5.2.11) — internal cleanup-order
   bug. Workaround: test calls `playAudioStreamF` with null file pointer.
 
-Undemoed binding:
-- `lockSampleId` / `unlockSampleId` — `playSampleWithId` returns 0 headless.
-  Works on machines with audio output.
+Notes:
+- `lockSampleId` / `unlockSampleId` — tested in `Tests.Functional` (passes on
+  machines with audio output). `playSampleWithId` may return 0 in headless CI
+  environments; the test suite handles this gracefully.
 

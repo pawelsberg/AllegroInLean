@@ -7,11 +7,20 @@ conventions and process for adding new bindings or improving the library.
 
 1. **Clone** the repo and make sure the build works (see [docs/Build.md](docs/Build.md)).
 2. Run the test suite to confirm a green baseline:
-   ```
+
+   **Linux / macOS:**
+   ```bash
    lake build allegroSmoke allegroFuncTest allegroErrorTest && \
      .lake/build/bin/allegroSmoke && \
      .lake/build/bin/allegroFuncTest && \
      .lake/build/bin/allegroErrorTest
+   ```
+   **Windows (PowerShell):**
+   ```powershell
+   lake build allegroSmoke allegroFuncTest allegroErrorTest
+   .lake\build\bin\allegroSmoke.exe
+   .lake\build\bin\allegroFuncTest.exe
+   .lake\build\bin\allegroErrorTest.exe
    ```
 3. Create a feature branch for your change.
 

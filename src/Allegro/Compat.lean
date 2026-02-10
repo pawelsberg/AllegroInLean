@@ -30,14 +30,14 @@ namespace Display
 @[inline] def setFlag            (d : Display) (flag : DisplayFlags) (onOff : UInt32) := setDisplayFlag d flag onOff
 @[inline] def option             (d : Display) (opt : DisplayOption) := getDisplayOption d opt
 @[inline] def setTitle           (d : Display) (title : String) := setWindowTitle d title
-@[inline] def setPosition        (d : Display) (x y : UInt32) := setWindowPosition d x y
+@[inline] def setPosition        (d : Display) (x y : Int32) := setWindowPosition d x y
 @[inline] def setConstraints     (d : Display) (minW minH maxW maxH : UInt32) := setWindowConstraints d minW minH maxW maxH
 @[inline] def backbuffer         (d : Display) := getBackbuffer d
 @[inline] def setAsTarget        (d : Display) := setTargetBackbuffer d
 @[inline] def clipboardText      (d : Display) := getClipboardText d
 @[inline] def setClipboard       (d : Display) (text : String) := setClipboardText d text
 @[inline] def hasClipboardText   (d : Display) := clipboardHasText d
-@[inline] def setIcon            (d : Display) (bmp : UInt64) := setDisplayIcon d bmp
+@[inline] def setIcon            (d : Display) (bmp : Bitmap) := setDisplayIcon d bmp
 @[inline] def windowPosition     (d : Display) := getWindowPosition d
 @[inline] def eventSource        (d : Display) := getDisplayEventSource d
 @[inline] def hideMouseCursor    (d : Display) := Allegro.hideMouseCursor d
@@ -108,6 +108,10 @@ namespace Bitmap
 @[inline] def isCompatible        (b : Bitmap) := isCompatibleBitmap b
 @[inline] def backupDirty         (b : Bitmap) := backupDirtyBitmap b
 
+-- Color-accepting overloads
+@[inline] def drawTinted           (b : Bitmap) (c : Color) (dx dy : Float) (fl : FlipFlags) := drawTintedRgb b c.r c.g c.b dx dy fl
+@[inline] def drawTintedScaled     (b : Bitmap) (c : Color) (sx sy sw sh dx dy dw dh : Float) (fl : FlipFlags) := drawTintedScaledRgb b c.r c.g c.b sx sy sw sh dx dy dw dh fl
+@[inline] def drawTintedRotated    (b : Bitmap) (c : Color) (cx cy dx dy angle : Float) (fl : FlipFlags) := drawTintedRotatedRgb b c.r c.g c.b cx cy dx dy angle fl
 end Bitmap
 
 -- ════════════════════════════════════════════════════════════════════════════
@@ -492,6 +496,11 @@ namespace Font
 @[inline] def doMultilineUstr      (f : Font) (maxW : Float) (u : UInt64) := Allegro.doMultilineUstr f maxW u
 @[inline] def glyph                (f : Font) (cp : UInt32) := getGlyph f cp
 
+-- Color-accepting overloads
+@[inline] def drawText             (f : Font) (c : Color) (x y : Float) (fl : TextAlign) (text : String) := Allegro.drawText f c x y fl text
+@[inline] def drawJustifiedText    (f : Font) (c : Color) (x1 x2 y diff : Float) (fl : TextAlign) (text : String) := drawJustifiedTextRgb f c.r c.g c.b x1 x2 y diff fl text
+@[inline] def drawMultilineText    (f : Font) (c : Color) (x y maxW lineH : Float) (fl : TextAlign) (text : String) := drawMultilineTextRgb f c.r c.g c.b x y maxW lineH fl text
+@[inline] def drawGlyph            (f : Font) (c : Color) (x y : Float) (cp : Int32) := drawGlyphRgb f c.r c.g c.b x y cp
 end Font
 
 -- ════════════════════════════════════════════════════════════════════════════

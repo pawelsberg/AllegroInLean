@@ -209,11 +209,11 @@ opaque getNewDisplayAdapter : IO UInt32
 
 /-- Set the window position for the next display creation. -/
 @[extern "allegro_al_set_new_window_position"]
-opaque setNewWindowPosition : UInt32 → UInt32 → IO Unit
+opaque setNewWindowPosition : Int32 → Int32 → IO Unit
 
 /-- Get the window position for the next display creation as `(x, y)`. -/
 @[extern "allegro_al_get_new_window_position"]
-opaque getNewWindowPosition : IO (UInt32 × UInt32)
+opaque getNewWindowPosition : IO (Int32 × Int32)
 
 -- ── Display lifecycle ──
 
@@ -346,7 +346,7 @@ opaque setWindowTitle : Display → @& String → IO Unit
 
 /-- Set the position of the display window on screen. -/
 @[extern "allegro_al_set_window_position"]
-opaque setWindowPosition : Display → UInt32 → UInt32 → IO Unit
+opaque setWindowPosition : Display → Int32 → Int32 → IO Unit
 
 /-- Set min/max size constraints on a resizable window. Returns 1 on success. -/
 @[extern "allegro_al_set_window_constraints"]
@@ -453,7 +453,7 @@ opaque backupDirtyBitmaps : Display → IO Unit
 
 /-- Get the window position as `(x, y)` in one call. -/
 @[extern "allegro_al_get_window_position"]
-opaque getWindowPosition : Display → IO (UInt32 × UInt32)
+opaque getWindowPosition : Display → IO (Int32 × Int32)
 
 /-- Get the clipping rectangle as `(x, y, w, h)` in one call. -/
 @[extern "allegro_al_get_clipping_rectangle"]
@@ -469,7 +469,7 @@ opaque getWindowConstraints : Display → IO (UInt32 × UInt32 × UInt32 × UInt
 
 /-- Get monitor `adapter`'s desktop area as `(x1, y1, x2, y2)` in one call. -/
 @[extern "allegro_al_get_monitor_info"]
-opaque getMonitorInfo : UInt32 → IO (UInt32 × UInt32 × UInt32 × UInt32)
+opaque getMonitorInfo : UInt32 → IO (Int32 × Int32 × Int32 × Int32)
 
 /-- Get fullscreen display mode at `index` as `(width, height, format, refreshRate)`. -/
 @[extern "allegro_al_get_display_mode"]

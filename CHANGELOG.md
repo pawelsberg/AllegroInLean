@@ -15,7 +15,6 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 - **56 Option-returning wrappers** (up from 28).
 - **533 Compat dot-notation wrappers** covering all handle types.
 - **18 new extras/thematic demos:** SystemExtras, DisplayExtras, BitmapExtras, EventExtras, TransformExtras, PathExtras, UstrExtras, ColorExtras, AudioExtras, PrimitivesExtras, ConfigExtras, FontExtras, JoystickExtras, MenuExtras, FileIO, Shader, Haptic, VideoFile. Total demo count: 37.
-- **Tests:** 621 functional + 212 error-path = 833 assertions (up from 423).
 - **`scripts/build-allegro.sh --clean`** option to remove source and install dirs.
 
 ### Fixed
@@ -24,8 +23,7 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 ### Changed
 - Removed all 337 backward-compatible `def` aliases from 13 `src/` modules; migrated all examples and tests to typed enum constructors (e.g. `EventType.keyDown` instead of `eventTypeKeyDown`).
 - All 37 demos and 3 test suites migrated from `Allegro.functionName handle args` to dot-notation via `Allegro.Compat`.
-- All markdown documentation updated to reflect current project state (31 modules, 27 C shims, 37 demos, 833 assertions, 42 handle types).
-
+- All markdown documentation updated to reflect current project state
 ---
 
 ## Milestone C

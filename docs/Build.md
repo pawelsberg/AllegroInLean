@@ -50,6 +50,11 @@ Either run `lake build` from the MSYS2 **MINGW64** shell (which sets up
 `PATH` so that `cc`, `pkg-config`, and the Allegro DLLs are found from
 PowerShell / CMD / VS Code terminals.
 
+To set the path for the current PowerShell session:
+```powershell
+$env:PATH = "C:\msys64\mingw64\bin;" + $env:PATH
+```
+
 If pkg-config is still not discovered, point `allegroPrefix` explicitly:
 ```bash
 lake build -K allegroPrefix=/mingw64
@@ -96,7 +101,9 @@ lake build
 ```
 
 ## Run examples
-```
+
+**Linux / macOS:**
+```bash
 lake exe allegroLoopDemo
 lake exe allegroConfigDemo     # console-only — Config subsystem
 lake exe allegroColorDemo      # console-only — Color addon
@@ -104,6 +111,14 @@ lake exe allegroUstrDemo       # console-only — Ustr (Unicode strings)
 lake exe allegroPathDemo       # console-only — Path helpers
 lake exe allegroBlendingDemo   # windowed — blend-mode visualiser
 lake exe allegroNativeDialogDemo  # windowed — file chooser, message box, text log
+```
+
+**Windows (PowerShell):**
+```powershell
+.lake\build\bin\allegroConfigDemo.exe      # console-only — Config subsystem
+.lake\build\bin\allegroColorDemo.exe       # console-only — Color addon
+.lake\build\bin\allegroUstrDemo.exe        # console-only — Ustr (Unicode strings)
+.lake\build\bin\allegroPathDemo.exe        # console-only — Path helpers
 ```
 
 > **Wayland note:** The native dialog demo requires XWayland on Wayland sessions.
@@ -120,16 +135,22 @@ required, or only a memory-bitmap display) and print PASS/FAIL per test.
 A quick integration check: initialises every addon, creates a display, and tears
 down cleanly.
 
+```bash
+lake build allegroSmoke && .lake/build/bin/allegroSmoke           # Linux / macOS
 ```
-lake build allegroSmoke && .lake/build/bin/allegroSmoke
+```powershell
+lake build allegroSmoke; .lake\build\bin\allegroSmoke.exe          # Windows
 ```
 
 ### Functional tests
 Per-module tests that exercise bindings against real Allegro behaviour (config
 round-trips, colour math, font metrics, path manipulation, etc.).
 
+```bash
+lake build allegroFuncTest && .lake/build/bin/allegroFuncTest     # Linux / macOS
 ```
-lake build allegroFuncTest && .lake/build/bin/allegroFuncTest
+```powershell
+lake build allegroFuncTest; .lake\build\bin\allegroFuncTest.exe    # Windows
 ```
 
 ### Error-path tests
@@ -141,11 +162,21 @@ lake build allegroErrorTest && .lake/build/bin/allegroErrorTest
 ```
 
 ### Run all tests at once
-```
+
+**Linux / macOS:**
+```bash
 lake build allegroSmoke allegroFuncTest allegroErrorTest && \
   .lake/build/bin/allegroSmoke && \
   .lake/build/bin/allegroFuncTest && \
   .lake/build/bin/allegroErrorTest
+```
+
+**Windows (PowerShell):**
+```powershell
+lake build allegroSmoke allegroFuncTest allegroErrorTest
+.lake\build\bin\allegroSmoke.exe
+.lake\build\bin\allegroFuncTest.exe
+.lake\build\bin\allegroErrorTest.exe
 ```
 
 ### Data files

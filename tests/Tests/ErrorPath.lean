@@ -129,7 +129,7 @@ def testEventsInvalidHandle : IO Bool := do
   check "eventGetTimestamp 0 returns 0.0" (ts == 0.0)
   -- eventGetKeyboardKeycode on null → 0
   let kc ← nullE.keyboardKeycode
-  check "eventGetKeyboardKeycode 0 returns 0" (kc == 0)
+  check "eventGetKeyboardKeycode 0 returns 0" (kc.val == 0)
   -- eventGetMouseX/Y on null → 0
   let mx ← nullE.mouseX
   check "eventGetMouseX 0 returns 0" (mx == 0)
