@@ -28,8 +28,17 @@ sudo apt-get install liballegro5-dev liballegro-image5-dev \
 brew install allegro
 ```
 
-See [docs/Build.md](docs/Build.md) for Fedora, Windows (MSYS2), and
-building from source via the helper scripts.
+**Windows (MSYS2 / MinGW-w64)**
+
+```bash
+pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-allegro mingw-w64-x86_64-pkg-config
+```
+
+> Ensure `C:\msys64\mingw64\bin` is on your `PATH`, or run `lake build`
+> from the MSYS2 **MINGW64** shell.
+
+See [docs/Build.md](docs/Build.md) for Fedora, building from source via
+the helper scripts, and more Windows details.
 
 ### 2. Install Lean 4
 

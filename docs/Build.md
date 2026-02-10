@@ -39,10 +39,18 @@ Homebrew installs all addons and sets up `pkg-config` automatically.
 
 ### Windows (MSYS2 / MinGW-w64)
 ```bash
-pacman -S mingw-w64-x86_64-allegro
+pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-allegro mingw-w64-x86_64-pkg-config
 ```
-Use the **MINGW64** shell. Point `allegroPrefix` to the MSYS2 prefix if
-pkg-config is not on `PATH`:
+
+> **GCC is required.** Lake compiles the C shim with `cc`, which is
+> provided by the `mingw-w64-x86_64-gcc` package.
+
+Either run `lake build` from the MSYS2 **MINGW64** shell (which sets up
+`PATH` automatically), or add `C:\msys64\mingw64\bin` to your system
+`PATH` so that `cc`, `pkg-config`, and the Allegro DLLs are found from
+PowerShell / CMD / VS Code terminals.
+
+If pkg-config is still not discovered, point `allegroPrefix` explicitly:
 ```bash
 lake build -K allegroPrefix=/mingw64
 ```
