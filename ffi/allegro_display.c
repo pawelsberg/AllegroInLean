@@ -42,6 +42,21 @@ lean_object* allegro_al_create_display(uint32_t width, uint32_t height) {
             return io_ok_uint64(0);
         }
     }
+#if defined(__MINGW32__) || defined(__MINGW64__)
+    /* MinGW-built Allegro includes a D3D backend stub, but the Direct3D
+     * runtime often cannot initialise in a MinGW environment, leading to a
+     * NULL-pointer crash inside the display driver vtable.  When the caller
+     * has not explicitly requested a specific backend, force OpenGL which
+     * works reliably under MinGW. */
+    {
+        int flags = al_get_new_display_flags();
+        if (!(flags & (ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0
+                      | ALLEGRO_OPENGL_FORWARD_COMPATIBLE
+                      | ALLEGRO_DIRECT3D_INTERNAL))) {
+            al_set_new_display_flags(flags | ALLEGRO_OPENGL);
+        }
+    }
+#endif
 #endif
     ALLEGRO_DISPLAY *display = al_create_display((int)width, (int)height);
     return io_ok_uint64(ptr_to_u64(display));
