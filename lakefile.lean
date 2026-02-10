@@ -54,18 +54,18 @@ private def commonPkgConfigPath : String :=
   "/usr/local/lib64/pkgconfig:/usr/local/lib/pkgconfig:/opt/homebrew/lib/pkgconfig"
 
 /-- Resolve the Allegro installation prefix.
-    Priority: 1) `-K allegroPrefix=…`  2) system pkg-config
-    3) local build tree  4) common system prefixes  5) empty. -/
+    Priority: 1) `-K allegroPrefix=…`  2) local build tree
+    3) system pkg-config  4) common system prefixes  5) empty. -/
 def allegroPrefixCandidates : Array System.FilePath :=
   match get_config? allegroPrefix with
   | some p => #[System.FilePath.mk p]
   | none =>
-    -- Try system pkg-config
-    match pkgConfig #["--variable=prefix", "allegro-5"] with
+    -- Try local build (allegro-local/, or legacy vendored tree)
+    match pkgConfigWithPath localPkgConfigPath #["--variable=prefix", "allegro-5"] with
     | some p => #[System.FilePath.mk p]
     | none =>
-      -- Try local build (allegro-local/, or legacy vendored tree)
-      match pkgConfigWithPath localPkgConfigPath #["--variable=prefix", "allegro-5"] with
+      -- Try system pkg-config
+      match pkgConfig #["--variable=prefix", "allegro-5"] with
       | some p => #[System.FilePath.mk p]
       | none =>
         -- Try common system prefixes (/usr/local, Homebrew, etc.)
