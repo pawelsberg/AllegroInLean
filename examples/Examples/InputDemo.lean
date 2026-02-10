@@ -31,10 +31,10 @@ def main : IO Unit := do
   queue.registerSource timerSource
   timer.start
 
-  let evDisplayClose := Allegro.eventTypeDisplayClose
-  let evKeyDown := Allegro.eventTypeKeyDown
-  let evMouseButtonDown := Allegro.eventTypeMouseButtonDown
-  let evTimer := Allegro.eventTypeTimer
+  let evDisplayClose := Allegro.EventType.displayClose
+  let evKeyDown := Allegro.EventType.keyDown
+  let evMouseButtonDown := Allegro.EventType.mouseButtonDown
+  let evTimer := Allegro.EventType.timer
   let event <- Allegro.createEvent
 
   while true do

@@ -44,11 +44,6 @@ def srcMinusDest : BlendOp := ⟨1⟩
 def destMinusSrc : BlendOp := ⟨2⟩
 end BlendOp
 
--- Backward-compatible aliases
-def blendAdd := BlendOp.add
-def blendSrcMinusDest := BlendOp.srcMinusDest
-def blendDestMinusSrc := BlendOp.destMinusSrc
-
 -- ── Blend factors ──
 
 /-- Allegro blend factor (what each side is multiplied by). -/
@@ -80,18 +75,6 @@ def constColor : BlendFactor := ⟨8⟩
 def inverseConstColor : BlendFactor := ⟨9⟩
 end BlendFactor
 
--- Backward-compatible aliases
-def blendZero := BlendFactor.zero
-def blendOne := BlendFactor.one
-def blendAlpha := BlendFactor.alpha
-def blendInverseAlpha := BlendFactor.inverseAlpha
-def blendSrcColor := BlendFactor.srcColor
-def blendDestColor := BlendFactor.destColor
-def blendInverseSrcColor := BlendFactor.inverseSrcColor
-def blendInverseDestColor := BlendFactor.inverseDestColor
-def blendConstColor := BlendFactor.constColor
-def blendInverseConstColor := BlendFactor.inverseConstColor
-
 -- ════════════════════════════════════════════════════════════════════
 -- Draw flip flags  (defined here so both Blending and Bitmap can use)
 -- ════════════════════════════════════════════════════════════════════
@@ -113,10 +96,6 @@ def horizontal : FlipFlags := ⟨1⟩
 /-- Flip the bitmap vertically when drawing. -/
 def vertical : FlipFlags := ⟨2⟩
 end FlipFlags
-
--- Backward-compatible aliases
-def flipHorizontalFlag := FlipFlags.horizontal
-def flipVerticalFlag := FlipFlags.vertical
 
 -- ── Set / Get blender ──
 

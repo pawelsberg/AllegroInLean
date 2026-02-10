@@ -48,10 +48,6 @@ def vertex : ShaderType := ⟨1⟩
 def pixel : ShaderType := ⟨2⟩
 end ShaderType
 
--- Backward-compatible aliases
-def shaderTypeVertex := ShaderType.vertex
-def shaderTypePixel := ShaderType.pixel
-
 -- ── Shader platform constants ──
 
 /-- Allegro shader platform. -/
@@ -74,14 +70,6 @@ def glslMinimal : ShaderPlatform := ⟨4⟩
 /-- HLSL, minimal feature set. -/
 def hlslMinimal : ShaderPlatform := ⟨5⟩
 end ShaderPlatform
-
--- Backward-compatible aliases
-def shaderPlatformAuto := ShaderPlatform.auto
-def shaderPlatformGlsl := ShaderPlatform.glsl
-def shaderPlatformHlsl := ShaderPlatform.hlsl
-def shaderPlatformAutoMinimal := ShaderPlatform.autoMinimal
-def shaderPlatformGlslMinimal := ShaderPlatform.glslMinimal
-def shaderPlatformHlslMinimal := ShaderPlatform.hlslMinimal
 
 -- ── Lifecycle ──
 

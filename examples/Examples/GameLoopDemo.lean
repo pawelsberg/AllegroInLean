@@ -148,7 +148,7 @@ def drawScene (gs : GameState) (font : Allegro.Font) : IO Unit := do
   Allegro.drawFilledRoundedRectangleRgb gs.paddleX paddleY (gs.paddleX + paddleW) (paddleY + paddleH) 4 4 100 200 255
 
   -- Score
-  let centre := Allegro.alignCentre
+  let centre := Allegro.TextAlign.centre
   Allegro.drawTextRgb font 255 255 100 (screenW / 2) 10 centre s!"Score: {gs.score}"
 
   -- Game over overlay
@@ -204,15 +204,15 @@ def main : IO Unit := do
   timer.start
 
   -- Key constants
-  let keyLeft  := Allegro.keyLeft
-  let keyRight := Allegro.keyRight
-  let keyEsc   := Allegro.keyEscape
+  let keyLeft  := Allegro.KeyCode.left
+  let keyRight := Allegro.KeyCode.right
+  let keyEsc   := Allegro.KeyCode.escape
 
   -- Event type constants
-  let evtKeyDown      := Allegro.eventTypeKeyDown
-  let evtKeyUp        := Allegro.eventTypeKeyUp
-  let evtDisplayClose := Allegro.eventTypeDisplayClose
-  let evtTimer        := Allegro.eventTypeTimer
+  let evtKeyDown      := Allegro.EventType.keyDown
+  let evtKeyUp        := Allegro.EventType.keyUp
+  let evtDisplayClose := Allegro.EventType.displayClose
+  let evtTimer        := Allegro.EventType.timer
 
   let mut gs := initState
   let mut seed : UInt64 := 123456789

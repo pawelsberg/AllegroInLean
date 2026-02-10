@@ -40,11 +40,11 @@ def main : IO Unit := do
     -- Blue vertex
     540.0, 400.0, 0.0,  0.0, 0.0,  0.0, 0.0, 1.0, 1.0
   ]
-  let drawn ← Allegro.drawPrimBA triVtx 0 0 0 3 Allegro.primTypeTriangleList
+  let drawn ← Allegro.drawPrimBA triVtx 0 0 0 3 Allegro.PrimType.triangleList
   IO.println s!"  drawPrimBA triangle = {drawn} primitives drawn"
 
   -- ── drawIndexedPrimBA: draw the same triangle with an index array ──
-  let drawn2 ← Allegro.drawIndexedPrimBA triVtx 0 0 #[0, 1, 2] 3 Allegro.primTypeTriangleList
+  let drawn2 ← Allegro.drawIndexedPrimBA triVtx 0 0 #[0, 1, 2] 3 Allegro.PrimType.triangleList
   IO.println s!"  drawIndexedPrimBA triangle = {drawn2} primitives drawn"
 
   -- ── calculateArc: compute arc vertices ──
@@ -71,8 +71,8 @@ def main : IO Unit := do
 
   -- ── createVertexDecl / destroyVertexDecl ──
   let decl ← Allegro.createVertexDecl
-    #[(Allegro.primAttrPosition, Allegro.primStorageFloat3, 0),
-      (Allegro.primAttrColor, Allegro.primStorageFloat4, 20)]
+    #[(Allegro.PrimAttr.position, Allegro.PrimStorage.float3, 0),
+      (Allegro.PrimAttr.color, Allegro.PrimStorage.float4, 20)]
     36
   IO.println s!"  createVertexDecl = {decl}"
   if decl != 0 then
@@ -80,7 +80,7 @@ def main : IO Unit := do
     IO.println "  destroyVertexDecl — OK"
 
   -- ── Vertex/Index buffer lifecycle ──
-  let vb ← Allegro.createVertexBuffer 0 4 Allegro.primBufferStatic
+  let vb ← Allegro.createVertexBuffer 0 4 Allegro.PrimBufferFlags.static
   if vb != 0 then
     let ptr ← vb.lock 0 4 ⟨0⟩
     IO.println s!"  lockVertexBuffer = {ptr}"
@@ -93,7 +93,7 @@ def main : IO Unit := do
     IO.println "  createVertexBuffer returned null (GPU not available — OK)"
 
   -- ── Index buffer lifecycle ──
-  let ib ← Allegro.createIndexBuffer (4 : UInt32) (6 : UInt32) Allegro.primBufferStatic
+  let ib ← Allegro.createIndexBuffer (4 : UInt32) (6 : UInt32) Allegro.PrimBufferFlags.static
   if ib != 0 then
     let iptr ← ib.lock (0 : UInt32) (6 : UInt32) ⟨0⟩
     IO.println s!"  lockIndexBuffer = {iptr}"

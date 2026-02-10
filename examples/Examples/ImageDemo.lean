@@ -22,8 +22,8 @@ def main : IO Unit := do
   queue.registerSource timerSource
   timer.start
 
-  let evDisplayClose := Allegro.eventTypeDisplayClose
-  let evTimer := Allegro.eventTypeTimer
+  let evDisplayClose := Allegro.EventType.displayClose
+  let evTimer := Allegro.EventType.timer
   let event <- Allegro.createEvent
 
   let bmp <- Allegro.loadBitmap "data/sample.png"

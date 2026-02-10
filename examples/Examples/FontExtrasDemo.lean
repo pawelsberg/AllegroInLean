@@ -76,7 +76,7 @@ def main : IO Unit := do
   Allegro.clearToColorRgb 30 30 50
   let mut yPos : Float := 20.0
   for line in lines do
-    font.drawTextRgb 255 255 200 20.0 yPos Allegro.alignLeft line
+    font.drawTextRgb 255 255 200 20.0 yPos Allegro.TextAlign.left line
     yPos := yPos + 22.0
   Allegro.flipDisplay
   IO.println "  Rendered multiline text — visible for 1 second"

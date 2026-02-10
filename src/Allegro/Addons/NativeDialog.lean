@@ -122,14 +122,6 @@ def showHidden : FileChooserFlags := ⟨16⟩
 def multiple : FileChooserFlags := ⟨32⟩
 end FileChooserFlags
 
--- Backward-compatible aliases
-def filechooserFileMustExist := FileChooserFlags.fileMustExist
-def filechooserSave := FileChooserFlags.save
-def filechooserFolder := FileChooserFlags.folder
-def filechooserPictures := FileChooserFlags.pictures
-def filechooserShowHidden := FileChooserFlags.showHidden
-def filechooserMultiple := FileChooserFlags.multiple
-
 -- ════════════════════════════════════════════════════════════════════════════
 -- Constants — message box flags
 -- ════════════════════════════════════════════════════════════════════════════
@@ -158,13 +150,6 @@ def yesNo : MessageBoxFlags := ⟨8⟩
 def question : MessageBoxFlags := ⟨16⟩
 end MessageBoxFlags
 
--- Backward-compatible aliases
-def messageboxWarn := MessageBoxFlags.warn
-def messageboxError := MessageBoxFlags.error
-def messageboxOkCancel := MessageBoxFlags.okCancel
-def messageboxYesNo := MessageBoxFlags.yesNo
-def messageboxQuestion := MessageBoxFlags.question
-
 -- ════════════════════════════════════════════════════════════════════════════
 -- Constants — text log flags
 -- ════════════════════════════════════════════════════════════════════════════
@@ -186,10 +171,6 @@ def noClose : TextLogFlags := ⟨1⟩
 /-- Use a monospace font in the text log. -/
 def monospace : TextLogFlags := ⟨2⟩
 end TextLogFlags
-
--- Backward-compatible aliases
-def textlogNoClose := TextLogFlags.noClose
-def textlogMonospace := TextLogFlags.monospace
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- Constants — menu item flags
@@ -215,12 +196,6 @@ def checked : MenuItemFlags := ⟨2⟩
 def disabled : MenuItemFlags := ⟨4⟩
 end MenuItemFlags
 
--- Backward-compatible aliases
-def menuItemEnabled := MenuItemFlags.enabled
-def menuItemCheckbox := MenuItemFlags.checkbox
-def menuItemChecked := MenuItemFlags.checked
-def menuItemDisabled := MenuItemFlags.disabled
-
 -- ════════════════════════════════════════════════════════════════════════════
 -- Constants — event types
 -- ════════════════════════════════════════════════════════════════════════════
@@ -229,10 +204,6 @@ def menuItemDisabled := MenuItemFlags.disabled
 def EventType.nativeDialogClose : EventType := ⟨600⟩
 /-- Fired when the user clicks a menu item. -/
 def EventType.menuClick : EventType := ⟨601⟩
-
--- Backward-compatible aliases
-def eventNativeDialogClose := EventType.nativeDialogClose
-def eventMenuClick := EventType.menuClick
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- Addon lifecycle

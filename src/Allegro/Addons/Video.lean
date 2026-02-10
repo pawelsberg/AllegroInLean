@@ -52,21 +52,12 @@ def videoDecode : VideoPosition := ⟨1⟩
 def audioDecode : VideoPosition := ⟨2⟩
 end VideoPosition
 
--- Backward-compatible aliases
-def videoPositionActual := VideoPosition.actual
-def videoPositionVideoDecode := VideoPosition.videoDecode
-def videoPositionAudioDecode := VideoPosition.audioDecode
-
 -- ── Event type constants ──
 
 /-- Event: a new video frame is ready to show. -/
 def EventType.videoFrameShow : EventType := ⟨550⟩
 /-- Event: the video has finished playing. -/
 def EventType.videoFinished : EventType := ⟨551⟩
-
--- Backward-compatible aliases
-def videoEventFrameShow := EventType.videoFrameShow
-def videoEventFinished := EventType.videoFinished
 
 -- ── Addon lifecycle ──
 

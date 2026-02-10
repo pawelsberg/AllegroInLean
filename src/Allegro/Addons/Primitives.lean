@@ -79,15 +79,6 @@ def triangleFan : PrimType := ⟨5⟩
 def pointList : PrimType := ⟨6⟩
 end PrimType
 
--- Backward-compatible aliases
-def primTypeLineList := PrimType.lineList
-def primTypeLineStrip := PrimType.lineStrip
-def primTypeLineLoop := PrimType.lineLoop
-def primTypeTriangleList := PrimType.triangleList
-def primTypeTriangleStrip := PrimType.triangleStrip
-def primTypeTriangleFan := PrimType.triangleFan
-def primTypePointList := PrimType.pointList
-
 -- ── Buffer flags ──
 
 /-- Allegro vertex/index buffer flags (bitfield). -/
@@ -110,12 +101,6 @@ def dynamic : PrimBufferFlags := ⟨0x04⟩
 def readwrite : PrimBufferFlags := ⟨0x08⟩
 end PrimBufferFlags
 
--- Backward-compatible aliases
-def primBufferStream := PrimBufferFlags.stream
-def primBufferStatic := PrimBufferFlags.static
-def primBufferDynamic := PrimBufferFlags.dynamic
-def primBufferReadwrite := PrimBufferFlags.readwrite
-
 -- ── Line join / cap constants ──
 
 /-- Allegro line join style. -/
@@ -135,12 +120,6 @@ def round : LineJoin := ⟨2⟩
 def miter : LineJoin := ⟨3⟩
 end LineJoin
 
--- Backward-compatible aliases
-def lineJoinNone := LineJoin.none
-def lineJoinBevel := LineJoin.bevel
-def lineJoinRound := LineJoin.round
-def lineJoinMiter := LineJoin.miter
-
 /-- Allegro line cap style. -/
 structure LineCap where
   /-- Raw Allegro constant value. -/
@@ -159,13 +138,6 @@ def triangle : LineCap := ⟨3⟩
 /-- Closed cap — joins first and last vertex. -/
 def closed : LineCap := ⟨4⟩
 end LineCap
-
--- Backward-compatible aliases
-def lineCapNone := LineCap.none
-def lineCapSquare := LineCap.square
-def lineCapRound := LineCap.round
-def lineCapTriangle := LineCap.triangle
-def lineCapClosed := LineCap.closed
 
 -- ── Addon lifecycle ──
 
@@ -423,12 +395,6 @@ def texCoord : PrimAttr := ⟨3⟩
 def texCoordPixel : PrimAttr := ⟨4⟩
 end PrimAttr
 
--- Backward-compatible aliases
-def primAttrPosition := PrimAttr.position
-def primAttrColor := PrimAttr.color
-def primAttrTexCoord := PrimAttr.texCoord
-def primAttrTexCoordPixel := PrimAttr.texCoordPixel
-
 -- ── Vertex storage constants ──
 
 /-- Allegro vertex storage format. -/
@@ -453,22 +419,6 @@ def normalizedUshort4 : PrimStorage := ⟨11⟩
 def halfFloat2 : PrimStorage := ⟨12⟩
 def halfFloat4 : PrimStorage := ⟨13⟩
 end PrimStorage
-
--- Backward-compatible aliases
-def primStorageFloat2 := PrimStorage.float2
-def primStorageFloat3 := PrimStorage.float3
-def primStorageShort2 := PrimStorage.short2
-def primStorageFloat1 := PrimStorage.float1
-def primStorageFloat4 := PrimStorage.float4
-def primStorageUbyte4 := PrimStorage.ubyte4
-def primStorageShort4 := PrimStorage.short4
-def primStorageNormalizedUbyte4 := PrimStorage.normalizedUbyte4
-def primStorageNormalizedShort2 := PrimStorage.normalizedShort2
-def primStorageNormalizedShort4 := PrimStorage.normalizedShort4
-def primStorageNormalizedUshort2 := PrimStorage.normalizedUshort2
-def primStorageNormalizedUshort4 := PrimStorage.normalizedUshort4
-def primStorageHalfFloat2 := PrimStorage.halfFloat2
-def primStorageHalfFloat4 := PrimStorage.halfFloat4
 
 @[extern "allegro_al_create_vertex_decl"]
 private opaque createVertexDeclRaw : @&Array (UInt32 × UInt32 × UInt32) → UInt32 → IO VertexDecl

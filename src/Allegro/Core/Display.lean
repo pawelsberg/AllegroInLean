@@ -76,19 +76,6 @@ def programmablePipeline : DisplayFlags := ⟨2048⟩
 def maximized : DisplayFlags := ⟨8192⟩
 end DisplayFlags
 
--- Backward-compatible aliases
-def fullscreenFlag := DisplayFlags.fullscreen
-def fullscreenWindowFlag := DisplayFlags.fullscreenWindow
-def windowedFlag := DisplayFlags.windowed
-def resizableFlag := DisplayFlags.resizable
-def openglFlag := DisplayFlags.opengl
-def opengl30Flag := DisplayFlags.opengl30
-def openglForwardCompatibleFlag := DisplayFlags.openglForwardCompatible
-def noframeFlag := DisplayFlags.noframe
-def generateExposeEventsFlag := DisplayFlags.generateExposeEvents
-def maximizedFlag := DisplayFlags.maximized
-def programmablePipelineFlag := DisplayFlags.programmablePipeline
-
 -- ── Display option constants ──
 
 /-- Allegro display option identifier. -/
@@ -144,30 +131,6 @@ def openglMajorVersion : DisplayOption := ⟨33⟩
 def openglMinorVersion : DisplayOption := ⟨34⟩
 end DisplayOption
 
--- Backward-compatible aliases
-def displayOptionColorSize := DisplayOption.colorSize
-def displayOptionRedSize := DisplayOption.redSize
-def displayOptionGreenSize := DisplayOption.greenSize
-def displayOptionBlueSize := DisplayOption.blueSize
-def displayOptionAlphaSize := DisplayOption.alphaSize
-def displayOptionDepthSize := DisplayOption.depthSize
-def displayOptionStencilSize := DisplayOption.stencilSize
-def displayOptionSampleBuffers := DisplayOption.sampleBuffers
-def displayOptionSamples := DisplayOption.samples
-def displayOptionFloatColor := DisplayOption.floatColor
-def displayOptionFloatDepth := DisplayOption.floatDepth
-def displayOptionSingleBuffer := DisplayOption.singleBuffer
-def displayOptionSwapMethod := DisplayOption.swapMethod
-def displayOptionCompatibleDisplay := DisplayOption.compatibleDisplay
-def displayOptionUpdateDisplayRegion := DisplayOption.updateDisplayRegion
-def displayOptionVsync := DisplayOption.vsync
-def displayOptionMaxBitmapSize := DisplayOption.maxBitmapSize
-def displayOptionSupportNpotBitmap := DisplayOption.supportNpotBitmap
-def displayOptionSupportSeparateAlpha := DisplayOption.supportSeparateAlpha
-def displayOptionAutoConvertBitmaps := DisplayOption.autoConvertBitmaps
-def displayOptionOpenglMajorVersion := DisplayOption.openglMajorVersion
-def displayOptionOpenglMinorVersion := DisplayOption.openglMinorVersion
-
 -- ── Display option importance ──
 
 /-- Allegro display option importance. -/
@@ -184,11 +147,6 @@ def require : DisplayOptionImportance := ⟨1⟩
 /-- Option importance: prefer this value but fall back gracefully. -/
 def suggest : DisplayOptionImportance := ⟨2⟩
 end DisplayOptionImportance
-
--- Backward-compatible aliases
-def importanceDontcare := DisplayOptionImportance.dontcare
-def importanceRequire := DisplayOptionImportance.require
-def importanceSuggest := DisplayOptionImportance.suggest
 
 -- ── Display creation setup ──
 
@@ -360,18 +318,6 @@ def faceUp : DisplayOrientation := ⟨16⟩
 /-- Display orientation: face down (tablet lying flat, screen down). -/
 def faceDown : DisplayOrientation := ⟨32⟩
 end DisplayOrientation
-
--- Backward-compatible aliases
-def displayOrientationUnknown := DisplayOrientation.unknown
-def displayOrientation0Degrees := DisplayOrientation.degrees0
-def displayOrientation90Degrees := DisplayOrientation.degrees90
-def displayOrientation180Degrees := DisplayOrientation.degrees180
-def displayOrientation270Degrees := DisplayOrientation.degrees270
-def displayOrientationPortrait := DisplayOrientation.portrait
-def displayOrientationLandscape := DisplayOrientation.landscape
-def displayOrientationAll := DisplayOrientation.all
-def displayOrientationFaceUp := DisplayOrientation.faceUp
-def displayOrientationFaceDown := DisplayOrientation.faceDown
 
 @[extern "allegro_al_get_display_orientation"]
 private opaque getDisplayOrientationRaw : Display → IO UInt32
@@ -566,14 +512,6 @@ def alphaFunction : RenderState := ⟨0x0014⟩
 def alphaTestValue : RenderState := ⟨0x0015⟩
 end RenderState
 
--- Backward-compatible aliases
-def renderStateAlphaTest := RenderState.alphaTest
-def renderStateWriteMask := RenderState.writeMask
-def renderStateDepthTest := RenderState.depthTest
-def renderStateDepthFunction := RenderState.depthFunction
-def renderStateAlphaFunction := RenderState.alphaFunction
-def renderStateAlphaTestValue := RenderState.alphaTestValue
-
 -- ── Render function constants ──
 
 /-- Allegro render comparison function. -/
@@ -600,16 +538,6 @@ def notEqual : RenderFunction := ⟨6⟩
 /-- Render function: pass if greater than or equal. -/
 def greaterEqual : RenderFunction := ⟨7⟩
 end RenderFunction
-
--- Backward-compatible aliases
-def renderFunctionNever := RenderFunction.never
-def renderFunctionAlways := RenderFunction.always
-def renderFunctionLess := RenderFunction.less
-def renderFunctionEqual := RenderFunction.equal
-def renderFunctionLessEqual := RenderFunction.lessEqual
-def renderFunctionGreater := RenderFunction.greater
-def renderFunctionNotEqual := RenderFunction.notEqual
-def renderFunctionGreaterEqual := RenderFunction.greaterEqual
 
 -- ── Write mask flags ──
 
@@ -638,15 +566,6 @@ def rgb : WriteMask := ⟨7⟩
 /-- Write mask: all RGBA channels. -/
 def rgba : WriteMask := ⟨15⟩
 end WriteMask
-
--- Backward-compatible aliases
-def writeMaskRed := WriteMask.red
-def writeMaskGreen := WriteMask.green
-def writeMaskBlue := WriteMask.blue
-def writeMaskAlpha := WriteMask.alpha
-def writeMaskDepth := WriteMask.depth
-def writeMaskRGB := WriteMask.rgb
-def writeMaskRGBA := WriteMask.rgba
 
 @[extern "allegro_al_get_render_state"]
 private opaque getRenderStateRaw : UInt32 → IO UInt32

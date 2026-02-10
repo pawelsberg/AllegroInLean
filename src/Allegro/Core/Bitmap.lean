@@ -100,33 +100,6 @@ def xrgb8888 : PixelFormat := ⟨23⟩
 def abgrF32 : PixelFormat := ⟨24⟩
 end PixelFormat
 
--- Backward-compatible aliases
-def pixelFormatAny := PixelFormat.any
-def pixelFormatAnyNoAlpha := PixelFormat.anyNoAlpha
-def pixelFormatAnyWithAlpha := PixelFormat.anyWithAlpha
-def pixelFormatAny15NoAlpha := PixelFormat.any15NoAlpha
-def pixelFormatAny16NoAlpha := PixelFormat.any16NoAlpha
-def pixelFormatAny16WithAlpha := PixelFormat.any16WithAlpha
-def pixelFormatAny24NoAlpha := PixelFormat.any24NoAlpha
-def pixelFormatAny32NoAlpha := PixelFormat.any32NoAlpha
-def pixelFormatAny32WithAlpha := PixelFormat.any32WithAlpha
-def pixelFormatArgb8888 := PixelFormat.argb8888
-def pixelFormatRgba8888 := PixelFormat.rgba8888
-def pixelFormatArgb4444 := PixelFormat.argb4444
-def pixelFormatRgb888 := PixelFormat.rgb888
-def pixelFormatRgb565 := PixelFormat.rgb565
-def pixelFormatRgb555 := PixelFormat.rgb555
-def pixelFormatRgba5551 := PixelFormat.rgba5551
-def pixelFormatArgb1555 := PixelFormat.argb1555
-def pixelFormatAbgr8888 := PixelFormat.abgr8888
-def pixelFormatXbgr8888 := PixelFormat.xbgr8888
-def pixelFormatBgr888 := PixelFormat.bgr888
-def pixelFormatBgr565 := PixelFormat.bgr565
-def pixelFormatBgr555 := PixelFormat.bgr555
-def pixelFormatRgbx8888 := PixelFormat.rgbx8888
-def pixelFormatXrgb8888 := PixelFormat.xrgb8888
-def pixelFormatAbgrF32 := PixelFormat.abgrF32
-
 -- ── Pixel format queries ──
 
 @[extern "allegro_al_get_pixel_size"]
@@ -196,16 +169,6 @@ def mipmap : BitmapFlags := ⟨256⟩
 def noPremultipliedAlpha : BitmapFlags := ⟨512⟩
 end BitmapFlags
 
--- Backward-compatible aliases
-def bitmapFlagMemory := BitmapFlags.memory
-def bitmapFlagVideo := BitmapFlags.video
-def bitmapFlagConvert := BitmapFlags.convert
-def bitmapFlagNoPreserveTexture := BitmapFlags.noPreserveTexture
-def bitmapFlagMinLinear := BitmapFlags.minLinear
-def bitmapFlagMagLinear := BitmapFlags.magLinear
-def bitmapFlagMipmap := BitmapFlags.mipmap
-def bitmapFlagNoPremultipliedAlpha := BitmapFlags.noPremultipliedAlpha
-
 -- FlipFlags is defined in Blending.lean (imported above) so both
 -- Bitmap.lean and Blending.lean can use it.
 
@@ -225,11 +188,6 @@ def readonly : LockMode := ⟨1⟩
 /-- Lock for writing only (may discard existing content). -/
 def writeonly : LockMode := ⟨2⟩
 end LockMode
-
--- Backward-compatible aliases
-def lockReadwrite := LockMode.readwrite
-def lockReadonly := LockMode.readonly
-def lockWriteonly := LockMode.writeonly
 
 -- ── Bitmap creation / new-bitmap setup ──
 
@@ -522,12 +480,6 @@ def clamp : BitmapWrapMode := ⟨2⟩
 /-- Wrap mode: mirror the texture. -/
 def mirror : BitmapWrapMode := ⟨3⟩
 end BitmapWrapMode
-
--- Backward-compatible aliases
-def bitmapWrapDefault := BitmapWrapMode.default
-def bitmapWrapRepeat := BitmapWrapMode.«repeat»
-def bitmapWrapClamp := BitmapWrapMode.clamp
-def bitmapWrapMirror := BitmapWrapMode.mirror
 
 @[extern "allegro_al_get_new_bitmap_wrap"]
 private opaque getNewBitmapWrapRaw : IO (UInt32 × UInt32)

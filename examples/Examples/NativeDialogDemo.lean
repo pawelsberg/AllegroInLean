@@ -28,7 +28,7 @@ def main : IO Unit := do
 
   -- ── Text log ──
   IO.println "Opening text log window..."
-  let tl ← openNativeTextLog "AllegroInLean Text Log" textlogMonospace
+  let tl ← openNativeTextLog "AllegroInLean Text Log" TextLogFlags.monospace
   if (tl : UInt64) == 0 then
     IO.eprintln "openNativeTextLog failed"
   else
@@ -56,7 +56,7 @@ def main : IO Unit := do
   if (display : UInt64) == 0 then
     IO.eprintln "createDisplay failed for file chooser parent"
   else
-    let fc ← createNativeFileDialog "" "Select a file" "*.*" filechooserFileMustExist
+    let fc ← createNativeFileDialog "" "Select a file" "*.*" FileChooserFlags.fileMustExist
     if (fc : UInt64) == 0 then
       IO.eprintln "createNativeFileDialog failed"
     else

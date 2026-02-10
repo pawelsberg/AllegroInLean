@@ -112,32 +112,32 @@ def testStateSaveRestore : IO Bool := do
   printSection "State Save/Restore"
 
   -- State flag constants
-  check "stateBlender = 0x0010" (Allegro.stateBlender.val == 0x0010)
-  check "stateAll = 0xFFFF" (Allegro.stateAll.val == 0xFFFF)
-  check "stateBitmap = 0x000A" (Allegro.stateBitmap.val == 0x000A)
-  check "stateTargetBitmap = 0x0008" (Allegro.stateTargetBitmap.val == 0x0008)
-  check "stateNewBitmapParameters = 0x0002" (Allegro.stateNewBitmapParameters.val == 0x0002)
-  check "stateTransform = 0x0040" (Allegro.stateTransform.val == 0x0040)
+  check "stateBlender = 0x0010" (Allegro.StateFlags.blender.val == 0x0010)
+  check "stateAll = 0xFFFF" (Allegro.StateFlags.all.val == 0xFFFF)
+  check "stateBitmap = 0x000A" (Allegro.StateFlags.bitmap.val == 0x000A)
+  check "stateTargetBitmap = 0x0008" (Allegro.StateFlags.targetBitmap.val == 0x0008)
+  check "stateNewBitmapParameters = 0x0002" (Allegro.StateFlags.newBitmapParameters.val == 0x0002)
+  check "stateTransform = 0x0040" (Allegro.StateFlags.transform.val == 0x0040)
 
   -- Create state buffer
   let state : State ← Allegro.createState
   check "createState returns non-zero" (state != 0)
 
   -- Store blender state
-  Allegro.setBlender Allegro.blendAdd Allegro.blendAlpha Allegro.blendInverseAlpha
-  state.store Allegro.stateBlender
+  Allegro.setBlender Allegro.BlendOp.add Allegro.BlendFactor.alpha Allegro.BlendFactor.inverseAlpha
+  state.store Allegro.StateFlags.blender
 
   -- Change blender to something different
-  Allegro.setBlender Allegro.blendAdd Allegro.blendOne Allegro.blendOne
+  Allegro.setBlender Allegro.BlendOp.add Allegro.BlendFactor.one Allegro.BlendFactor.one
 
   -- Restore original blender state
   state.restore
 
   -- Verify blender was restored (read back and check)
   let (op, src, dst) ← Allegro.getBlender
-  check "restore blender op" (op.val == Allegro.blendAdd.val)
-  check "restore blender src" (src.val == Allegro.blendAlpha.val)
-  check "restore blender dst" (dst.val == Allegro.blendInverseAlpha.val)
+  check "restore blender op" (op.val == Allegro.BlendOp.add.val)
+  check "restore blender src" (src.val == Allegro.BlendFactor.alpha.val)
+  check "restore blender dst" (dst.val == Allegro.BlendFactor.inverseAlpha.val)
 
   -- RAII wrapper
   Allegro.withState fun s2 => do
@@ -431,10 +431,10 @@ def testFont : IO Bool := do
   check "builtin textWidth('Hello') > 0" (tw > 0)
 
   -- Alignment constants
-  let al := Allegro.alignLeft
-  let ac := Allegro.alignCentre
-  let ar := Allegro.alignRight
-  let ai := Allegro.alignInteger
+  let al := Allegro.TextAlign.left
+  let ac := Allegro.TextAlign.centre
+  let ar := Allegro.TextAlign.right
+  let ai := Allegro.TextAlign.integer
   check "align constants" (al.val == 0 && ac.val == 1 && ar.val == 2 && ai.val == 4)
 
   builtin.destroy
@@ -473,7 +473,7 @@ def testImageBitmap : IO Bool := do
   check "image addon initialized" (iiInit == 1)
 
   -- Create a memory bitmap
-  let memFlag := Allegro.bitmapFlagMemory
+  let memFlag := Allegro.BitmapFlags.memory
   Allegro.setNewBitmapFlags memFlag
   let bmp : Bitmap ← Allegro.createBitmap 64 32
   check "createBitmap 64×32 non-zero" (bmp != 0)
@@ -531,7 +531,7 @@ def testPrimitives : IO Bool := do
   check "primitives addon initialized" (piInit == 1)
 
   -- Draw to an off-screen memory bitmap and verify no crash
-  let memFlag := Allegro.bitmapFlagMemory
+  let memFlag := Allegro.BitmapFlags.memory
   Allegro.setNewBitmapFlags memFlag
   let bmp : Bitmap ← Allegro.createBitmap 100 100
   if bmp != 0 then
@@ -586,8 +586,8 @@ def testAudio : IO Bool := do
     IO.eprintln "  SKIP: data/beep.wav not found"
 
   -- Playmode constants
-  let pm1 := Allegro.playmodeOnce
-  let pm2 := Allegro.playmodeLoop
+  let pm1 := Allegro.Playmode.once
+  let pm2 := Allegro.Playmode.loop
   check "playmode constants differ" (pm1 != pm2)
 
   -- Device enumeration
@@ -689,7 +689,7 @@ def testEventData : IO Bool := do
     let (gotEd, ed) ← q.getNextData
     check "getNextEventData returns 1" (gotEd == 1)
     if gotEd == 1 then
-      check "EventData type = timerEvent (30)" (ed.type == Allegro.eventTypeTimer)
+      check "EventData type = timerEvent (30)" (ed.type == Allegro.EventType.timer)
       check "EventData timestamp > 0" (ed.timestamp > 0.0)
       check "EventData source non-zero" (ed.source != 0)
       check "EventData.timerCount > 0" (ed.timerCount > 0)
@@ -699,7 +699,7 @@ def testEventData : IO Bool := do
     -- May or may not have more events queued; just check no crash
     check "peekNextEventData no crash" true
     if gotPeek == 1 then
-      check "peeked event type = timerEvent" (ped.type == Allegro.eventTypeTimer)
+      check "peeked event type = timerEvent" (ped.type == Allegro.EventType.timer)
 
     -- waitForEventTimedData with timeout
     t.stop
@@ -714,7 +714,7 @@ def testEventData : IO Bool := do
     let (gotTimed2, ed2) ← q.waitForTimedData 0.5
     check "waitForEventTimedData with timer → 1" (gotTimed2 == 1)
     if gotTimed2 == 1 then
-      check "timed EventData type = timerEvent" (ed2.type == Allegro.eventTypeTimer)
+      check "timed EventData type = timerEvent" (ed2.type == Allegro.EventType.timer)
 
     t.stop
     t.destroy
@@ -745,7 +745,7 @@ def testInput : IO Bool := do
   let kbs : Allegro.KeyboardState ← Allegro.createKeyboardState
   check "createKeyboardState non-zero" (kbs != 0)
   kbs.get
-  let esc := Allegro.keyEscape
+  let esc := Allegro.KeyCode.escape
   let isDown ← kbs.keyDown esc
   check "ESC not pressed in headless" (isDown == 0)
   kbs.destroy
@@ -924,7 +924,7 @@ def testMouseCursor (display : Allegro.Display) : IO Bool := do
   check "setMouseCursor succeeds" (ok == 1)
 
   -- Set system cursor
-  let ok2 ← display.setSystemCursor Allegro.systemCursorDefault
+  let ok2 ← display.setSystemCursor Allegro.SystemCursor.default
   check "setSystemMouseCursor default" (ok2 == 1)
 
   -- Cursor position queries
@@ -932,8 +932,8 @@ def testMouseCursor (display : Allegro.Display) : IO Bool := do
   check "getMouseCursorPosition no crash" true
 
   -- System cursor constants
-  check "systemCursorArrow = 2" (Allegro.systemCursorArrow.val == 2)
-  check "systemCursorLink = 17" (Allegro.systemCursorLink.val == 17)
+  check "systemCursorArrow = 2" (Allegro.SystemCursor.arrow.val == 2)
+  check "systemCursorLink = 17" (Allegro.SystemCursor.link.val == 17)
 
   -- Cleanup
   cursor.destroy
@@ -950,7 +950,7 @@ def testBitmapExtras : IO Bool := do
   check "loadBitmapFlags bad path → 0" (bmpBad == 0)
 
   -- ── Gap-fill: getBitmapDepth, getBitmapSamples ──
-  let memFlag := Allegro.bitmapFlagMemory
+  let memFlag := Allegro.BitmapFlags.memory
   Allegro.setNewBitmapFlags memFlag
   let bmp : Bitmap ← Allegro.createBitmap 32 32
   check "create bitmap for extras" (bmp != 0)
@@ -1020,14 +1020,14 @@ def testTupleApis (display : Allegro.Display) : IO Bool := do
     check "getDisplayMode tuple" (mw > 0 && mh > 0 && mrr > 0)
 
   -- Blender tuple
-  Allegro.setBlender Allegro.blendAdd Allegro.blendAlpha Allegro.blendInverseAlpha
+  Allegro.setBlender Allegro.BlendOp.add Allegro.BlendFactor.alpha Allegro.BlendFactor.inverseAlpha
   let (bop, bsrc, bdst) ← Allegro.getBlender
-  check "getBlender tuple" (bop == Allegro.blendAdd && bsrc == Allegro.blendAlpha && bdst == Allegro.blendInverseAlpha)
+  check "getBlender tuple" (bop == Allegro.BlendOp.add && bsrc == Allegro.BlendFactor.alpha && bdst == Allegro.BlendFactor.inverseAlpha)
 
   -- Separate blender tuple
-  Allegro.setSeparateBlender Allegro.blendAdd Allegro.blendOne Allegro.blendInverseAlpha Allegro.blendAdd Allegro.blendAlpha Allegro.blendInverseAlpha
+  Allegro.setSeparateBlender Allegro.BlendOp.add Allegro.BlendFactor.one Allegro.BlendFactor.inverseAlpha Allegro.BlendOp.add Allegro.BlendFactor.alpha Allegro.BlendFactor.inverseAlpha
   let (sop, ssrc, sdst, saop, sasrc, sadst) ← Allegro.getSeparateBlender
-  check "getSeparateBlender tuple" (sop == Allegro.blendAdd && ssrc == Allegro.blendOne && sdst == Allegro.blendInverseAlpha && saop == Allegro.blendAdd && sasrc == Allegro.blendAlpha && sadst == Allegro.blendInverseAlpha)
+  check "getSeparateBlender tuple" (sop == Allegro.BlendOp.add && ssrc == Allegro.BlendFactor.one && sdst == Allegro.BlendFactor.inverseAlpha && saop == Allegro.BlendOp.add && sasrc == Allegro.BlendFactor.alpha && sadst == Allegro.BlendFactor.inverseAlpha)
 
   -- Transform coordinates tuple
   let tr : Transform ← Allegro.createTransform
@@ -1491,16 +1491,16 @@ def testBitmapBlender : IO Bool := do
     bmp.setAsTarget
 
     -- setBitmapBlender / getBitmapBlender
-    Allegro.setBitmapBlender Allegro.blendAdd Allegro.blendOne Allegro.blendOne
+    Allegro.setBitmapBlender Allegro.BlendOp.add Allegro.BlendFactor.one Allegro.BlendFactor.one
     let (bop, bsrc, bdst) ← Allegro.getBitmapBlender
-    check "setBitmapBlender/get op = ADD" (bop == Allegro.blendAdd)
-    check "setBitmapBlender/get src = ONE" (bsrc == Allegro.blendOne)
-    check "setBitmapBlender/get dst = ONE" (bdst == Allegro.blendOne)
+    check "setBitmapBlender/get op = ADD" (bop == Allegro.BlendOp.add)
+    check "setBitmapBlender/get src = ONE" (bsrc == Allegro.BlendFactor.one)
+    check "setBitmapBlender/get dst = ONE" (bdst == Allegro.BlendFactor.one)
 
     -- setSeparateBitmapBlender / getSeparateBitmapBlender
-    Allegro.setSeparateBitmapBlender Allegro.blendAdd Allegro.blendOne Allegro.blendInverseAlpha Allegro.blendAdd Allegro.blendAlpha Allegro.blendInverseAlpha
+    Allegro.setSeparateBitmapBlender Allegro.BlendOp.add Allegro.BlendFactor.one Allegro.BlendFactor.inverseAlpha Allegro.BlendOp.add Allegro.BlendFactor.alpha Allegro.BlendFactor.inverseAlpha
     let (sop, ssrc, sdst, saop, sasrc, sadst) ← Allegro.getSeparateBitmapBlender
-    check "separate bitmap blender round-trip" (sop == Allegro.blendAdd && ssrc == Allegro.blendOne && sdst == Allegro.blendInverseAlpha && saop == Allegro.blendAdd && sasrc == Allegro.blendAlpha && sadst == Allegro.blendInverseAlpha)
+    check "separate bitmap blender round-trip" (sop == Allegro.BlendOp.add && ssrc == Allegro.BlendFactor.one && sdst == Allegro.BlendFactor.inverseAlpha && saop == Allegro.BlendOp.add && sasrc == Allegro.BlendFactor.alpha && sadst == Allegro.BlendFactor.inverseAlpha)
 
     -- setBitmapBlendColor / getBitmapBlendColor
     Allegro.setBitmapBlendColor 0.5 0.25 0.75 1.0
@@ -1608,10 +1608,10 @@ def testBlendingExtras : IO Bool := do
 
   -- setRenderState / getRenderState
   -- ALLEGRO_ALPHA_TEST = 0x0010
-  Allegro.setRenderState Allegro.renderStateAlphaTest 1
-  let rs ← Allegro.getRenderState Allegro.renderStateAlphaTest
+  Allegro.setRenderState Allegro.RenderState.alphaTest 1
+  let rs ← Allegro.getRenderState Allegro.RenderState.alphaTest
   check "setRenderState/getRenderState round-trip" (rs == 1)
-  Allegro.setRenderState Allegro.renderStateAlphaTest 0  -- restore
+  Allegro.setRenderState Allegro.RenderState.alphaTest 0  -- restore
 
   pure true
 
@@ -1673,11 +1673,11 @@ def testAudioExtras : IO Bool := do
   check "isAcodecAddonInitialized = 1" (acInit == 1)
 
   -- getChannelCount: ALLEGRO_CHANNEL_CONF_2 = 0x20
-  let cc ← Allegro.getChannelCount Allegro.channelConf2
+  let cc ← Allegro.getChannelCount Allegro.ChannelConf.conf2
   check "getChannelCount(CONF_2) = 2" (cc == 2)
 
   -- getAudioDepthSize: ALLEGRO_AUDIO_DEPTH_INT16 = 0x01 → 2 bytes
-  let ds ← Allegro.getAudioDepthSize Allegro.audioDepthInt16
+  let ds ← Allegro.getAudioDepthSize Allegro.AudioDepth.int16
   check "getAudioDepthSize(INT16) = 2" (ds == 2)
 
   -- Default mixer inspection
@@ -1693,7 +1693,7 @@ def testAudioExtras : IO Bool := do
     check "mixerHasAttachments = 0 or 1" (mha == 0 || mha == 1)
 
   -- Voice (underlying the default mixer)
-  let voice : Voice ← Allegro.createVoice 44100 Allegro.audioDepthInt16 Allegro.channelConf2
+  let voice : Voice ← Allegro.createVoice 44100 Allegro.AudioDepth.int16 Allegro.ChannelConf.conf2
   if voice != 0 then
     let vp ← voice.position
     check "getVoicePosition ≥ 0" (vp >= 0)
@@ -1934,7 +1934,7 @@ def testAudioStreamExtras : IO Bool := do
   printSection "Audio Stream Extras (gap-fill)"
 
   -- Create a raw audio stream: 4 buffers, 1024 samples, 44100 Hz, INT16, stereo
-  let stream : AudioStream ← Allegro.createAudioStreamRaw 4 1024 44100 Allegro.audioDepthInt16 Allegro.channelConf2
+  let stream : AudioStream ← Allegro.createAudioStreamRaw 4 1024 44100 Allegro.AudioDepth.int16 Allegro.ChannelConf.conf2
   if stream != 0 then
     -- Query properties
     let freq ← stream.frequency
@@ -1950,10 +1950,10 @@ def testAudioStreamExtras : IO Bool := do
     check "getAvailableAudioStreamFragments ≤ 4" (avail <= 4)
 
     let ch ← stream.channels
-    check "getAudioStreamChannels = channelConf2" (ch == Allegro.channelConf2)
+    check "getAudioStreamChannels = channelConf2" (ch == Allegro.ChannelConf.conf2)
 
     let dep ← stream.audioDepth
-    check "getAudioStreamDepth = audioDepthInt16" (dep == Allegro.audioDepthInt16)
+    check "getAudioStreamDepth = audioDepthInt16" (dep == Allegro.AudioDepth.int16)
 
     let att ← stream.isAttached
     check "getAudioStreamAttached = 0 (detached)" (att == 0)
@@ -1973,7 +1973,7 @@ def testAudioRecorder : IO Bool := do
   printSection "Audio Recorder (gap-fill)"
 
   -- Create an audio recorder: 5 fragments, 1024 samples, 44100 Hz, INT16, mono
-  let rec_ : AudioRecorder ← Allegro.createAudioRecorder 5 1024 44100 Allegro.audioDepthInt16 Allegro.channelConf1
+  let rec_ : AudioRecorder ← Allegro.createAudioRecorder 5 1024 44100 Allegro.AudioDepth.int16 Allegro.ChannelConf.conf1
   if rec_ != 0 then
     -- isAudioRecorderRecording — should be 0 before starting
     let notRec ← rec_.isRecording
@@ -2012,7 +2012,7 @@ def testSampleIdExtras : IO Bool := do
   let spl : Sample ← Allegro.loadSample "data/beep.wav"
   if spl != 0 then
     -- playSampleWithId
-    let sid ← Allegro.playSampleWithId spl 1.0 0.0 1.0 Allegro.playmodeOnce
+    let sid ← Allegro.playSampleWithId spl 1.0 0.0 1.0 Allegro.Playmode.once
     check "playSampleWithId returns SampleId" true
 
     -- lockSampleId / unlockSampleId — UNSTABLE
@@ -2050,7 +2050,7 @@ def testSampleInstanceExtras : IO Bool := do
       check "setSampleInstanceLength returns 0 or 1" (okLen == 0 || okLen == 1)
 
       -- attachSampleInstanceToVoice
-      let voice : Voice ← Allegro.createVoice 44100 Allegro.audioDepthInt16 Allegro.channelConf2
+      let voice : Voice ← Allegro.createVoice 44100 Allegro.AudioDepth.int16 Allegro.ChannelConf.conf2
       if voice != 0 then
         -- Get the sample frequency/depth/channels to match
         let instFreq ← inst.frequency
@@ -2093,7 +2093,7 @@ def testAudioMisc : IO Bool := do
     -- fillSilence on sample data
     let ptr ← spl.sampleData
     if ptr != 0 then
-      Allegro.fillSilence ptr 1 Allegro.audioDepthInt16 Allegro.channelConf1
+      Allegro.fillSilence ptr 1 Allegro.AudioDepth.int16 Allegro.ChannelConf.conf1
       check "fillSilence no crash" true
 
     spl.destroy
@@ -2151,7 +2151,7 @@ def testMenuExtras : IO Bool := do
       | none   => check "findMenuItem returns none for missing" true
 
       -- toggleMenuItemFlags
-      let oldFlags ← menu.toggleItemFlags 0 Allegro.menuItemChecked
+      let oldFlags ← menu.toggleItemFlags 0 Allegro.MenuItemFlags.checked
       check "toggleMenuItemFlags returns old flags" (oldFlags.val >= 0)
 
       menu.destroy
@@ -2162,7 +2162,7 @@ def testMenuExtras : IO Bool := do
     let menu2 : Menu ← Allegro.buildMenu
       #["File", "Open", "Save", "Quit"]
       #[1, 2, 3, 4]
-      #[Allegro.menuItemEnabled, Allegro.menuItemEnabled, Allegro.menuItemEnabled, Allegro.menuItemEnabled]
+      #[Allegro.MenuItemFlags.enabled, Allegro.MenuItemFlags.enabled, Allegro.MenuItemFlags.enabled, Allegro.MenuItemFlags.enabled]
       #[0, 0, 0, 0]
     check "buildMenu returns non-zero" (menu2 != 0)
     if menu2 != 0 then
@@ -2306,8 +2306,8 @@ def testPrimitivesDrawing : IO Bool := do
   -- drawPrim: use a vertex buffer approach
   -- First test createVertexDecl / destroyVertexDecl
   let decl : VertexDecl ← Allegro.createVertexDecl
-    #[(Allegro.primAttrPosition, Allegro.primStorageFloat3, 0),
-      (Allegro.primAttrColor, Allegro.primStorageFloat4, 20)]
+    #[(Allegro.PrimAttr.position, Allegro.PrimStorage.float3, 0),
+      (Allegro.PrimAttr.color, Allegro.PrimStorage.float4, 20)]
     36
   check "createVertexDecl non-zero" (decl != 0)
   if decl != 0 then
@@ -2331,24 +2331,24 @@ def testPrimitivesDrawing : IO Bool := do
     30.0, 50.0, 0.0,  0.0, 0.0,  0.0, 0.0, 1.0, 1.0    -- blue
   ]
   check "triVtx size = 108 bytes" (triVtx.size == 108)
-  let drawnTri ← Allegro.drawPrimBA triVtx 0 0 0 3 Allegro.primTypeTriangleList
+  let drawnTri ← Allegro.drawPrimBA triVtx 0 0 0 3 Allegro.PrimType.triangleList
   check "drawPrimBA: triangle drawn (count > 0)" (drawnTri > 0)
 
   -- drawPrimBA with line list: 2 of the 3 vertices → 1 line
-  let drawnLine ← Allegro.drawPrimBA triVtx 0 0 0 2 Allegro.primTypeLineList
+  let drawnLine ← Allegro.drawPrimBA triVtx 0 0 0 2 Allegro.PrimType.lineList
   check "drawPrimBA: line drawn (count > 0)" (drawnLine > 0)
 
   -- drawPrimBA with empty ByteArray → 0
-  let drawnEmpty ← Allegro.drawPrimBA ByteArray.empty 0 0 0 0 Allegro.primTypeTriangleList
+  let drawnEmpty ← Allegro.drawPrimBA ByteArray.empty 0 0 0 0 Allegro.PrimType.triangleList
   check "drawPrimBA: empty returns 0" (drawnEmpty == 0)
 
   -- ── drawIndexedPrimBA: draw triangle using index array ──
   let idxArr : Array UInt32 := #[0, 1, 2]
-  let drawnIdx ← Allegro.drawIndexedPrimBA triVtx 0 0 idxArr 3 Allegro.primTypeTriangleList
+  let drawnIdx ← Allegro.drawIndexedPrimBA triVtx 0 0 idxArr 3 Allegro.PrimType.triangleList
   check "drawIndexedPrimBA: indexed triangle drawn (count > 0)" (drawnIdx > 0)
 
   -- drawIndexedPrimBA with empty → 0
-  let drawnIdxEmpty ← Allegro.drawIndexedPrimBA ByteArray.empty 0 0 #[] 0 Allegro.primTypeTriangleList
+  let drawnIdxEmpty ← Allegro.drawIndexedPrimBA ByteArray.empty 0 0 #[] 0 Allegro.PrimType.triangleList
   check "drawIndexedPrimBA: empty returns 0" (drawnIdxEmpty == 0)
 
   pure true
@@ -2359,7 +2359,7 @@ def testVertexIndexBuffers : IO Bool := do
   printSection "Vertex & Index Buffers (gap-fill)"
 
   -- Create a vertex buffer: NULL decl (0), 4 vertices, STATIC
-  let vb : VertexBuffer ← Allegro.createVertexBuffer 0 4 Allegro.primBufferStatic
+  let vb : VertexBuffer ← Allegro.createVertexBuffer 0 4 Allegro.PrimBufferFlags.static
   if vb != 0 then
     -- Lock it for writing
     let ptr ← vb.lock 0 4 ⟨0⟩  -- flags 0 = read+write
@@ -2374,7 +2374,7 @@ def testVertexIndexBuffers : IO Bool := do
     check "createVertexBuffer returned null (GPU buffers unavailable — OK)" true
 
   -- Create an index buffer: 4 bytes per index, 6 indices, STATIC
-  let ib : IndexBuffer ← Allegro.createIndexBuffer 4 6 Allegro.primBufferStatic
+  let ib : IndexBuffer ← Allegro.createIndexBuffer 4 6 Allegro.PrimBufferFlags.static
   if ib != 0 then
     let ptr ← ib.lock 0 6 ⟨0⟩
     -- ptr may be 0 in software-only / headless environments
@@ -2405,7 +2405,7 @@ def testAudioRawSample : IO Bool := do
     if dataPtr != 0 then
       -- Create a raw sample from the same buffer (freeBuf=0 so Allegro won't free it)
       -- Just use 44100 Hz directly
-      let rawSpl : Sample ← Allegro.createSampleRaw dataPtr 1024 44100 Allegro.audioDepthInt16 Allegro.channelConf1 0
+      let rawSpl : Sample ← Allegro.createSampleRaw dataPtr 1024 44100 Allegro.AudioDepth.int16 Allegro.ChannelConf.conf1 0
       check "createSampleRaw non-zero" (rawSpl != 0)
       if rawSpl != 0 then
         rawSpl.destroy
@@ -2433,7 +2433,7 @@ def testAudioRawSample : IO Bool := do
     spl2.destroy
 
   -- setAudioStreamChannelMatrix — test with a raw audio stream
-  let stream : AudioStream ← Allegro.createAudioStreamRaw 2 512 44100 Allegro.audioDepthInt16 Allegro.channelConf1
+  let stream : AudioStream ← Allegro.createAudioStreamRaw 2 512 44100 Allegro.AudioDepth.int16 Allegro.ChannelConf.conf1
   if stream != 0 then
     let matrix := ByteArray.mk #[
       0x00, 0x00, 0x80, 0x3F,
@@ -2824,13 +2824,13 @@ def testShader : IO Bool := do
   printSection "Shader"
 
   -- Constants
-  check "shaderTypeVertex = 1" (Allegro.shaderTypeVertex.val == 1)
-  check "shaderTypePixel = 2" (Allegro.shaderTypePixel.val == 2)
-  check "shaderPlatformAuto = 0" (Allegro.shaderPlatformAuto.val == 0)
-  check "shaderPlatformGlsl = 1" (Allegro.shaderPlatformGlsl.val == 1)
+  check "shaderTypeVertex = 1" (Allegro.ShaderType.vertex.val == 1)
+  check "shaderTypePixel = 2" (Allegro.ShaderType.pixel.val == 2)
+  check "shaderPlatformAuto = 0" (Allegro.ShaderPlatform.auto.val == 0)
+  check "shaderPlatformGlsl = 1" (Allegro.ShaderPlatform.glsl.val == 1)
 
   -- createShader — may return 0 in headless mode, that's OK
-  let s : Shader ← Allegro.createShader Allegro.shaderPlatformAuto
+  let s : Shader ← Allegro.createShader Allegro.ShaderPlatform.auto
   if s != 0 then
     let plat ← s.platform
     check "getShaderPlatform non-zero" (plat.val != 0 || true) -- may be 0 if auto
@@ -2839,12 +2839,12 @@ def testShader : IO Bool := do
     check "getShaderLog no crash" true
 
     -- Try getting default shader source
-    let defSrc ← Allegro.getDefaultShaderSource plat Allegro.shaderTypeVertex
+    let defSrc ← Allegro.getDefaultShaderSource plat Allegro.ShaderType.vertex
     check "getDefaultShaderSource vertex" (defSrc.length > 0 || true)
 
     -- Try attaching default sources
     if defSrc.length > 0 then
-      let ok1 ← s.attachSource Allegro.shaderTypeVertex defSrc
+      let ok1 ← s.attachSource Allegro.ShaderType.vertex defSrc
       check "attachShaderSource vertex" (ok1 == 1 || true) -- may fail without GL context
 
     -- useShader with null restores default
@@ -2869,7 +2869,7 @@ def testShader : IO Bool := do
     check "createShader not available (headless OK)" true
 
   -- createShader? variant
-  let sOpt ← Allegro.createShader? Allegro.shaderPlatformAuto
+  let sOpt ← Allegro.createShader? Allegro.ShaderPlatform.auto
   if let some (s2 : Shader) := sOpt then
     s2.destroy
   check "createShader? no crash" true

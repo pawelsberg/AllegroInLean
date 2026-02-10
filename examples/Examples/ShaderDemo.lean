@@ -23,7 +23,7 @@ def main : IO Unit := do
     IO.eprintln "  createDisplay failed"; Allegro.uninstallSystem; return
 
   -- Create a shader (auto-detect platform)
-  let shader ← Allegro.createShader Allegro.shaderPlatformAuto
+  let shader ← Allegro.createShader Allegro.ShaderPlatform.auto
   if shader == 0 then
     IO.println "  createShader returned null — no shader support on this system"
     display.destroy; Allegro.uninstallSystem; return
@@ -35,15 +35,15 @@ def main : IO Unit := do
   IO.println s!"  getShaderPlatform = {plat.val}"
 
   -- Get default shader sources
-  let vSrc ← Allegro.getDefaultShaderSource plat Allegro.shaderTypeVertex
+  let vSrc ← Allegro.getDefaultShaderSource plat Allegro.ShaderType.vertex
   IO.println s!"  getDefaultShaderSource(vertex) = \"{vSrc.take 60}…\" ({vSrc.length} chars)"
-  let fSrc ← Allegro.getDefaultShaderSource plat Allegro.shaderTypePixel
+  let fSrc ← Allegro.getDefaultShaderSource plat Allegro.ShaderType.pixel
   IO.println s!"  getDefaultShaderSource(pixel) = \"{fSrc.take 60}…\" ({fSrc.length} chars)"
 
   -- Attach default sources
-  let okV ← shader.attachSource Allegro.shaderTypeVertex vSrc
+  let okV ← shader.attachSource Allegro.ShaderType.vertex vSrc
   IO.println s!"  attachShaderSource(vertex) = {okV}"
-  let okF ← shader.attachSource Allegro.shaderTypePixel fSrc
+  let okF ← shader.attachSource Allegro.ShaderType.pixel fSrc
   IO.println s!"  attachShaderSource(pixel) = {okF}"
 
   -- Build

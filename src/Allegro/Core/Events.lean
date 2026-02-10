@@ -188,38 +188,6 @@ def displayConnected : EventType := ⟨60⟩
 def displayDisconnected : EventType := ⟨61⟩
 end EventType
 
--- Backward-compatible aliases
-def eventTypeJoystickAxis := EventType.joystickAxis
-def eventTypeJoystickButtonDown := EventType.joystickButtonDown
-def eventTypeJoystickButtonUp := EventType.joystickButtonUp
-def eventTypeJoystickConfiguration := EventType.joystickConfiguration
-def eventTypeKeyDown := EventType.keyDown
-def eventTypeKeyChar := EventType.keyChar
-def eventTypeKeyUp := EventType.keyUp
-def eventTypeMouseAxes := EventType.mouseAxes
-def eventTypeMouseButtonDown := EventType.mouseButtonDown
-def eventTypeMouseButtonUp := EventType.mouseButtonUp
-def eventTypeMouseEnterDisplay := EventType.mouseEnterDisplay
-def eventTypeMouseLeaveDisplay := EventType.mouseLeaveDisplay
-def eventTypeMouseWarped := EventType.mouseWarped
-def eventTypeTimer := EventType.timer
-def eventTypeDisplayExpose := EventType.displayExpose
-def eventTypeDisplayResize := EventType.displayResize
-def eventTypeDisplayClose := EventType.displayClose
-def eventTypeDisplayLost := EventType.displayLost
-def eventTypeDisplayFound := EventType.displayFound
-def eventTypeDisplaySwitchIn := EventType.displaySwitchIn
-def eventTypeDisplaySwitchOut := EventType.displaySwitchOut
-def eventTypeDisplayOrientation := EventType.displayOrientation
-def eventTypeDisplayHaltDrawing := EventType.displayHaltDrawing
-def eventTypeDisplayResumeDrawing := EventType.displayResumeDrawing
-def eventTypeTouchBegin := EventType.touchBegin
-def eventTypeTouchEnd := EventType.touchEnd
-def eventTypeTouchMove := EventType.touchMove
-def eventTypeTouchCancel := EventType.touchCancel
-def eventTypeDisplayConnected := EventType.displayConnected
-def eventTypeDisplayDisconnected := EventType.displayDisconnected
-
 -- ── General event fields ──
 
 /-- Get the type code of an event. -/

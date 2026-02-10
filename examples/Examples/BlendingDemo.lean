@@ -34,21 +34,21 @@ def main : IO Unit := do
   queue.registerSource timerSrc
   timer.start
 
-  let evClose := Allegro.eventTypeDisplayClose
-  let evTimer := Allegro.eventTypeTimer
-  let evKeyDown := Allegro.eventTypeKeyDown
+  let evClose := Allegro.EventType.displayClose
+  let evTimer := Allegro.EventType.timer
+  let evKeyDown := Allegro.EventType.keyDown
   let event ← Allegro.createEvent
 
   let font : Font ← Allegro.createBuiltinFont
 
   -- Blend constants
-  let bAdd := Allegro.blendAdd
-  let bSrcMinusDest := Allegro.blendSrcMinusDest
-  let bOne := Allegro.blendOne
-  let bAlpha := Allegro.blendAlpha
-  let bInvAlpha := Allegro.blendInverseAlpha
-  let bZero := Allegro.blendZero
-  let bSrcColor := Allegro.blendSrcColor
+  let bAdd := Allegro.BlendOp.add
+  let bSrcMinusDest := Allegro.BlendOp.srcMinusDest
+  let bOne := Allegro.BlendFactor.one
+  let bAlpha := Allegro.BlendFactor.alpha
+  let bInvAlpha := Allegro.BlendFactor.inverseAlpha
+  let bZero := Allegro.BlendFactor.zero
+  let bSrcColor := Allegro.BlendFactor.srcColor
 
   -- Cycle through blend modes with Space
   let modeRef ← IO.mkRef (0 : Nat)
@@ -66,9 +66,9 @@ def main : IO Unit := do
 
     else if evType == evKeyDown then
       let key ← event.keyboardKeycode
-      if key == Allegro.keyEscape.val then
+      if key == Allegro.KeyCode.escape.val then
         doneRef.set true
-      else if key == Allegro.keySpace.val then
+      else if key == Allegro.KeyCode.space.val then
         modeRef.modify (· + 1)
 
     else if evType == evTimer then
@@ -107,9 +107,9 @@ def main : IO Unit := do
 
       -- Reset to normal blending for HUD text
       Allegro.setBlender bAdd bAlpha bInvAlpha
-      font.drawTextRgb 255 255 255 10.0 10.0 alignLeft label
-      font.drawTextRgb 200 200 200 10.0 26.0 alignLeft blenderInfo
-      font.drawTextRgb 180 180 180 10.0 450.0 alignLeft
+      font.drawTextRgb 255 255 255 10.0 10.0 TextAlign.left label
+      font.drawTextRgb 200 200 200 10.0 26.0 TextAlign.left blenderInfo
+      font.drawTextRgb 180 180 180 10.0 450.0 TextAlign.left
         "Space = cycle blend mode   Esc = quit"
 
       Allegro.flipDisplay

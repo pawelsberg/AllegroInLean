@@ -29,7 +29,7 @@ def main : IO Unit := do
     let video ← Allegro.openVideoF vf ".ogv"
     IO.println s!"  openVideoF = {video}"
     if video != 0 then
-      let pos ← video.position Allegro.videoPositionActual
+      let pos ← video.position Allegro.VideoPosition.actual
       IO.println s!"  getVideoPosition = {pos}"
       video.close
       IO.println "  closeVideo — OK"

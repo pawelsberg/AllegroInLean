@@ -48,14 +48,14 @@ def main : IO Unit := do
   timer.start
 
   -- Event type constants
-  let evDisplayClose := Allegro.eventTypeDisplayClose
-  let evKeyDown := Allegro.eventTypeKeyDown
-  let evTimer := Allegro.eventTypeTimer
-  let evJoyAxis := Allegro.eventTypeJoystickAxis
-  let evJoyBtnDown := Allegro.eventTypeJoystickButtonDown
-  let evJoyBtnUp := Allegro.eventTypeJoystickButtonUp
-  let evJoyConfig := Allegro.eventTypeJoystickConfiguration
-  let kEsc := Allegro.keyEscape
+  let evDisplayClose := Allegro.EventType.displayClose
+  let evKeyDown := Allegro.EventType.keyDown
+  let evTimer := Allegro.EventType.timer
+  let evJoyAxis := Allegro.EventType.joystickAxis
+  let evJoyBtnDown := Allegro.EventType.joystickButtonDown
+  let evJoyBtnUp := Allegro.EventType.joystickButtonUp
+  let evJoyConfig := Allegro.EventType.joystickConfiguration
+  let kEsc := Allegro.KeyCode.escape
 
   let event ← Allegro.createEvent
   let font : Font ← Allegro.createBuiltinFont

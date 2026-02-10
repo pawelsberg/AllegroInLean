@@ -20,7 +20,7 @@ def main : IO Unit := do
   let _ ← Allegro.initPrimitivesAddon
   Allegro.initFontAddon
 
-  let flags := Allegro.fullscreenWindowFlag
+  let flags := Allegro.DisplayFlags.fullscreenWindow
   Allegro.setNewDisplayFlags flags
   let _ ← Allegro.createDisplay 800 600
 
@@ -42,24 +42,24 @@ def main : IO Unit := do
   queue.registerSource timerSrc
   timer.start
 
-  let evDisplayClose := Allegro.eventTypeDisplayClose
-  let evTimer := Allegro.eventTypeTimer
+  let evDisplayClose := Allegro.EventType.displayClose
+  let evTimer := Allegro.EventType.timer
   let event ← Allegro.createEvent
   let kbState ← Allegro.createKeyboardState
 
-  let kEsc := Allegro.keyEscape
-  let kLeft := Allegro.keyLeft
-  let kRight := Allegro.keyRight
-  let kUp := Allegro.keyUp
-  let kDown := Allegro.keyArrowDown
-  let kPlus := Allegro.keyW  -- W to zoom in
-  let kMinus := Allegro.keyS -- S to zoom out
+  let kEsc := Allegro.KeyCode.escape
+  let kLeft := Allegro.KeyCode.left
+  let kRight := Allegro.KeyCode.right
+  let kUp := Allegro.KeyCode.up
+  let kDown := Allegro.KeyCode.down
+  let kPlus := Allegro.KeyCode.w  -- W to zoom in
+  let kMinus := Allegro.KeyCode.s -- S to zoom out
 
   -- Blending constants
-  let bAdd := Allegro.blendAdd
-  let bAlpha := Allegro.blendAlpha
-  let bInvAlpha := Allegro.blendInverseAlpha
-  let bOne := Allegro.blendOne
+  let bAdd := Allegro.BlendOp.add
+  let bAlpha := Allegro.BlendFactor.alpha
+  let bInvAlpha := Allegro.BlendFactor.inverseAlpha
+  let bOne := Allegro.BlendFactor.one
 
   let builtinFont : Font ← Allegro.createBuiltinFont
 

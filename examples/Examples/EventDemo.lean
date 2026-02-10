@@ -79,28 +79,28 @@ def main : IO Unit := do
   timer.start
 
   -- ── Cache event type constants ──
-  let evDisplayClose := Allegro.eventTypeDisplayClose
-  let evDisplayResize := Allegro.eventTypeDisplayResize
-  let evDisplayExpose := Allegro.eventTypeDisplayExpose
-  let evDisplaySwitchOut := Allegro.eventTypeDisplaySwitchOut
-  let evDisplaySwitchIn := Allegro.eventTypeDisplaySwitchIn
-  let evKeyDown := Allegro.eventTypeKeyDown
-  let evKeyUp := Allegro.eventTypeKeyUp
-  let evKeyChar := Allegro.eventTypeKeyChar
-  let evMouseAxes := Allegro.eventTypeMouseAxes
-  let evMouseBtnDown := Allegro.eventTypeMouseButtonDown
-  let evMouseBtnUp := Allegro.eventTypeMouseButtonUp
-  let evMouseEnter := Allegro.eventTypeMouseEnterDisplay
-  let evMouseLeave := Allegro.eventTypeMouseLeaveDisplay
-  let evTimer := Allegro.eventTypeTimer
-  let evJoyAxis := Allegro.eventTypeJoystickAxis
-  let evJoyBtnDown := Allegro.eventTypeJoystickButtonDown
-  let evJoyBtnUp := Allegro.eventTypeJoystickButtonUp
-  let evJoyConfig := Allegro.eventTypeJoystickConfiguration
-  let evTouchBegin := Allegro.eventTypeTouchBegin
-  let evTouchEnd := Allegro.eventTypeTouchEnd
-  let evTouchMove := Allegro.eventTypeTouchMove
-  let kEsc := Allegro.keyEscape
+  let evDisplayClose := Allegro.EventType.displayClose
+  let evDisplayResize := Allegro.EventType.displayResize
+  let evDisplayExpose := Allegro.EventType.displayExpose
+  let evDisplaySwitchOut := Allegro.EventType.displaySwitchOut
+  let evDisplaySwitchIn := Allegro.EventType.displaySwitchIn
+  let evKeyDown := Allegro.EventType.keyDown
+  let evKeyUp := Allegro.EventType.keyUp
+  let evKeyChar := Allegro.EventType.keyChar
+  let evMouseAxes := Allegro.EventType.mouseAxes
+  let evMouseBtnDown := Allegro.EventType.mouseButtonDown
+  let evMouseBtnUp := Allegro.EventType.mouseButtonUp
+  let evMouseEnter := Allegro.EventType.mouseEnterDisplay
+  let evMouseLeave := Allegro.EventType.mouseLeaveDisplay
+  let evTimer := Allegro.EventType.timer
+  let evJoyAxis := Allegro.EventType.joystickAxis
+  let evJoyBtnDown := Allegro.EventType.joystickButtonDown
+  let evJoyBtnUp := Allegro.EventType.joystickButtonUp
+  let evJoyConfig := Allegro.EventType.joystickConfiguration
+  let evTouchBegin := Allegro.EventType.touchBegin
+  let evTouchEnd := Allegro.EventType.touchEnd
+  let evTouchMove := Allegro.EventType.touchMove
+  let kEsc := Allegro.KeyCode.escape
 
   let event ← Allegro.createEvent
   let font : Font ← Allegro.createBuiltinFont

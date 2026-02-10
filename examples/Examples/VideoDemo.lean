@@ -82,13 +82,13 @@ def main : IO Unit := do
   timer.start
 
   -- Constants
-  let evtKeyDown      := Allegro.eventTypeKeyDown
-  let evtDisplayClose := Allegro.eventTypeDisplayClose
-  let evtTimer        := Allegro.eventTypeTimer
-  let evtFrameShow    := Allegro.videoEventFrameShow
-  let evtFinished     := Allegro.videoEventFinished
-  let keyEsc          := Allegro.keyEscape
-  let keySpace        := Allegro.keySpace
+  let evtKeyDown      := Allegro.EventType.keyDown
+  let evtDisplayClose := Allegro.EventType.displayClose
+  let evtTimer        := Allegro.EventType.timer
+  let evtFrameShow    := Allegro.EventType.videoFrameShow
+  let evtFinished     := Allegro.EventType.videoFinished
+  let keyEsc          := Allegro.KeyCode.escape
+  let keySpace        := Allegro.KeyCode.space
 
   let mut running := true
   let mut redraw  := false
@@ -140,15 +140,15 @@ def main : IO Unit := do
         frame.drawScaled 0 0 fwf fhf dx dy dw dh FlipFlags.none
 
       -- Position overlay
-      let pos ← video.position Allegro.videoPositionActual
+      let pos ← video.position Allegro.VideoPosition.actual
       let posStr := if finished then "Finished"
                     else if paused then s!"Paused  {pos.toString.take 5}s"
                     else s!"Playing {pos.toString.take 5}s"
-      font.drawTextRgb 255 255 100 8 8 Allegro.alignLeft posStr
+      font.drawTextRgb 255 255 100 8 8 Allegro.TextAlign.left posStr
 
       if finished then
         font.drawTextRgb 200 200 200 (screenW.toFloat / 2) (screenH.toFloat / 2)
-          Allegro.alignCentre "Video ended — press ESC to exit"
+          Allegro.TextAlign.centre "Video ended — press ESC to exit"
 
       Allegro.flipDisplay
       redraw := false

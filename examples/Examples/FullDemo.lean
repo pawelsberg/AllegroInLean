@@ -43,7 +43,7 @@ def main : IO Unit := do
   let _ <- Allegro.changeDirectory pathStr
   path.destroy
 
-  let flags := Allegro.fullscreenWindowFlag
+  let flags := Allegro.DisplayFlags.fullscreenWindow
   Allegro.setNewDisplayFlags flags
   let _ <- Allegro.createDisplay 1024 768
 
@@ -67,13 +67,13 @@ def main : IO Unit := do
 
   timer.start
 
-  let evKeyDown := Allegro.eventTypeKeyDown
-  let evKeyUp := Allegro.eventTypeKeyUp
-  let evDisplayClose := Allegro.eventTypeDisplayClose
-  let evMouseAxes := Allegro.eventTypeMouseAxes
-  let evMouseButtonDown := Allegro.eventTypeMouseButtonDown
-  let evMouseButtonUp := Allegro.eventTypeMouseButtonUp
-  let evTimer := Allegro.eventTypeTimer
+  let evKeyDown := Allegro.EventType.keyDown
+  let evKeyUp := Allegro.EventType.keyUp
+  let evDisplayClose := Allegro.EventType.displayClose
+  let evMouseAxes := Allegro.EventType.mouseAxes
+  let evMouseButtonDown := Allegro.EventType.mouseButtonDown
+  let evMouseButtonUp := Allegro.EventType.mouseButtonUp
+  let evTimer := Allegro.EventType.timer
 
   let event <- Allegro.createEvent
 

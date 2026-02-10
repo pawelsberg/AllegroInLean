@@ -39,12 +39,12 @@ lean_object* allegro_al_destroy_sample(uint64_t sample) {
     return io_ok_unit();
 }
 
-lean_object* allegro_al_play_sample(uint64_t sample, double gain, double pan, double speed, uint32_t loop) {
+lean_object* allegro_al_play_sample(uint64_t sample, double gain, double pan, double speed, uint32_t playmode) {
     if (sample == 0)
         return io_ok_uint32(0);
     ALLEGRO_SAMPLE_ID id;
     bool ok = al_play_sample((ALLEGRO_SAMPLE *)u64_to_ptr(sample), (float)gain, (float)pan, (float)speed,
-                             loop ? ALLEGRO_PLAYMODE_LOOP : ALLEGRO_PLAYMODE_ONCE, &id);
+                             (ALLEGRO_PLAYMODE)playmode, &id);
     return io_ok_uint32(ok ? 1u : 0u);
 }
 

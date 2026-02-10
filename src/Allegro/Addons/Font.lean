@@ -73,12 +73,6 @@ def right : TextAlign := ⟨2⟩
 def integer : TextAlign := ⟨4⟩
 end TextAlign
 
--- Backward-compatible aliases
-def alignLeft := TextAlign.left
-def alignCentre := TextAlign.centre
-def alignRight := TextAlign.right
-def alignInteger := TextAlign.integer
-
 -- ── Font creation / loading / destruction ──
 
 /-- Create the built-in 8×8 monospace font (always available, no file needed). -/

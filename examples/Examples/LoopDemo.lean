@@ -8,7 +8,7 @@ def main : IO Unit := do
     IO.eprintln "al_init failed"
     return
 
-  let flags := Allegro.fullscreenWindowFlag
+  let flags := Allegro.DisplayFlags.fullscreenWindow
   Allegro.setNewDisplayFlags flags
   let _ <- Allegro.createDisplay 1024 768
 
@@ -22,8 +22,8 @@ def main : IO Unit := do
   queue.registerSource timerSource
   timer.start
 
-  let evDisplayClose := Allegro.eventTypeDisplayClose
-  let evTimer := Allegro.eventTypeTimer
+  let evDisplayClose := Allegro.EventType.displayClose
+  let evTimer := Allegro.EventType.timer
   let event <- Allegro.createEvent
 
   while true do

@@ -161,77 +161,6 @@ def f11 : KeyCode := ⟨57⟩
 def f12 : KeyCode := ⟨58⟩
 end KeyCode
 
--- Backward-compatible aliases
-def keyA := KeyCode.a
-def keyB := KeyCode.b
-def keyC := KeyCode.c
-def keyD := KeyCode.d
-def keyE := KeyCode.e
-def keyF := KeyCode.f
-def keyG := KeyCode.g
-def keyH := KeyCode.h
-def keyI := KeyCode.i
-def keyJ := KeyCode.j
-def keyK := KeyCode.k
-def keyL := KeyCode.l
-def keyM := KeyCode.m
-def keyN := KeyCode.n
-def keyO := KeyCode.o
-def keyP := KeyCode.p
-def keyQ := KeyCode.q
-def keyR := KeyCode.r
-def keyS := KeyCode.s
-def keyT := KeyCode.t
-def keyU := KeyCode.u
-def keyV := KeyCode.v
-def keyW := KeyCode.w
-def keyX := KeyCode.x
-def keyY := KeyCode.y
-def keyZ := KeyCode.z
-def key0 := KeyCode.num0
-def key1 := KeyCode.num1
-def key2 := KeyCode.num2
-def key3 := KeyCode.num3
-def key4 := KeyCode.num4
-def key5 := KeyCode.num5
-def key6 := KeyCode.num6
-def key7 := KeyCode.num7
-def key8 := KeyCode.num8
-def key9 := KeyCode.num9
-def keyEscape := KeyCode.escape
-def keySpace := KeyCode.space
-def keyEnter := KeyCode.enter
-def keyTab := KeyCode.tab
-def keyBackspace := KeyCode.backspace
-def keyDelete := KeyCode.delete
-def keyInsert := KeyCode.insert
-def keyHome := KeyCode.home
-def keyEnd := KeyCode.«end»
-def keyPgUp := KeyCode.pgUp
-def keyPgDn := KeyCode.pgDn
-def keyLeft := KeyCode.left
-def keyRight := KeyCode.right
-def keyUp := KeyCode.up
-def keyArrowDown := KeyCode.down
-def keyLShift := KeyCode.lShift
-def keyRShift := KeyCode.rShift
-def keyLCtrl := KeyCode.lCtrl
-def keyRCtrl := KeyCode.rCtrl
-def keyAlt := KeyCode.alt
-def keyAltGr := KeyCode.altGr
-def keyF1 := KeyCode.f1
-def keyF2 := KeyCode.f2
-def keyF3 := KeyCode.f3
-def keyF4 := KeyCode.f4
-def keyF5 := KeyCode.f5
-def keyF6 := KeyCode.f6
-def keyF7 := KeyCode.f7
-def keyF8 := KeyCode.f8
-def keyF9 := KeyCode.f9
-def keyF10 := KeyCode.f10
-def keyF11 := KeyCode.f11
-def keyF12 := KeyCode.f12
-
 /-- Convert a keycode to its human-readable name (e.g. "Escape"). -/
 @[extern "allegro_al_keycode_to_name"]
 private opaque keycodeToNameRaw : UInt32 → IO String
@@ -429,28 +358,6 @@ def altSelect : SystemCursor := ⟨18⟩
 /-- Unavailable / not-allowed cursor. -/
 def unavailable : SystemCursor := ⟨19⟩
 end SystemCursor
-
--- Backward-compatible aliases
-def systemCursorNone := SystemCursor.none
-def systemCursorDefault := SystemCursor.default
-def systemCursorArrow := SystemCursor.arrow
-def systemCursorBusy := SystemCursor.busy
-def systemCursorQuestion := SystemCursor.question
-def systemCursorEdit := SystemCursor.edit
-def systemCursorMove := SystemCursor.move
-def systemCursorResizeN := SystemCursor.resizeN
-def systemCursorResizeW := SystemCursor.resizeW
-def systemCursorResizeS := SystemCursor.resizeS
-def systemCursorResizeE := SystemCursor.resizeE
-def systemCursorResizeNW := SystemCursor.resizeNW
-def systemCursorResizeSW := SystemCursor.resizeSW
-def systemCursorResizeSE := SystemCursor.resizeSE
-def systemCursorResizeNE := SystemCursor.resizeNE
-def systemCursorProgress := SystemCursor.progress
-def systemCursorPrecision := SystemCursor.precision
-def systemCursorLink := SystemCursor.link
-def systemCursorAltSelect := SystemCursor.altSelect
-def systemCursorUnavailable := SystemCursor.unavailable
 
 /-- Set a system (OS-native) mouse cursor for a display. Returns 1 on success. -/
 @[extern "allegro_al_set_system_mouse_cursor"]

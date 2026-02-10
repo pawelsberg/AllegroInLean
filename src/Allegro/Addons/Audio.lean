@@ -143,12 +143,6 @@ def bidir : Playmode := ⟨258⟩
 def loopOnce : Playmode := ⟨261⟩
 end Playmode
 
--- Backward-compatible aliases
-def playmodeOnce := Playmode.once
-def playmodeLoop := Playmode.loop
-def playmodeBidir := Playmode.bidir
-def playmodeLoopOnce := Playmode.loopOnce
-
 -- ── Audio depth constants ──
 
 /-- Allegro audio sample depth (bit-depth and signedness). -/
@@ -173,15 +167,6 @@ def uint16 : AudioDepth := ⟨9⟩
 /-- Unsigned 24-bit integer audio depth. -/
 def uint24 : AudioDepth := ⟨10⟩
 end AudioDepth
-
--- Backward-compatible aliases
-def audioDepthInt8 := AudioDepth.int8
-def audioDepthInt16 := AudioDepth.int16
-def audioDepthInt24 := AudioDepth.int24
-def audioDepthFloat32 := AudioDepth.float32
-def audioDepthUint8 := AudioDepth.uint8
-def audioDepthUint16 := AudioDepth.uint16
-def audioDepthUint24 := AudioDepth.uint24
 
 -- ── Channel configuration constants ──
 
@@ -208,15 +193,6 @@ def conf61 : ChannelConf := ⟨97⟩
 def conf71 : ChannelConf := ⟨113⟩
 end ChannelConf
 
--- Backward-compatible aliases
-def channelConf1 := ChannelConf.conf1
-def channelConf2 := ChannelConf.conf2
-def channelConf3 := ChannelConf.conf3
-def channelConf4 := ChannelConf.conf4
-def channelConf51 := ChannelConf.conf51
-def channelConf61 := ChannelConf.conf61
-def channelConf71 := ChannelConf.conf71
-
 -- ── Mixer quality constants ──
 
 /-- Allegro mixer interpolation quality. -/
@@ -234,16 +210,11 @@ def linear : MixerQuality := ⟨273⟩
 def cubic : MixerQuality := ⟨274⟩
 end MixerQuality
 
--- Backward-compatible aliases
-def mixerQualityPoint := MixerQuality.point
-def mixerQualityLinear := MixerQuality.linear
-def mixerQualityCubic := MixerQuality.cubic
-
 @[extern "allegro_al_play_sample"]
 private opaque playSampleRaw : Sample → Float → Float → Float → UInt32 → IO UInt32
 
-/-- Fire-and-forget playback. `playSample spl gain pan speed loopFlag`
-    where loopFlag = 0 for once, non-zero for loop. -/
+/-- Fire-and-forget playback. `playSample spl gain pan speed mode`
+    where mode is a `Playmode` value (once, loop, bidir, loopOnce). -/
 @[inline] def playSample (spl : Sample) (gain pan speed : Float) (mode : Playmode) : IO UInt32 :=
   playSampleRaw spl gain pan speed mode.val
 

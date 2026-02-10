@@ -164,7 +164,7 @@ def testFontInvalidHandle : IO Bool := do
   let desc ← null.descent
   check "getFontDescent 0 returns 0" (desc == 0)
   -- drawTextRgb with null font → no crash
-  let left := Allegro.alignLeft
+  let left := Allegro.TextAlign.left
   null.drawTextRgb 255 255 255 10.0 10.0 left "test"
   check "drawTextRgb with null font no crash" true
   -- destroyFont 0
@@ -414,7 +414,7 @@ def testStateInvalidHandle : IO Bool := do
   printSection "State – invalid handle"
   let null : State := 0
   -- store/restore on null → no crash
-  null.store Allegro.stateAll
+  null.store Allegro.StateFlags.all
   check "storeState 0 no crash" true
   null.restore
   check "restoreState 0 no crash" true
@@ -502,7 +502,7 @@ def testBadFilePaths : IO Bool := do
   let sv ← Allegro.saveBitmap s!"{tmp}/test_null.png" 0
   check "saveBitmap null bitmap returns 0" (sv == 0)
   -- saveBitmap to unwritable path (with valid bitmap)
-  let memFlag := Allegro.bitmapFlagMemory
+  let memFlag := Allegro.BitmapFlags.memory
   Allegro.setNewBitmapFlags memFlag
   let bmp2 : Bitmap ← Allegro.createBitmap 2 2
   let sv2 ← bmp2.save "/nonexistent_dir/test.png"
@@ -515,7 +515,7 @@ def testBadFilePaths : IO Bool := do
 def testEdgeCases : IO Bool := do
   printSection "Edge cases"
   -- Zero-size bitmap
-  let memFlag := Allegro.bitmapFlagMemory
+  let memFlag := Allegro.BitmapFlags.memory
   Allegro.setNewBitmapFlags memFlag
   let zb : Bitmap ← Allegro.createBitmap 0 0
   -- Allegro allows 0×0 bitmaps; just verify no crash and clean up

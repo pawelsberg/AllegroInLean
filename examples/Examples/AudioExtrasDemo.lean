@@ -46,19 +46,19 @@ def main : IO Unit := do
   IO.println s!"  isAcodecAddonInitialized = {acInit}"
 
   -- Channel / depth utilities
-  let chCnt ← Allegro.getChannelCount Allegro.channelConf1  -- ALLEGRO_CHANNEL_CONF_1
+  let chCnt ← Allegro.getChannelCount Allegro.ChannelConf.conf1  -- ALLEGRO_CHANNEL_CONF_1
   IO.println s!"  getChannelCount(CONF_1) = {chCnt}"
-  let depSz ← Allegro.getAudioDepthSize Allegro.audioDepthInt8  -- INT8
+  let depSz ← Allegro.getAudioDepthSize Allegro.AudioDepth.int8  -- INT8
   IO.println s!"  getAudioDepthSize(INT8) = {depSz}"
 
   -- fillSilence — takes a raw UInt64 pointer; pass 0 to just test the call path
   -- (null pointer is safe — Allegro checks internally)
-  Allegro.fillSilence (0 : UInt64) 0 Allegro.audioDepthInt8 Allegro.channelConf1
+  Allegro.fillSilence (0 : UInt64) 0 Allegro.AudioDepth.int8 Allegro.ChannelConf.conf1
   IO.println "  fillSilence(null,0) — OK"
 
   -- createSampleRaw — takes a raw UInt64 pointer, so pass 0 (null) for demo
   -- We can't easily create a valid buffer pointer from Lean, so just test the call
-  let rawSpl : Sample ← Allegro.createSampleRaw (0 : UInt64) 256 44100 Allegro.audioDepthInt24 Allegro.channelConf1 (0 : UInt32)
+  let rawSpl : Sample ← Allegro.createSampleRaw (0 : UInt64) 256 44100 Allegro.AudioDepth.int24 Allegro.ChannelConf.conf1 (0 : UInt32)
   IO.println s!"  createSampleRaw(null buf) = {rawSpl} (may be 0)"
   if rawSpl != 0 then
     let dataPtr ← rawSpl.sampleData
@@ -143,7 +143,7 @@ def main : IO Unit := do
 
   -- ── Audio stream + voice lifecycle ──
   -- Create a voice: 44100 Hz, INT16, 1-channel (mono)
-  let voice : Voice ← Allegro.createVoice 44100 Allegro.audioDepthInt24 Allegro.channelConf1
+  let voice : Voice ← Allegro.createVoice 44100 Allegro.AudioDepth.int24 Allegro.ChannelConf.conf1
   if voice != 0 then
     -- Voice getters
     let vpos ← voice.position
@@ -158,7 +158,7 @@ def main : IO Unit := do
     IO.println s!"  voiceHasAttachments = {vha}"
 
     -- Create a raw audio stream: 4 buffers, 1024 samples, 44100Hz, INT16, mono
-    let stream : AudioStream ← Allegro.createAudioStreamRaw 4 1024 44100 Allegro.audioDepthInt24 Allegro.channelConf1
+    let stream : AudioStream ← Allegro.createAudioStreamRaw 4 1024 44100 Allegro.AudioDepth.int24 Allegro.ChannelConf.conf1
     if stream != 0 then
       let sFreq ← stream.frequency
       IO.println s!"  getAudioStreamFrequency = {sFreq}"
@@ -259,7 +259,7 @@ def main : IO Unit := do
 
   -- ── Audio recorder (UNSTABLE) ──
   -- createAudioRecorder: fragCount=5, samples=1024, freq=44100, depth=INT16, chanConf=1
-  let rec : AudioRecorder ← Allegro.createAudioRecorder 5 1024 44100 Allegro.audioDepthInt24 Allegro.channelConf1
+  let rec : AudioRecorder ← Allegro.createAudioRecorder 5 1024 44100 Allegro.AudioDepth.int24 Allegro.ChannelConf.conf1
   if rec != 0 then
     let _ ← rec.start
     IO.println "  startAudioRecorder — OK"

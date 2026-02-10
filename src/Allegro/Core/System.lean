@@ -143,18 +143,6 @@ def bitmap : StateFlags := ⟨0x000A⟩
 def all : StateFlags := ⟨0xFFFF⟩
 end StateFlags
 
--- Backward-compatible aliases
-def stateNewDisplayParameters := StateFlags.newDisplayParameters
-def stateNewBitmapParameters := StateFlags.newBitmapParameters
-def stateDisplay := StateFlags.display
-def stateTargetBitmap := StateFlags.targetBitmap
-def stateBlender := StateFlags.blender
-def stateNewFileInterface := StateFlags.newFileInterface
-def stateTransform := StateFlags.transform
-def stateProjectionTransform := StateFlags.projectionTransform
-def stateBitmap := StateFlags.bitmap
-def stateAll := StateFlags.all
-
 /-- Capture the indicated state into the state buffer.
     `flags` is a bitmask of `StateFlags` values (combine with `|||`). -/
 @[extern "allegro_al_store_state"]
