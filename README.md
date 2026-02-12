@@ -273,11 +273,25 @@ def main : IO Unit := do
 
 ### Step 4 — Build and run
 
+**If Allegro is installed system-wide** (Debian/Ubuntu, macOS Homebrew):
 ```bash
 lake update                               # fetch dependencies
 lake build                                # compile
 .lake/build/bin/my_game                   # run (from project root)
 ```
+
+**If you built Allegro locally** into `allegro-local/` (Fedora/Rocky/RHEL):
+```bash
+lake update
+lake build -K allegroPrefix=$PWD/allegro-local
+.lake/build/bin/my_game
+```
+
+> ⚠️ **The `-K allegroPrefix=…` flag is required** when using a local Allegro
+> build. It ensures the C shim is compiled against the correct headers.
+> Without it, stale system headers (e.g. an older Allegro in `/usr/local/include`)
+> may cause `al_init` to silently fail at runtime due to a version mismatch
+> baked into the `al_init` macro.
 
 ### Platform notes
 
@@ -310,6 +324,27 @@ needed if you customise the link flags.
 
 **Windows:**
 Make sure the Allegro DLLs are on your `PATH` (e.g. `C:\msys64\mingw64\bin`).
+
+### Troubleshooting
+
+**`al_init failed` at runtime (silent, no error details):**
+This almost always means the C shim was compiled against different Allegro headers
+than the libraries loaded at runtime. The `al_init` macro embeds a version check.
+Fix: pass the correct prefix — `lake build -K allegroPrefix=$PWD/allegro-local`.
+Also check for stale Allegro headers in `/usr/local/include/allegro5/` that may
+be picked up over the `allegro-local/` headers.
+
+**Build fails with "implicit declaration of function" in C shim files:**
+This indicates the Allegro version installed on your system is older than what
+the bindings expect (5.2.11). Either update Allegro or build from source via
+`scripts/build-allegro.sh`.
+
+**`LD_LIBRARY_PATH` needed despite `allegro-local/` existing:**
+The template `lakefile.lean` embeds `-rpath` for `allegro-local/lib64` and
+`allegro-local/lib`. If you changed the link flags, you may need:
+```bash
+LD_LIBRARY_PATH=allegro-local/lib64 .lake/build/bin/my_game
+```
 
 ### Data files (fonts, sounds, images)
 

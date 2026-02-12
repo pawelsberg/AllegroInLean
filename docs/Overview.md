@@ -96,6 +96,23 @@ let sample ← Allegro.loadSample "data/beep.wav"
 .lake/build/bin/my_game
 ```
 
+### Common consumer project pitfalls
+
+1. **`al_init` returns 0 / fails silently** — Almost always a header/library
+   version mismatch. The `al_init` macro embeds `ALLEGRO_VERSION_INT` at compile
+   time and compares it to the runtime library. If you built Allegro locally into
+   `allegro-local/`, make sure to pass
+   `lake build -K allegroPrefix=$PWD/allegro-local` so the C shim is compiled
+   against the correct headers. Stale headers in `/usr/local/include` are a
+   common culprit.
+
+2. **Addon initialisation order** — `initFontAddon` must be called before
+   `initTtfAddon`. `installAudio` must be called before `initAcodecAddon`.
+   `reserveSamples` must be called before `loadSample`/`playSample`.
+
+3. **Cleanup order** — Destroy resources in reverse order of creation.
+   Shutdown addons in reverse order of initialisation.
+
 
 ## Structure
 

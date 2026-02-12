@@ -73,6 +73,17 @@ If a handle is borrowed, it remains valid only as long as the owning resource is
 - Prefer explicit checks at the call site and short-circuit early on failure.
 - Always check for `0` after `create*`, `load*`, or `getStandardPath`-like functions.
 
+### `al_init` and version checking
+
+`al_init()` is a macro that calls `al_install_system(ALLEGRO_VERSION_INT, NULL)`.
+The `ALLEGRO_VERSION_INT` constant is baked into the C shim at compile time from
+the Allegro headers. If the headers and runtime library have different versions,
+`al_install_system` will reject the version mismatch and return `false`.
+
+This is the most common cause of silent `al_init` failures in consumer projects
+that build Allegro locally. Ensure `lake build -K allegroPrefix=…` points to
+the same Allegro tree used at runtime.
+
 ## Threading and safety
 
 - Treat Allegro as **not** thread-safe unless the underlying Allegro documentation

@@ -150,9 +150,16 @@ cp .lake/packages/AllegroInLean/scripts/build-allegro.sh scripts/
 # 3. Build Allegro locally
 ./scripts/build-allegro.sh
 
-# 4. Build your project (Allegro will be found in allegro-local/)
-lake build
+# 4. Build your project — pass the absolute path to allegro-local/
+lake build -K allegroPrefix=$PWD/allegro-local
 ```
+
+> ⚠️ **The `-K allegroPrefix=…` flag is critical.** The library's C shim is
+> compiled as part of your build, and `allegroPrefix` controls which headers
+> it uses. Without it, stale system headers (e.g. Allegro 5.2.9 in
+> `/usr/local/include`) can silently shadow the local 5.2.11 headers, causing
+> the `al_init` macro to embed the wrong version — leading to `al_init`
+> returning `false` at runtime with no error message.
 
 Make sure your consumer `lakefile.lean` includes the proper `-L` and `-rpath`
 flags for `allegro-local/` — see the template in the README.
@@ -267,6 +274,69 @@ Some tests generate temporary files (`_test_save.wav`, `_test_save_f.wav`) in `d
 during execution — these are gitignored.
 
 If an asset is missing, the test/demo will print a SKIP or warning rather than fail.
+
+## Troubleshooting
+
+### `al_init` fails silently at runtime (returns 0)
+
+The `al_init()` macro embeds `ALLEGRO_VERSION_INT` at compile time and checks
+it against the runtime library version. If the C shim was compiled against
+different headers than the `.so` loaded at runtime, `al_init` will return
+`false`.
+
+**Common cause:** Stale Allegro headers in `/usr/local/include/allegro5/`
+(e.g. version 5.2.9) shadowing the `allegro-local/include/` headers (5.2.11).
+
+**Fix:** Pass the correct prefix explicitly:
+```bash
+lake build -K allegroPrefix=$PWD/allegro-local
+```
+
+Or remove the stale headers:
+```bash
+sudo rm -rf /usr/local/include/allegro5 /usr/local/lib64/liballegro*
+```
+
+### Build fails with "implicit declaration of function"
+
+The installed Allegro version is older than 5.2.11. Some APIs
+(`al_get_display_adapter`, `al_get_render_state`, `al_get_joystick_guid`,
+etc.) were added in later releases. Build Allegro 5.2.11 from source:
+
+```bash
+./scripts/build-allegro.sh
+lake build -K allegroPrefix=$PWD/allegro-local
+```
+
+### `allegro5/allegro_native_dialog.h: No such file or directory`
+
+The native dialog addon header is missing from your Allegro installation.
+On Debian/Ubuntu, install `liballegro-dialog5-dev`. On Fedora/Rocky, build
+from source (the build script includes native dialog support when GTK 3
+headers are available):
+
+```bash
+sudo dnf install gtk3-devel
+./scripts/build-allegro.sh --clean
+```
+
+### Linker: "unable to find library -lallegro"
+
+Allegro is not installed, or is installed in a non-standard location.
+Either install system packages, build from source, or specify the prefix:
+
+```bash
+lake build -K allegroPrefix=/path/to/allegro
+```
+
+### Runtime: "error while loading shared libraries: liballegro.so.5.2"
+
+The runtime linker cannot find Allegro shared libraries. Either:
+- Ensure `-rpath` is set in your link flags (the template lakefile does this)
+- Set `LD_LIBRARY_PATH`:
+  ```bash
+  LD_LIBRARY_PATH=allegro-local/lib64 .lake/build/bin/my_game
+  ```
 
 ## Generate API documentation
 
