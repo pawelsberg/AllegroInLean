@@ -27,6 +27,23 @@ sudo apt-get install liballegro5-dev liballegro-image5-dev \
 brew install allegro
 ```
 
+**Fedora / Rocky / RHEL**
+
+Allegro 5 packages are **not available** in the standard Fedora, Rocky Linux, or RHEL repositories. Build from source using the provided helper script:
+
+```bash
+# Install build dependencies first
+sudo dnf install -y gcc gcc-c++ cmake make \
+  libX11-devel libXcursor-devel libXrandr-devel libXi-devel \
+  mesa-libGL-devel libpng-devel libjpeg-turbo-devel \
+  freetype-devel pulseaudio-libs-devel openal-soft-devel \
+  libvorbis-devel flac-devel libtheora-devel gtk3-devel
+
+./scripts/build-allegro.sh
+```
+
+This builds Allegro 5.2.11 into `allegro-local/` which the lakefile discovers automatically.
+
 **Windows (MSYS2 / MinGW-w64)**
 
 ```bash
@@ -36,7 +53,7 @@ pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-allegro mingw-w64-x86_64-pkg-con
 > Ensure `C:\msys64\mingw64\bin` is on your `PATH`, or run `lake build`
 > from the MSYS2 **MINGW64** shell.
 
-See [docs/Build.md](docs/Build.md) for Fedora, building from source via
+See [docs/Build.md](docs/Build.md) for building from source via
 the helper scripts, and more Windows details.
 
 ### 2. Install Lean 4
@@ -140,20 +157,39 @@ require AllegroInLean from git
 package my_game where
   moreLeanArgs := #["-DautoImplicit=false"]
 
--- Use the same link arguments as AllegroInLean
-def allegroLibDirs : Array String :=
+-- Locate Allegro libraries on the current platform.
+-- On Linux, check: 1) allegro-local/ (local build), 2) /usr/local, 3) /usr.
+def allegroLibDirs : Array String := Id.run do
+  let mut dirs : Array String := #[]
   if System.Platform.isWindows then
-    #["-LC:/msys64/mingw64/lib"]
+    dirs := dirs.push "-LC:/msys64/mingw64/lib"
   else if System.Platform.isOSX then
-    #["-L/opt/homebrew/lib"]
+    dirs := dirs.push "-L/opt/homebrew/lib"
   else
-    #[]
+    -- Linux: check common prefix locations.
+    -- If you built Allegro locally with build-allegro.sh, it lives
+    -- in allegro-local/ inside your consumer project (see below).
+    let candidates := #[
+      ("allegro-local/lib64", true),
+      ("allegro-local/lib", true),
+      ("/usr/local/lib64", false),
+      ("/usr/local/lib", false),
+      ("/usr/lib64", false),
+      ("/usr/lib", false)
+    ]
+    for (dir, needsRpath) in candidates do
+      dirs := dirs.push s!"-L{dir}"
+      if needsRpath then
+        dirs := dirs.push s!"-Wl,-rpath,{dir}"
+  return dirs
 
 def allegroLinkArgs : Array String :=
   allegroLibDirs ++ #["-lallegro", "-lallegro_image", "-lallegro_font",
     "-lallegro_ttf", "-lallegro_primitives", "-lallegro_audio", "-lallegro_acodec",
     "-lallegro_color", "-lallegro_dialog", "-lallegro_video",
-    "-lallegro_memfile"]
+    "-lallegro_memfile",
+    -- Linux needs explicit -lm and --allow-shlib-undefined
+    "-lm", "-Wl,--allow-shlib-undefined"]
 
 @[default_target]
 lean_exe my_game where
@@ -168,7 +204,64 @@ import Allegro
 open Allegro
 ```
 
-On Windows make sure the Allegro DLLs are on your `PATH` (e.g. `C:\msys64\mingw64\bin`).
+### Platform notes
+
+**Linux — Building Allegro locally for your project:**
+On Fedora, Rocky Linux, RHEL, and other distributions that do not ship Allegro 5
+packages, you need to build Allegro from source. The simplest approach is to copy
+the build script from the AllegroInLean dependency and run it inside your project:
+
+```bash
+# After the first `lake build` (which fetches the dependency):
+cp .lake/packages/AllegroInLean/scripts/build-allegro.sh ./scripts/
+./scripts/build-allegro.sh
+```
+
+This creates an `allegro-local/` directory in your project root. The template
+`lakefile.lean` above already includes `-L` and `-rpath` flags for this location.
+
+**Linux — `LD_LIBRARY_PATH`:**
+If Allegro is installed in a non-standard location (e.g. `/usr/local/lib` or
+`allegro-local/lib64`) and you did **not** use `-rpath` in your link flags, set
+`LD_LIBRARY_PATH` before running your executable:
+
+```bash
+LD_LIBRARY_PATH=allegro-local/lib64 .lake/build/bin/my_game
+```
+
+The template above already embeds `-rpath` for the local build, so this is only
+needed if you customise the link flags.
+
+**Windows:**
+Make sure the Allegro DLLs are on your `PATH` (e.g. `C:\msys64\mingw64\bin`).
+
+### Data files (fonts, sounds, images)
+
+AllegroInLean does **not** ship game assets for consumer projects. You must
+provide your own fonts, sounds, and images. Place them in a `data/` directory
+(or wherever you prefer) and load them using relative paths from your working
+directory:
+
+```lean
+let font ← Allegro.loadTtfFont "data/MyFont.ttf" 24 0
+let sample ← Allegro.loadSample "data/beep.wav"
+```
+
+Run your executable from the project root so that relative paths resolve
+correctly:
+
+```bash
+# From the project root:
+.lake/build/bin/my_game
+```
+
+### `open Allegro` namespace note
+
+When you `open Allegro`, some standard library names (e.g. `Array.mkArray`) may
+be shadowed by identically-named Allegro declarations. If you encounter
+unexpected "unknown identifier" errors, either:
+- Qualify the call: `_root_.Array.mkArray n default`
+- Use a selective open: `open Allegro in` on specific `do` blocks
 
 ## Layout
 

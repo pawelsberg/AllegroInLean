@@ -35,6 +35,24 @@ def main : IO Unit := do
 	IO.println "ok"
 ```
 
+### Asset loading in consumer projects
+
+The library demos use `getStandardPath` and `changeDirectory` to locate
+`data/` relative to the executable. In consumer projects, this path resolves
+to the binary directory (`.lake/build/bin/`), **not** the project root. The
+simplest approach is to use relative paths and run from the project root:
+
+```lean
+-- Load assets via relative paths (run from project root)
+let font ← Allegro.loadTtfFont "data/MyFont.ttf" 24 0
+let sample ← Allegro.loadSample "data/beep.wav"
+```
+
+```bash
+# Run from the project root so relative paths work
+.lake/build/bin/my_game
+```
+
 
 ## Structure
 

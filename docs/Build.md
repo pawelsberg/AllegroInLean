@@ -20,7 +20,16 @@ sudo apt-get install -y \
 ```
 
 ### Linux — Fedora / Rocky / RHEL
+
+> ⚠️ **Allegro 5 packages are not available** in the standard Fedora, Rocky Linux,
+> or RHEL repositories (as of 2025). The `dnf install` commands below are listed
+> for completeness — they may work on Fedora spins that carry EPEL or third-party
+> repos, but on a stock install they will fail. **The recommended path is to build
+> from source** using the provided helper script (see
+> [Building from source](#building-from-source-helper-script) below).
+
 ```bash
+# These packages may NOT be available — see warning above.
 sudo dnf install -y \
   allegro5-devel allegro5-addon-image-devel allegro5-addon-font-devel \
   allegro5-addon-ttf-devel allegro5-addon-primitives-devel \
@@ -61,8 +70,41 @@ lake build -K allegroPrefix=/mingw64
 ```
 
 ### Building from source (helper script)
-If you prefer not to install system packages, use the provided script to
-download and build Allegro into a local `allegro-local/` prefix:
+
+If system packages are not available (common on Fedora / Rocky / RHEL), or you
+prefer a local build, use the provided script to download and build Allegro into
+a local `allegro-local/` prefix.
+
+#### Build dependencies
+
+The script needs `cmake`, `make`, and a C compiler (`cc` / `gcc`). Allegro
+itself needs development headers for the features you want:
+
+**Fedora / Rocky / RHEL:**
+```bash
+sudo dnf install -y gcc gcc-c++ cmake make \
+  libX11-devel libXcursor-devel libXrandr-devel libXi-devel \
+  mesa-libGL-devel libpng-devel libjpeg-turbo-devel \
+  freetype-devel pulseaudio-libs-devel openal-soft-devel \
+  libvorbis-devel flac-devel libtheora-devel gtk3-devel
+```
+
+**Debian / Ubuntu:**
+```bash
+sudo apt-get install -y build-essential cmake \
+  libx11-dev libxcursor-dev libxrandr-dev libxi-dev \
+  libgl-dev libpng-dev libjpeg-dev \
+  libfreetype-dev libpulse-dev libopenal-dev \
+  libvorbis-dev libflac-dev libtheora-dev libgtk-3-dev
+```
+
+**macOS:** `xcode-select --install && brew install cmake`
+
+> Missing optional dependencies will not break the build — Allegro simply
+> disables the corresponding addon (e.g. no PulseAudio headers → no audio
+> backend). However, you likely want most of them for game development.
+
+#### Running the build script
 
 **Linux / macOS / FreeBSD:**
 ```bash
@@ -87,6 +129,36 @@ lake build -K allegroPrefix=/path/to/your/prefix
 ```
 
 ## Configuration
+
+### Consumer projects (using AllegroInLean as a dependency)
+
+If you are using AllegroInLean as a Lake dependency in your own project (see
+[README — Using as a dependency](../README.md#using-as-a-dependency)), you
+need Allegro installed on your system **or** built locally inside your project.
+
+The recommended approach for Fedora / Rocky / RHEL (where system packages are
+unavailable):
+
+```bash
+# 1. Run `lake build` once to fetch the dependency
+lake build 2>&1 || true
+
+# 2. Copy the build script into your project
+mkdir -p scripts
+cp .lake/packages/AllegroInLean/scripts/build-allegro.sh scripts/
+
+# 3. Build Allegro locally
+./scripts/build-allegro.sh
+
+# 4. Build your project (Allegro will be found in allegro-local/)
+lake build
+```
+
+Make sure your consumer `lakefile.lean` includes the proper `-L` and `-rpath`
+flags for `allegro-local/` — see the template in the README.
+
+### Build configuration (library development)
+
 The build resolves the Allegro prefix in this order:
 
 1. **Explicit flag** — `lake build -K allegroPrefix=/opt/allegro`
