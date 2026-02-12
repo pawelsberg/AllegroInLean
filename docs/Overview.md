@@ -27,13 +27,56 @@ import Allegro.Core.System
 open Allegro
 
 def main : IO Unit := do
-	let okInit <- Allegro.init
-	if okInit == 0 then
-		IO.eprintln "al_init failed"
-		return
-	Allegro.uninstallSystem
-	IO.println "ok"
+  let okInit ← Allegro.init
+  if okInit == 0 then
+    IO.eprintln "al_init failed"
+    return
+  Allegro.uninstallSystem
+  IO.println "ok"
 ```
+
+### Common addon initialisation
+
+Most games need several addons. Initialise them right after `Allegro.init`:
+
+```lean
+import Allegro
+
+open Allegro
+
+def main : IO Unit := do
+  let ok ← Allegro.init
+  if ok == 0 then IO.eprintln "al_init failed"; return
+
+  -- Core subsystems
+  let _ ← Allegro.installKeyboard
+  let _ ← Allegro.installMouse
+
+  -- Addons — call initFontAddon before initTtfAddon
+  let _ ← Allegro.initImageAddon
+  Allegro.initFontAddon
+  let _ ← Allegro.initTtfAddon
+  let _ ← Allegro.initPrimitivesAddon
+  let _ ← Allegro.installAudio
+  let _ ← Allegro.initAcodecAddon
+  let _ ← Allegro.reserveSamples 4    -- for fire-and-forget playback
+
+  -- … create display, event queue, game loop …
+
+  -- Shutdown in reverse order
+  Allegro.uninstallAudio
+  Allegro.shutdownPrimitivesAddon
+  Allegro.shutdownTtfAddon
+  Allegro.shutdownFontAddon
+  Allegro.shutdownImageAddon
+```
+
+### Dot-notation via Allegro.Compat
+
+When you `import Allegro` and `open Allegro`, the `Allegro.Compat` module is
+included automatically. This provides dot-notation on handle types so you can
+write `display.destroy`, `timer.start`, `queue.waitFor evt`, etc. instead of
+the fully-qualified `Allegro.destroyDisplay display` style.
 
 ### Asset loading in consumer projects
 

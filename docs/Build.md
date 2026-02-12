@@ -140,8 +140,8 @@ The recommended approach for Fedora / Rocky / RHEL (where system packages are
 unavailable):
 
 ```bash
-# 1. Run `lake build` once to fetch the dependency
-lake build 2>&1 || true
+# 1. Fetch the AllegroInLean dependency
+lake update
 
 # 2. Copy the build script into your project
 mkdir -p scripts
@@ -174,9 +174,14 @@ lake build
 
 ## Run examples
 
+You can run demos either via `lake exe` or directly from the build output.
+
 **Linux / macOS:**
 ```bash
-lake exe allegroLoopDemo
+lake exe allegroLoopDemo                              # via Lake
+.lake/build/bin/allegroConfigDemo                     # direct binary path
+
+# More examples:
 lake exe allegroConfigDemo     # console-only — Config subsystem
 lake exe allegroColorDemo      # console-only — Color addon
 lake exe allegroUstrDemo       # console-only — Ustr (Unicode strings)

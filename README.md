@@ -72,7 +72,8 @@ lake build -K allegroPrefix=/usr          # custom Allegro prefix
 ### 4. Run
 
 ```bash
-.lake/build/bin/allegroFullDemo
+.lake/build/bin/allegroFullDemo      # direct binary path
+lake exe allegroFullDemo              # or via Lake
 ```
 
 If your Allegro install is not under the default local prefix, pass a prefix
@@ -145,7 +146,18 @@ lake build allegroSmoke allegroFuncTest allegroErrorTest
 
 ## Using as a dependency
 
-To use AllegroInLean in your own Lean 4 project, add it as a dependency in your `lakefile.lean`:
+To use AllegroInLean in your own Lean 4 project you need three files.
+
+### Step 1 — `lean-toolchain`
+
+Create a `lean-toolchain` file matching the version used by AllegroInLean
+(currently `leanprover/lean4:4.27.0`):
+
+```
+leanprover/lean4:4.27.0
+```
+
+### Step 2 — `lakefile.lean`
 
 ```lean
 import Lake
@@ -158,7 +170,9 @@ package my_game where
   moreLeanArgs := #["-DautoImplicit=false"]
 
 -- Locate Allegro libraries on the current platform.
--- On Linux, check: 1) allegro-local/ (local build), 2) /usr/local, 3) /usr.
+-- IMPORTANT: Only add directories where Allegro is actually installed.
+-- Adding broad system paths (e.g. /usr/lib64) can shadow the Lean
+-- toolchain's bundled glibc and cause link failures on glibc ≥ 2.34.
 def allegroLibDirs : Array String := Id.run do
   let mut dirs : Array String := #[]
   if System.Platform.isWindows then
@@ -166,16 +180,12 @@ def allegroLibDirs : Array String := Id.run do
   else if System.Platform.isOSX then
     dirs := dirs.push "-L/opt/homebrew/lib"
   else
-    -- Linux: check common prefix locations.
-    -- If you built Allegro locally with build-allegro.sh, it lives
-    -- in allegro-local/ inside your consumer project (see below).
+    -- Linux: allegro-local/ is produced by scripts/build-allegro.sh.
+    -- System-installed Allegro (e.g. /usr/lib64) is found by the
+    -- default linker search path — no explicit -L needed.
     let candidates := #[
       ("allegro-local/lib64", true),
-      ("allegro-local/lib", true),
-      ("/usr/local/lib64", false),
-      ("/usr/local/lib", false),
-      ("/usr/lib64", false),
-      ("/usr/lib", false)
+      ("allegro-local/lib", true)
     ]
     for (dir, needsRpath) in candidates do
       dirs := dirs.push s!"-L{dir}"
@@ -183,25 +193,90 @@ def allegroLibDirs : Array String := Id.run do
         dirs := dirs.push s!"-Wl,-rpath,{dir}"
   return dirs
 
-def allegroLinkArgs : Array String :=
-  allegroLibDirs ++ #["-lallegro", "-lallegro_image", "-lallegro_font",
+def allegroLinkArgs : Array String := Id.run do
+  let mut args := allegroLibDirs
+  args := args ++ #["-lallegro", "-lallegro_image", "-lallegro_font",
     "-lallegro_ttf", "-lallegro_primitives", "-lallegro_audio", "-lallegro_acodec",
     "-lallegro_color", "-lallegro_dialog", "-lallegro_video",
-    "-lallegro_memfile",
-    -- Linux needs explicit -lm and --allow-shlib-undefined
-    "-lm", "-Wl,--allow-shlib-undefined"]
+    "-lallegro_memfile"]
+  -- macOS bundles math in libSystem; -Wl,--allow-shlib-undefined is
+  -- Linux-only (ld64 on macOS does not recognise it).
+  if !System.Platform.isWindows && !System.Platform.isOSX then
+    args := args.push "-lm"
+    args := args.push "-Wl,--allow-shlib-undefined"
+  return args
 
 @[default_target]
 lean_exe my_game where
-  root := `Main`
+  root := `Main
   moreLinkArgs := allegroLinkArgs
 ```
 
-Then import the library in your Lean files:
+### Step 3 — `Main.lean` (minimal working example)
+
+This opens a window and draws a rectangle — enough to verify that
+everything is wired up correctly. `import Allegro` brings in the full
+library, and `open Allegro` enables unqualified access to all API
+functions **including dot-notation** on handle types (e.g.
+`display.destroy`, `timer.start`) via the auto-imported `Allegro.Compat`
+module.
 
 ```lean
 import Allegro
+
 open Allegro
+
+def main : IO Unit := do
+  let ok ← Allegro.init
+  if ok == 0 then IO.eprintln "al_init failed"; return
+
+  -- Initialise the addons your game needs
+  let _ ← Allegro.initPrimitivesAddon
+  Allegro.initFontAddon
+  let _ ← Allegro.installKeyboard
+
+  let display ← Allegro.createDisplay 640 480
+  if display == 0 then IO.eprintln "createDisplay failed"; return
+
+  -- Built-in font — no external files needed for quick prototyping
+  let font ← Allegro.createBuiltinFont
+
+  let timer ← Allegro.createTimer (1.0 / 60.0)
+  let queue ← Allegro.createEventQueue
+  let evt   ← Allegro.createEvent
+
+  queue.registerSource (← display.eventSource)
+  queue.registerSource (← Allegro.getKeyboardEventSource)
+  queue.registerSource (← timer.eventSource)
+  timer.start
+
+  let mut running := true
+  while running do
+    queue.waitFor evt
+    let eType ← evt.type
+    if eType == EventType.displayClose then
+      running := false
+    else if eType == EventType.keyDown then
+      if (← evt.keyboardKeycode) == KeyCode.escape then running := false
+    else if eType == EventType.timer then
+      Allegro.clearToColorRgb 10 10 40
+      Allegro.drawFilledRectangleRgb 200 150 440 330 60 180 255
+      Allegro.drawTextRgb font 255 255 255 320 340 TextAlign.centre "Hello from AllegroInLean!"
+      Allegro.flipDisplay
+
+  timer.stop; timer.destroy
+  evt.destroy; queue.destroy
+  font.destroy; display.destroy
+  Allegro.shutdownPrimitivesAddon
+  Allegro.shutdownFontAddon
+```
+
+### Step 4 — Build and run
+
+```bash
+lake update                               # fetch dependencies
+lake build                                # compile
+.lake/build/bin/my_game                   # run (from project root)
 ```
 
 ### Platform notes
@@ -212,7 +287,8 @@ packages, you need to build Allegro from source. The simplest approach is to cop
 the build script from the AllegroInLean dependency and run it inside your project:
 
 ```bash
-# After the first `lake build` (which fetches the dependency):
+# After `lake update` (which fetches the dependency):
+mkdir -p scripts
 cp .lake/packages/AllegroInLean/scripts/build-allegro.sh ./scripts/
 ./scripts/build-allegro.sh
 ```
@@ -246,6 +322,10 @@ directory:
 let font ← Allegro.loadTtfFont "data/MyFont.ttf" 24 0
 let sample ← Allegro.loadSample "data/beep.wav"
 ```
+
+> **Quick prototyping:** If you don't have font files yet, use
+> `Allegro.createBuiltinFont` for a zero-dependency 8×8 bitmap font.
+> It requires no addon initialisation beyond `Allegro.initFontAddon`.
 
 Run your executable from the project root so that relative paths resolve
 correctly:
