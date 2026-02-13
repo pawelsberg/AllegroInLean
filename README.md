@@ -298,6 +298,20 @@ lake build -K allegroPrefix=$PWD/allegro-local
 > may cause `al_init` to silently fail at runtime due to a version mismatch
 > baked into the `al_init` macro.
 
+### Step 5 — First game checklist (recommended)
+
+When starting a real game (not just a rectangle demo), this order avoids most setup mistakes:
+
+1. `Allegro.init`
+2. Addons/subsystems you actually use (`initPrimitivesAddon`, `initFontAddon`, `installKeyboard`, `installAudio`, `initAcodecAddon`, `reserveSamples`)
+3. `createDisplay`, `createTimer`, `createEventQueue`, `createEvent`
+4. Register event sources (display, keyboard/mouse, timer)
+5. Start timer, run event loop, update on timer events, draw only when queue is empty
+6. Destroy in reverse order (timer/event/queue/assets/display, then shutdown addons)
+
+This is the same lifecycle used by the demos and is suitable for side-scrollers,
+arcade games, and interactive tools.
+
 ### Platform notes
 
 **Linux — Building Allegro locally for your project:**
@@ -343,6 +357,14 @@ be picked up over the `allegro-local/` headers.
 This indicates the Allegro version installed on your system is older than what
 the bindings expect (5.2.11). Either update Allegro or build from source via
 `scripts/build-allegro.sh`.
+
+**Windows process exits with `-1073741515` (`0xC0000135`) before showing a window:**
+This usually means Allegro DLLs are not on `PATH` at runtime. In PowerShell:
+```powershell
+$env:PATH = "C:\msys64\mingw64\bin;" + $env:PATH
+.lake\build\bin\my_game.exe
+```
+Or run from the MSYS2 `MINGW64` shell where the path is preconfigured.
 
 **`LD_LIBRARY_PATH` needed despite `allegro-local/` existing:**
 The template `lakefile.lean` embeds `-rpath` for `allegro-local/lib64` and

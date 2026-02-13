@@ -69,6 +69,14 @@ If pkg-config is still not discovered, point `allegroPrefix` explicitly:
 lake build -K allegroPrefix=/mingw64
 ```
 
+Quick runtime check (PowerShell):
+```powershell
+$env:PATH = "C:\msys64\mingw64\bin;" + $env:PATH
+.lake\build\bin\allegroLoopDemo.exe
+```
+If this command exits with `-1073741515` (`0xC0000135`), required Allegro DLLs
+are still missing from your active `PATH`.
+
 ### Building from source (helper script)
 
 If system packages are not available (common on Fedora / Rocky / RHEL), or you
@@ -307,6 +315,20 @@ etc.) were added in later releases. Build Allegro 5.2.11 from source:
 ./scripts/build-allegro.sh
 lake build -K allegroPrefix=$PWD/allegro-local
 ```
+
+### Windows exits with code `-1073741515` (`0xC0000135`)
+
+The executable was built, but Windows cannot locate one or more Allegro DLLs
+at startup. Ensure `C:\msys64\mingw64\bin` is in `PATH` **for the same shell
+session where you run the executable**:
+
+```powershell
+$env:PATH = "C:\msys64\mingw64\bin;" + $env:PATH
+.lake\build\bin\my_game.exe
+```
+
+Using the MSYS2 `MINGW64` shell also works because it sets this path
+automatically.
 
 ### `allegro5/allegro_native_dialog.h: No such file or directory`
 
