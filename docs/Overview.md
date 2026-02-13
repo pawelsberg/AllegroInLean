@@ -157,6 +157,62 @@ drawFrame gs font
 This pattern scales well to complex games — rooms, enemies, and inventory can all
 live inside the pure `GameState` structure.
 
+### Array helper patterns for game state
+
+When manipulating arrays in pure game logic (e.g. removing matched balls,
+inserting elements), several common patterns are needed that don't have
+direct standard library equivalents in Lean 4.27.0:
+
+```lean
+-- Remove element at index (since Array.eraseIdx may not be available)
+def removeAt {T : Type} [Inhabited T] (a : Array T) (i : Nat) : Array T := Id.run do
+  let mut r : Array T := #[]
+  for j in List.range a.size do
+    if j != i then r := r.push a[j]!
+  return r
+
+-- Filter array by index set
+def removeIndices {T : Type} [Inhabited T] (a : Array T) (idxs : Array Nat) : Array T := Id.run do
+  let mut r : Array T := #[]
+  for j in List.range a.size do
+    if !idxs.contains j then r := r.push a[j]!
+  return r
+```
+
+> **Tip:** Always add `deriving Inhabited` to structures used in arrays
+> with `!`-indexing. Without it, `arr[i]!` won't compile.
+
+### Procedural audio generation
+
+You can generate sound effects and music programmatically by writing WAV
+files to disk, then loading them with `Allegro.loadSample`:
+
+```lean
+-- Generate PCM, write as .wav, load as Allegro Sample
+let pcmData := generateMySound  -- your ByteArray of 16-bit LE samples
+let wavFile := buildWavHeader pcmData  -- prepend 44-byte RIFF/WAV header
+IO.FS.writeBinFile "data/sfx.wav" wavFile
+let sample ← Allegro.loadSample "data/sfx.wav"
+```
+
+This avoids needing to ship external audio assets and is useful for
+prototyping or procedural games.
+
+### Mouse input in the game loop
+
+Mouse position is available via event fields. A common pattern:
+
+```lean
+else if eType == Allegro.EventType.mouseAxes then
+  let mx ← evt.mouseX   -- UInt32
+  let my ← evt.mouseY
+  gs := { gs with mouseX := mx.toFloat, mouseY := my.toFloat }
+else if eType == Allegro.EventType.mouseButtonDown then
+  let btn ← evt.mouseButton
+  if btn == 1 then  -- left click
+    gs := handleLeftClick gs
+```
+
 
 ## Structure
 

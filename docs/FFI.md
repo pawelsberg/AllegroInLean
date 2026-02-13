@@ -135,6 +135,14 @@ Safe patterns for background work:
 - For long-running loops, ensure cleanup occurs on early exit (use `try`/`finally`).
 - Consider adding small helpers that return `Option` or `Except` to make failure
 	explicit in Lean code.
+- Use `Id.run do` for pure mutable-variable functions (game logic, array helpers).
+  If your function uses `let mut`, it **must** be inside a `do` block.
+- Prefer `arr[i]!` over proof-based indexing for game code — it's simpler and
+  the performance difference is negligible. Add `deriving Inhabited` to the
+  element type.
+- When building generic array utilities, use explicit type parameters:
+  `{T : Type} [Inhabited T]` (not bare `α`) because the recommended
+  `-DautoImplicit=false` flag disallows implicit type variables.
 
 ## FFI extension checklist
 

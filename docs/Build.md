@@ -136,6 +136,27 @@ If you are using AllegroInLean as a Lake dependency in your own project (see
 [README — Using as a dependency](../README.md#using-as-a-dependency)), you
 need Allegro installed on your system **or** built locally inside your project.
 
+#### Quick-start checklist (consumer project)
+
+1. Create three files: `lean-toolchain`, `lakefile.lean`, `Main.lean`
+   (see the [README template](../README.md#using-as-a-dependency))
+2. `lake update` — fetches AllegroInLean from GitHub
+3. `lake build` — compiles your project (pass `-K allegroPrefix=…` if needed)
+4. Run from the project root so relative asset paths (e.g. `data/`) resolve
+5. On Windows, ensure `C:\msys64\mingw64\bin` is in `PATH` before building
+
+#### Common consumer-project pitfalls
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `al_init` returns 0 silently | Header/library version mismatch | Pass `-K allegroPrefix=$PWD/allegro-local` |
+| `Unknown identifier α` | `-DautoImplicit=false` in `moreLeanArgs` | Use explicit type params: `{T : Type}` |
+| `Unknown constant ByteArray.mkEmpty` | API removed in Lean 4.27.0 | Use `ByteArray.empty` |
+| `List.enum` not found | API removed in Lean 4.27.0 | Use `for i in List.range arr.size` + `arr[i]!` |
+| `failed to synthesize Inhabited` | `arr[i]!` on a custom struct array | Add `deriving Inhabited` to the struct |
+| Parse error on multi-line `{ s with }` | Continuation fields on new lines | Keep `with` update on one line |
+| Exit code `-1073741515` (Windows) | Allegro DLLs not on PATH | `$env:PATH = "C:\msys64\mingw64\bin;" + $env:PATH` |
+
 The recommended approach for Fedora / Rocky / RHEL (where system packages are
 unavailable):
 

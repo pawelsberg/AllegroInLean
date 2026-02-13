@@ -306,11 +306,31 @@ lake build
 When starting a real game (not just a rectangle demo), this order avoids most setup mistakes:
 
 1. `Allegro.init`
-2. Addons/subsystems you actually use (`initPrimitivesAddon`, `initFontAddon`, `installKeyboard`, `installAudio`, `initAcodecAddon`, `reserveSamples`)
+2. Addons/subsystems you actually use (`initPrimitivesAddon`, `initFontAddon`, `installKeyboard`, `installMouse`, `installAudio`, `initAcodecAddon`, `reserveSamples`)
 3. `createDisplay`, `createTimer`, `createEventQueue`, `createEvent`
-4. Register event sources (display, keyboard/mouse, timer)
+4. Register event sources (display, keyboard, mouse, timer)
 5. Start timer, run event loop, update on timer events, draw only when queue is empty
 6. Destroy in reverse order (timer/event/queue/assets/display, then shutdown addons)
+
+**Mouse-driven games**: Don't forget `installMouse` and `getMouseEventSource` —
+without registering the mouse event source, `mouseAxes` and `mouseButtonDown`
+events will never arrive:
+
+```lean
+let _ ← Allegro.installMouse
+let mouseSrc ← Allegro.getMouseEventSource
+queue.registerSource mouseSrc
+```
+
+**Audio**: Call `reserveSamples n` (e.g. 4–8) before loading/playing any sample.
+For looping background music, use `sample.play gain pan speed Playmode.loop`.
+Allegro's `Sample.play` fires-and-forgets — no stream management needed for
+simple sound effects.
+
+**Pure game state**: Keep game logic in a pure `structure GameState` updated
+by pure functions. Only rendering and event dispatch should use `IO`.
+See [Overview — Functional game loop pattern](docs/Overview.md#functional-game-loop-pattern)
+for a full example.
 
 This is the same lifecycle used by the demos and is suitable for side-scrollers,
 arcade games, and interactive tools.
@@ -428,8 +448,24 @@ identically-named Allegro declarations. If you encounter unexpected
 >   `(List.replicate n default).toArray` or `Array.ofFn (n := 5) (fun _ => 0)`.
 > - `Array.setD` does not exist. Use `Array.set!` (panics on out-of-bounds)
 >   or guard the index manually.
+> - `ByteArray.mkEmpty` does not exist. Use `ByteArray.empty`.
+> - `List.enum` does not exist. Use indexed `for i in List.range arr.size` loops instead.
 > - To iterate over a range, use `for i in List.range n do` (the `[:n]` syntax
 >   may not be available).
+> - When `moreLeanArgs` includes `-DautoImplicit=false` (recommended), **all
+>   type variables must be declared explicitly** with `{T : Type}` in function
+>   signatures. Bare `α` in parameter types will fail.
+> - Anonymous constructor syntax `⟨x, y, z⟩` can fail when the expected type
+>   is ambiguous (e.g. in `if`/`else` branches). Use explicit constructors
+>   like `MyStruct.mk x y z` or add a type annotation: `let v : MyStruct := ⟨…⟩`.
+> - Structure update `{ expr with field := val }` can fail when `expr` is an
+>   array-indexed element like `arr[i]!`. Bind the element first:
+>   `let old := arr[i]!; { old with field := val }`.
+> - Multi-line structure update literals (where `with` fields span multiple
+>   lines) can cause parse errors. Prefer single-line `{ s with a := x, b := y }`
+>   or use intermediate `let` bindings.
+> - Add `deriving Inhabited` to any structure you index with `arr[i]!`.
+> - Add `deriving BEq` to structures used with `Array.contains`.
 
 ## Layout
 
