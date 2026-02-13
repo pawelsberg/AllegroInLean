@@ -69,14 +69,6 @@ If pkg-config is still not discovered, point `allegroPrefix` explicitly:
 lake build -K allegroPrefix=/mingw64
 ```
 
-Quick runtime check (PowerShell):
-```powershell
-$env:PATH = "C:\msys64\mingw64\bin;" + $env:PATH
-.lake\build\bin\allegroLoopDemo.exe
-```
-If this command exits with `-1073741515` (`0xC0000135`), required Allegro DLLs
-are still missing from your active `PATH`.
-
 ### Building from source (helper script)
 
 If system packages are not available (common on Fedora / Rocky / RHEL), or you
@@ -170,7 +162,7 @@ lake build -K allegroPrefix=$PWD/allegro-local
 > returning `false` at runtime with no error message.
 
 Make sure your consumer `lakefile.lean` includes the proper `-L` and `-rpath`
-flags for `allegro-local/` — see the template in the README.
+flags for `allegro-local/` — see the [lakefile template](../README.md#step-2--lakefilelean) in the README.
 
 ### Build configuration (library development)
 
@@ -191,7 +183,6 @@ lake build
 
 You can run demos either via `lake exe` or directly from the build output.
 
-**Linux / macOS:**
 ```bash
 lake exe allegroLoopDemo                              # via Lake
 .lake/build/bin/allegroConfigDemo                     # direct binary path
@@ -205,13 +196,9 @@ lake exe allegroBlendingDemo   # windowed — blend-mode visualiser
 lake exe allegroNativeDialogDemo  # windowed — file chooser, message box, text log
 ```
 
-**Windows (PowerShell):**
-```powershell
-.lake\build\bin\allegroConfigDemo.exe      # console-only — Config subsystem
-.lake\build\bin\allegroColorDemo.exe       # console-only — Color addon
-.lake\build\bin\allegroUstrDemo.exe        # console-only — Ustr (Unicode strings)
-.lake\build\bin\allegroPathDemo.exe        # console-only — Path helpers
-```
+> **Windows:** Use backslashes and `.exe` suffix for direct paths:
+> `.lake\build\bin\allegroConfigDemo.exe`. Ensure `C:\msys64\mingw64\bin`
+> is on your `PATH` (see [Windows setup](#windows-msys2--mingw-w64) above).
 
 > **Wayland note:** The native dialog demo requires XWayland on Wayland sessions.
 > Launch with `GDK_BACKEND=x11 lake exe allegroNativeDialogDemo`.
@@ -228,10 +215,7 @@ A quick integration check: initialises every addon, creates a display, and tears
 down cleanly.
 
 ```bash
-lake build allegroSmoke && .lake/build/bin/allegroSmoke           # Linux / macOS
-```
-```powershell
-lake build allegroSmoke; .lake\build\bin\allegroSmoke.exe          # Windows
+lake build allegroSmoke && .lake/build/bin/allegroSmoke
 ```
 
 ### Functional tests
@@ -239,23 +223,19 @@ Per-module tests that exercise bindings against real Allegro behaviour (config
 round-trips, colour math, font metrics, path manipulation, etc.).
 
 ```bash
-lake build allegroFuncTest && .lake/build/bin/allegroFuncTest     # Linux / macOS
-```
-```powershell
-lake build allegroFuncTest; .lake\build\bin\allegroFuncTest.exe    # Windows
+lake build allegroFuncTest && .lake/build/bin/allegroFuncTest
 ```
 
 ### Error-path tests
 Validates that bad inputs return sensible failures (null handles, missing files,
 out-of-range parameters, `Option`-returning wrappers, etc.).
 
-```
+```bash
 lake build allegroErrorTest && .lake/build/bin/allegroErrorTest
 ```
 
 ### Run all tests at once
 
-**Linux / macOS:**
 ```bash
 lake build allegroSmoke allegroFuncTest allegroErrorTest && \
   .lake/build/bin/allegroSmoke && \
@@ -263,13 +243,8 @@ lake build allegroSmoke allegroFuncTest allegroErrorTest && \
   .lake/build/bin/allegroErrorTest
 ```
 
-**Windows (PowerShell):**
-```powershell
-lake build allegroSmoke allegroFuncTest allegroErrorTest
-.lake\build\bin\allegroSmoke.exe
-.lake\build\bin\allegroFuncTest.exe
-.lake\build\bin\allegroErrorTest.exe
-```
+> **Windows:** Use backslashes, `.exe` suffix, and `;` instead of `&&`:
+> `lake build allegroSmoke; .lake\build\bin\allegroSmoke.exe`
 
 ### Data files
 Some tests and examples reference files under `data/`:

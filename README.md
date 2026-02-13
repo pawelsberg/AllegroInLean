@@ -133,7 +133,6 @@ allegroPrefix = "/opt/allegro"
 
 ## Tests
 
-**Linux / macOS:**
 ```bash
 lake build allegroSmoke allegroFuncTest allegroErrorTest && \
   .lake/build/bin/allegroSmoke && \
@@ -141,13 +140,8 @@ lake build allegroSmoke allegroFuncTest allegroErrorTest && \
   .lake/build/bin/allegroErrorTest
 ```
 
-**Windows (PowerShell):**
-```powershell
-lake build allegroSmoke allegroFuncTest allegroErrorTest
-.lake\build\bin\allegroSmoke.exe
-.lake\build\bin\allegroFuncTest.exe
-.lake\build\bin\allegroErrorTest.exe
-```
+> **Windows:** Use backslashes, `.exe` suffix, and `;` instead of `&&`:
+> `lake build allegroSmoke; .lake\build\bin\allegroSmoke.exe`
 
 ## Using as a dependency
 
@@ -178,6 +172,7 @@ package my_game where
 -- IMPORTANT: Only add directories where Allegro is actually installed.
 -- Adding broad system paths (e.g. /usr/lib64) can shadow the Lean
 -- toolchain's bundled glibc and cause link failures on glibc ≥ 2.34.
+-- NOTE: If MSYS2 is installed outside C:\msys64, update the path below.
 def allegroLibDirs : Array String := Id.run do
   let mut dirs : Array String := #[]
   if System.Platform.isWindows then
@@ -290,6 +285,14 @@ lake build                                # compile
 lake update
 lake build -K allegroPrefix=$PWD/allegro-local
 .lake/build/bin/my_game
+```
+
+**Windows (PowerShell):**
+```powershell
+$env:PATH = "C:\msys64\mingw64\bin;" + $env:PATH
+lake update
+lake build
+.lake\build\bin\my_game.exe
 ```
 
 > ⚠️ **The `-K allegroPrefix=…` flag is required** when using a local Allegro
@@ -420,12 +423,13 @@ identically-named Allegro declarations. If you encounter unexpected
 - Qualify the call with `_root_`: e.g. `_root_.SomeModule.someFunction`
 - Use a selective open: `open Allegro in` on specific `do` blocks
 
-> **Note:** `Array.mkArray` does not exist in Lean 4.27.0 (it was removed
-> from the standard library). Use one of these alternatives instead:
-> ```lean
-> let arr : Array Cell := (List.replicate n default).toArray
-> let arr : Array Nat  := Array.ofFn (n := 5) (fun _ => 0)
-> ```
+> **Lean 4.27.0 API differences:**
+> - `Array.mkArray` was removed from the standard library. Use
+>   `(List.replicate n default).toArray` or `Array.ofFn (n := 5) (fun _ => 0)`.
+> - `Array.setD` does not exist. Use `Array.set!` (panics on out-of-bounds)
+>   or guard the index manually.
+> - To iterate over a range, use `for i in List.range n do` (the `[:n]` syntax
+>   may not be available).
 
 ## Layout
 

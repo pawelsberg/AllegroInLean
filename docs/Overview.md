@@ -113,6 +113,50 @@ let sample ← Allegro.loadSample "data/beep.wav"
 3. **Cleanup order** — Destroy resources in reverse order of creation.
    Shutdown addons in reverse order of initialisation.
 
+### Functional game loop pattern
+
+For games, keep your state in a pure `structure` and update it via pure functions.
+Only the main event loop and drawing require `IO`. This makes game logic testable
+and avoids excessive use of mutable references:
+
+```lean
+-- Pure game state — no IO
+structure GameState where
+  playerX : Float
+  playerY : Float
+  score   : Nat
+
+structure InputState where
+  upHeld   : Bool
+  downHeld : Bool
+
+-- Pure update — all game logic here
+def gameTick (gs : GameState) (input : InputState) : GameState :=
+  let dy := (if input.downHeld then 2.0 else 0.0) -
+            (if input.upHeld   then 2.0 else 0.0)
+  { gs with playerY := gs.playerY + dy }
+
+-- IO only for rendering
+def drawFrame (gs : GameState) (font : Allegro.Font) : IO Unit := do
+  Allegro.clearToColorRgb 0 0 0
+  Allegro.drawFilledCircleRgb gs.playerX gs.playerY 16 255 255 255
+  Allegro.drawTextRgb font 255 255 0 10 10 Allegro.TextAlign.left s!"Score: {gs.score}"
+  Allegro.flipDisplay
+```
+
+In the main loop, the only `mut` variables are the game state and input snapshot:
+
+```lean
+let mut gs := { playerX := 320, playerY := 240, score := 0 : GameState }
+let mut input : InputState := { upHeld := false, downHeld := false }
+-- on timer event:
+gs := gameTick gs input
+drawFrame gs font
+```
+
+This pattern scales well to complex games — rooms, enemies, and inventory can all
+live inside the pure `GameState` structure.
+
 
 ## Structure
 
