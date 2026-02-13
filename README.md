@@ -44,6 +44,11 @@ sudo dnf install -y gcc gcc-c++ cmake make \
 
 This builds Allegro 5.2.11 into `allegro-local/` which the lakefile discovers automatically.
 
+> **Using AllegroInLean as a dependency?** You won't have `scripts/` in your
+> own project yet. Run `lake update` first, then copy the script from the
+> fetched package — see [Platform notes](#platform-notes) below for the
+> exact commands.
+
 **Windows (MSYS2 / MinGW-w64)**
 
 ```bash
@@ -362,6 +367,21 @@ let sample ← Allegro.loadSample "data/beep.wav"
 > `Allegro.createBuiltinFont` for a zero-dependency 8×8 bitmap font.
 > It requires no addon initialisation beyond `Allegro.initFontAddon`.
 
+> **Font from the dependency:** After `lake update`, a ready-to-use
+> DejaVu Sans font (SIL Open Font License) is available at
+> `.lake/packages/AllegroInLean/data/DejaVuSans.ttf`. Copy it into your
+> project's `data/` directory:
+> ```bash
+> mkdir -p data
+> cp .lake/packages/AllegroInLean/data/DejaVuSans.ttf data/
+> cp .lake/packages/AllegroInLean/data/DejaVuSans.LICENSE data/
+> ```
+
+> **Examples:** The fetched dependency also contains 35+ demo programs
+> in `.lake/packages/AllegroInLean/examples/Examples/` covering every
+> addon (audio, input, primitives, fonts, etc.). They are an excellent
+> reference for learning the API.
+
 Run your executable from the project root so that relative paths resolve
 correctly:
 
@@ -372,11 +392,18 @@ correctly:
 
 ### `open Allegro` namespace note
 
-When you `open Allegro`, some standard library names (e.g. `Array.mkArray`) may
-be shadowed by identically-named Allegro declarations. If you encounter
-unexpected "unknown identifier" errors, either:
-- Qualify the call: `_root_.Array.mkArray n default`
+When you `open Allegro`, some standard library names may be shadowed by
+identically-named Allegro declarations. If you encounter unexpected
+"unknown identifier" errors, either:
+- Qualify the call with `_root_`: e.g. `_root_.SomeModule.someFunction`
 - Use a selective open: `open Allegro in` on specific `do` blocks
+
+> **Note:** `Array.mkArray` does not exist in Lean 4.27.0 (it was removed
+> from the standard library). Use one of these alternatives instead:
+> ```lean
+> let arr : Array Cell := (List.replicate n default).toArray
+> let arr : Array Nat  := Array.ofFn (n := 5) (fun _ => 0)
+> ```
 
 ## Layout
 
