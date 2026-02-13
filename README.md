@@ -14,12 +14,23 @@ layer.
 
 **Debian / Ubuntu**
 
+> ⚠️ **Version requirement:** AllegroInLean requires Allegro **5.2.11**.
+> Ubuntu 24.04 and Debian 12 ship **5.2.9** — the system packages will install
+> but the C shim will fail to compile with errors like
+> `implicit declaration of function 'al_get_joystick_guid'`.
+> If your distro ships an older version, **build from source** using
+> `scripts/build-allegro.sh` — see [Platform notes](#platform-notes) below.
+
 ```bash
 sudo apt-get install liballegro5-dev liballegro-image5-dev \
-  liballegro-font5-dev liballegro-ttf5-dev liballegro-primitives5-dev \
+  liballegro-ttf5-dev \
   liballegro-audio5-dev liballegro-acodec5-dev liballegro-dialog5-dev \
   liballegro-video5-dev libgtk-3-dev
 ```
+
+> **Note:** `liballegro5-dev` already includes the font, primitives, color,
+> and memfile headers on Debian/Ubuntu. Per-addon `-dev` packages only exist
+> for image, ttf, audio, acodec, dialog, and video.
 
 **macOS (Homebrew)**
 
@@ -273,14 +284,16 @@ def main : IO Unit := do
 
 ### Step 4 — Build and run
 
-**If Allegro is installed system-wide** (Debian/Ubuntu, macOS Homebrew):
+**If Allegro ≥ 5.2.11 is installed system-wide** (macOS Homebrew, or distros
+with a recent enough package):
 ```bash
 lake update                               # fetch dependencies
 lake build                                # compile
 .lake/build/bin/my_game                   # run (from project root)
 ```
 
-**If you built Allegro locally** into `allegro-local/` (Fedora/Rocky/RHEL):
+**If you built Allegro locally** into `allegro-local/`
+(Fedora/Rocky/RHEL, **or Debian/Ubuntu when the system version is < 5.2.11**):
 ```bash
 lake update
 lake build -K allegroPrefix=$PWD/allegro-local

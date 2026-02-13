@@ -9,15 +9,27 @@
 ## Installing Allegro 5 (per platform)
 
 ### Linux — Debian / Ubuntu
+
+> ⚠️ Ubuntu 24.04 / Debian 12 ship Allegro **5.2.9**. AllegroInLean requires
+> **5.2.11**. If the build fails with `implicit declaration of function` errors
+> in the C shim, build Allegro from source — see
+> [Building from source](#building-from-source-helper-script) below.
+> The Debian/Ubuntu build dependencies are listed in that section.
+
 ```bash
 sudo apt-get update
 sudo apt-get install -y \
-  liballegro5-dev liballegro-image5-dev liballegro-font5-dev \
-  liballegro-ttf5-dev liballegro-primitives5-dev \
+  liballegro5-dev liballegro-image5-dev \
+  liballegro-ttf5-dev \
   liballegro-audio5-dev liballegro-acodec5-dev \
   liballegro-dialog5-dev liballegro-video5-dev \
   libgtk-3-dev   # needed by native-dialog addon
 ```
+
+> **Note:** `liballegro5-dev` already includes the font, primitives, color,
+> and memfile headers on Debian/Ubuntu. The per-addon `-dev` packages
+> (`liballegro-font5-dev`, `liballegro-primitives5-dev`) do **not exist**
+> in Ubuntu 24.04 / Debian 12 and will cause `apt-get` to fail.
 
 ### Linux — Fedora / Rocky / RHEL
 
@@ -155,6 +167,7 @@ need Allegro installed on your system **or** built locally inside your project.
 | `List.enum` not found | API removed in Lean 4.27.0 | Use `for i in List.range arr.size` + `arr[i]!` |
 | `failed to synthesize Inhabited` | `arr[i]!` on a custom struct array | Add `deriving Inhabited` to the struct |
 | Parse error on multi-line `{ s with }` | Continuation fields on new lines | Keep `with` update on one line |
+| `implicit declaration of function` in C shim | System Allegro older than 5.2.11 | Build from source: `./scripts/build-allegro.sh` + `-K allegroPrefix` |
 | Exit code `-1073741515` (Windows) | Allegro DLLs not on PATH | `$env:PATH = "C:\msys64\mingw64\bin;" + $env:PATH` |
 
 The recommended approach for Fedora / Rocky / RHEL (where system packages are
