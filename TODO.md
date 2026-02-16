@@ -6,17 +6,7 @@ Lean 4 FFI bindings to Allegro 5.
 
 ## Remaining work
 
-### Graceful degradation for Allegro < 5.2.11
-
-C-side preprocessor guards are in place. Remaining Lean-side work:
-
-- [ ] Test with Ubuntu 24.04's system Allegro 5.2.9 packages.
-- [ ] On the Lean side, consider gating bindings behind a config flag or
-      returning `none` for unavailable functions.
-
----
-
-## Platform game example (isometric)
+### Platform game example (isometric)
 
 Create a self-contained isometric platform game in `examples/IsometricGame/`:
 

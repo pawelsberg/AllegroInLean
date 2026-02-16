@@ -197,6 +197,17 @@ lake build allegroSmoke allegroFuncTest allegroErrorTest && \
 ```bash
 mkdir my_game && cd my_game
 /path/to/AllegroInLean/scripts/init-project.sh   # generates all files below
+```
+
+If Allegro is not installed system-wide, build it locally first:
+
+```bash
+./scripts/build-allegro.sh
+```
+
+Then build and run:
+
+```bash
 lake update && lake build && .lake/build/bin/my_game
 ```
 
@@ -205,14 +216,15 @@ After `lake update` you can also run the script from the cached package:
 
 ### Manual setup — 3 files
 
+Create these three files in an empty directory:
+
 **`lean-toolchain`**
 
 ```
 leanprover/lean4:4.27.0
 ```
 
-**`lakefile.lean`** — the library exports `allegroLinkArgs` (platform
-detection, `-L`, `-rpath`, all `-l` flags), so your lakefile is just:
+**`lakefile.lean`**
 
 ```lean
 import Lake
@@ -221,17 +233,47 @@ open Lake DSL
 require AllegroInLean from git
   "https://github.com/pawelsberg/AllegroInLean" @ "main"
 
+-- ── Allegro link-flag helper ──
+-- Lake does not propagate link args from dependency libraries,
+-- so the consumer must supply them.  The block below auto-detects
+-- allegro-local/ (built by scripts/build-allegro.sh) and falls
+-- back to the default system library paths.
+
+private unsafe def fileExistsImpl (p : System.FilePath) : Bool :=
+  let action : IO Bool := p.pathExists
+  match unsafeBaseIO action.toBaseIO with
+  | Except.ok b => b | Except.error _ => false
+
+@[implemented_by fileExistsImpl]
+private opaque fileExists (p : System.FilePath) : Bool
+
 package my_game where
   moreLeanArgs := #["-DautoImplicit=false"]
+  moreLinkArgs := Id.run do
+    let mut args := #[]
+    -- Auto-detect allegro-local/ produced by scripts/build-allegro.sh
+    let pfx := __dir__ / "allegro-local"
+    if fileExists (pfx / "include" / "allegro5" / "allegro.h") then
+      for sub in #["lib64", "lib"] do
+        args := args.push s!"-L{(pfx / sub)}"
+        if !System.Platform.isWindows then
+          args := args.push s!"-Wl,-rpath,{(pfx / sub)}"
+    args := args ++ #[
+      "-lallegro", "-lallegro_image", "-lallegro_font",
+      "-lallegro_ttf", "-lallegro_primitives",
+      "-lallegro_audio", "-lallegro_acodec", "-lallegro_color",
+      "-lallegro_dialog", "-lallegro_video", "-lallegro_memfile"]
+    if !System.Platform.isWindows && !System.Platform.isOSX then
+      args := args.push "-lm"
+      args := args.push "-Wl,--allow-shlib-undefined"
+    return args
 
 @[default_target]
 lean_exe my_game where
   root := `Main
-  moreLinkArgs := allegroLinkArgs
 ```
 
-**`Main.lean`** — `runGameLoop` handles init, display, timer, event queue,
-addon setup, and cleanup automatically:
+**`Main.lean`**
 
 ```lean
 import Allegro
@@ -259,26 +301,31 @@ def main : IO Unit :=
 
 **Build and run:**
 
+Allegro 5 must be installed on your system before `lake build` — the C shim
+compiles against Allegro headers. See [Install Allegro 5](#1-install-allegro-5)
+above. On Fedora / Rocky / RHEL (no system packages), build locally after
+`lake update`:
+
+```bash
+lake update
+mkdir -p scripts
+cp .lake/packages/AllegroInLean/scripts/build-allegro.sh scripts/
+./scripts/build-allegro.sh
+lake build
+.lake/build/bin/my_game
+```
+
+On systems with Allegro system packages (Debian/Ubuntu ≥ 5.2.11, macOS,
+MSYS2):
+
 ```bash
 lake update && lake build && .lake/build/bin/my_game
 ```
 
-If you built Allegro locally (`scripts/build-allegro.sh`), pass the prefix:
-```bash
-lake build -K allegroPrefix=$PWD/allegro-local
-```
+> The lakefile auto-detects `allegro-local/` if present — no extra flags
+> needed.
 
 ### Platform notes
-
-**Linux — building Allegro locally:**
-Fedora, Rocky, RHEL, and Debian/Ubuntu < 5.2.11 need a source build:
-
-```bash
-# After lake update:
-mkdir -p scripts
-cp .lake/packages/AllegroInLean/scripts/build-allegro.sh ./scripts/
-./scripts/build-allegro.sh
-```
 
 **Windows:** Ensure `C:\msys64\mingw64\bin` is on `PATH`, or run from the
 MSYS2 MINGW64 shell.
@@ -286,8 +333,9 @@ MSYS2 MINGW64 shell.
 ### Troubleshooting
 
 **`al_init failed` at runtime:** The C shim was compiled against different
-headers than the runtime libraries. Pass the correct prefix:
-`lake build -K allegroPrefix=$PWD/allegro-local`.
+headers than the runtime libraries. Ensure `allegro-local/` (if used) was
+built with the correct Allegro version. Try a clean rebuild:
+`lake clean && lake build`.
 
 **"implicit declaration of function" build error:** Allegro version is
 too old (< 5.2.11). Build from source via `scripts/build-allegro.sh`.
@@ -321,30 +369,6 @@ identically-named Allegro declarations. If you encounter unexpected
 "unknown identifier" errors, either:
 - Qualify the call with `_root_`: e.g. `_root_.SomeModule.someFunction`
 - Use a selective open: `open Allegro in` on specific `do` blocks
-
-> **Lean 4.27.0 API differences:**
-> - `Array.mkArray` was removed from the standard library. Use
->   `(List.replicate n default).toArray` or `Array.ofFn (n := 5) (fun _ => 0)`.
-> - `Array.setD` does not exist. Use `Array.set!` (panics on out-of-bounds)
->   or guard the index manually.
-> - `ByteArray.mkEmpty` does not exist. Use `ByteArray.empty`.
-> - `List.enum` does not exist. Use indexed `for i in List.range arr.size` loops instead.
-> - To iterate over a range, use `for i in List.range n do` (the `[:n]` syntax
->   may not be available).
-> - When `moreLeanArgs` includes `-DautoImplicit=false` (recommended), **all
->   type variables must be declared explicitly** with `{T : Type}` in function
->   signatures. Bare `α` in parameter types will fail.
-> - Anonymous constructor syntax `⟨x, y, z⟩` can fail when the expected type
->   is ambiguous (e.g. in `if`/`else` branches). Use explicit constructors
->   like `MyStruct.mk x y z` or add a type annotation: `let v : MyStruct := ⟨…⟩`.
-> - Structure update `{ expr with field := val }` can fail when `expr` is an
->   array-indexed element like `arr[i]!`. Bind the element first:
->   `let old := arr[i]!; { old with field := val }`.
-> - Multi-line structure update literals (where `with` fields span multiple
->   lines) can cause parse errors. Prefer single-line `{ s with a := x, b := y }`
->   or use intermediate `let` bindings.
-> - Add `deriving Inhabited` to any structure you index with `arr[i]!`.
-> - Add `deriving BEq` to structures used with `Array.contains`.
 
 ## Layout
 

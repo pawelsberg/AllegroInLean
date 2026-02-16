@@ -81,8 +81,9 @@ fi
 write_if_missing "lean-toolchain" <<< "$LEAN_VERSION"
 
 # ── 2. lakefile.lean ───────────────────────────────────────────────
-# The library's lakefile exports `allegroLinkArgs` (with pkg-config
-# detection, rpath, platform flags).  Consumers just reference it.
+# Lake does not propagate link args from dependency libraries, so the
+# consumer lakefile must supply Allegro link flags itself.  The
+# template auto-detects allegro-local/ when present.
 write_if_missing "lakefile.lean" <<'LAKEFILE'
 import Lake
 open Lake DSL
@@ -90,13 +91,44 @@ open Lake DSL
 require AllegroInLean from git
   "https://github.com/pawelsberg/AllegroInLean" @ "main"
 
+-- ── Allegro link-flag helper ──
+-- Lake does not propagate link args from dependency libraries,
+-- so the consumer must supply them.  The block below auto-detects
+-- allegro-local/ (built by scripts/build-allegro.sh) and falls
+-- back to the default system library paths.
+
+private unsafe def fileExistsImpl (p : System.FilePath) : Bool :=
+  let action : IO Bool := p.pathExists
+  match unsafeBaseIO action.toBaseIO with
+  | Except.ok b => b | Except.error _ => false
+
+@[implemented_by fileExistsImpl]
+private opaque fileExists (p : System.FilePath) : Bool
+
 package my_game where
   moreLeanArgs := #["-DautoImplicit=false"]
+  moreLinkArgs := Id.run do
+    let mut args := #[]
+    -- Auto-detect allegro-local/ produced by scripts/build-allegro.sh
+    let pfx := __dir__ / "allegro-local"
+    if fileExists (pfx / "include" / "allegro5" / "allegro.h") then
+      for sub in #["lib64", "lib"] do
+        args := args.push s!"-L{(pfx / sub)}"
+        if !System.Platform.isWindows then
+          args := args.push s!"-Wl,-rpath,{(pfx / sub)}"
+    args := args ++ #[
+      "-lallegro", "-lallegro_image", "-lallegro_font",
+      "-lallegro_ttf", "-lallegro_primitives",
+      "-lallegro_audio", "-lallegro_acodec", "-lallegro_color",
+      "-lallegro_dialog", "-lallegro_video", "-lallegro_memfile"]
+    if !System.Platform.isWindows && !System.Platform.isOSX then
+      args := args.push "-lm"
+      args := args.push "-Wl,--allow-shlib-undefined"
+    return args
 
 @[default_target]
 lean_exe my_game where
   root := `Main
-  moreLinkArgs := allegroLinkArgs
 LAKEFILE
 
 # ── 3. Main.lean ───────────────────────────────────────────────────
@@ -141,6 +173,6 @@ echo ""
 echo "Next steps:"
 echo "  1. (Linux without system Allegro) ./scripts/build-allegro.sh"
 echo "  2. lake update"
-echo "  3. lake build              # or: lake build -K allegroPrefix=\$PWD/allegro-local"
+echo "  3. lake build"
 echo "  4. .lake/build/bin/my_game"
 echo ""

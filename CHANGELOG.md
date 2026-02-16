@@ -18,8 +18,8 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 - **Sound convenience layer**: `PlayParams` structure, `playOnce`/`playLoop`/`playWith` wrappers in `Audio.lean` + `Compat.lean`.
 - **Better error messages**: `initOrFail` (throws descriptive error), `checkSetup` diagnostic function.
 - **Starter kit script**: `scripts/init-project.sh` bootstraps a new game project with `lean-toolchain`, `lakefile.lean`, `Main.lean`, font, and build script.
-- **Joystick version guards**: `#if ALLEGRO_VERSION_INT >= AL_ID(5,2,11,0)` guards in `ffi/allegro_joystick.c` for graceful degradation on Allegro < 5.2.11.
-- **lakefile documentation**: Public API docs explaining `allegroLinkArgs` and `allegro_exe` macro for consumer packages.
+- **Joystick extras**: GUID, type, and mapping functions (require Allegro 5.2.11).
+- **lakefile documentation**: Public API docs explaining `allegro_exe` macro for internal targets and automatic link-arg propagation for consumer packages.
 
 ### Changed
 - Root `Allegro.lean` now imports `Math`, `Vec2`, and `GameLoop` modules.

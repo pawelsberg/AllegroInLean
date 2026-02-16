@@ -45,27 +45,14 @@ private opaque fileExistsBuildTime : System.FilePath → Bool
 -- ── Allegro prefix detection ──
 
 -- ════════════════════════════════════════════════════════════════════
--- PUBLIC API FOR CONSUMER PACKAGES
+-- CONSUMER PACKAGES
 -- ════════════════════════════════════════════════════════════════════
--- The following definitions are intentionally public so that downstream
--- packages can reference them in their lakefiles:
+-- Lake does NOT propagate `moreLinkArgs` from a dependency lean_lib
+-- to the consumer executable.  Consumer lakefiles must supply their
+-- own Allegro link flags (see the lakefile template in README.md).
 --
---   require AllegroInLean from git "…"
---
---   lean_exe my_game where
---     root := `Main
---     moreLinkArgs := allegroLinkArgs
---
--- That's it — no need to duplicate platform detection or link flags.
--- The `allegroshim` extern_lib is linked transitively via the `Allegro`
--- lean_lib dependency.
---
--- Available public definitions:
---   • allegroPrefixCandidates : Array System.FilePath
---   • allegroLibDirs          : Array System.FilePath
---   • allegroIncludeDirs      : Array System.FilePath
---   • allegroLinkArgs         : Array String
---   • allegro_exe (macro)     — creates a lean_exe with link args pre-configured
+-- The `moreLinkArgs` on `lean_lib Allegro` below is used only when
+-- building this package's own executables (demos / tests).
 -- ════════════════════════════════════════════════════════════════════
 
 /-- Candidate pkg-config directories from a local Allegro build (produced by `scripts/build-allegro.sh`). -/
@@ -84,7 +71,7 @@ def allegroPrefixCandidates : Array System.FilePath :=
   match get_config? allegroPrefix with
   | some p => #[System.FilePath.mk p]
   | none =>
-    -- Try local build (allegro-local/, or legacy vendored tree)
+    -- Try local build (allegro-local/)
     match pkgConfigWithPath localPkgConfigPath #["--variable=prefix", "allegro-5"] with
     | some p => #[System.FilePath.mk p]
     | none =>
@@ -183,6 +170,7 @@ package AllegroInLean where
 @[default_target]
 lean_lib Allegro where
   srcDir := "src"
+  moreLinkArgs := allegroLinkArgs
 
 -- ── Shared test harness library ──
 

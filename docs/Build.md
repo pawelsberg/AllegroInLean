@@ -154,29 +154,32 @@ need Allegro installed on your system **or** built locally inside your project.
 > ```bash
 > mkdir my_game && cd my_game
 > /path/to/AllegroInLean/scripts/init-project.sh
+> # (Linux without system Allegro) ./scripts/build-allegro.sh
 > lake update && lake build
 > ```
 
 #### Quick-start checklist (consumer project)
 
 1. Create three files: `lean-toolchain`, `lakefile.lean`, `Main.lean`
-   (see the [README template](../README.md#using-as-a-dependency))
-2. `lake update` — fetches AllegroInLean from GitHub
-3. `lake build` — compiles your project (pass `-K allegroPrefix=…` if needed)
-4. Run from the project root so relative asset paths (e.g. `data/`) resolve
-5. On Windows, ensure `C:\msys64\mingw64\bin` is in `PATH` before building
+   (see the [README template](../README.md#using-as-a-dependency)).
+   The lakefile must include `moreLinkArgs` with the Allegro link flags —
+   Lake does not propagate link args from dependency libraries.
+2. **Install Allegro 5** — see [Installing Allegro 5](#installing-allegro-5-per-platform) above.
+   On Fedora / Rocky / RHEL (no system packages), run `lake update` first, then
+   build locally — see step 3.
+3. `lake update` — fetches AllegroInLean from GitHub
+4. `lake build` — compiles your project (the lakefile auto-detects `allegro-local/`)
+5. Run from the project root so relative asset paths (e.g. `data/`) resolve
+6. On Windows, ensure `C:\msys64\mingw64\bin` is in `PATH` before building
 
 #### Common consumer-project pitfalls
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `al_init` returns 0 silently | Header/library version mismatch | Pass `-K allegroPrefix=$PWD/allegro-local` |
+| `allegro5/allegro.h: No such file` | Allegro not installed | Install Allegro or build locally: `./scripts/build-allegro.sh` |
+| `al_init` returns 0 silently | Header/library version mismatch | Clean rebuild: `lake clean && lake build` |
 | `Unknown identifier α` | `-DautoImplicit=false` in `moreLeanArgs` | Use explicit type params: `{T : Type}` |
-| `Unknown constant ByteArray.mkEmpty` | API removed in Lean 4.27.0 | Use `ByteArray.empty` |
-| `List.enum` not found | API removed in Lean 4.27.0 | Use `for i in List.range arr.size` + `arr[i]!` |
-| `failed to synthesize Inhabited` | `arr[i]!` on a custom struct array | Add `deriving Inhabited` to the struct |
-| Parse error on multi-line `{ s with }` | Continuation fields on new lines | Keep `with` update on one line |
-| `implicit declaration of function` in C shim | System Allegro older than 5.2.11 | Build from source: `./scripts/build-allegro.sh` + `-K allegroPrefix` |
+| `implicit declaration of function` in C shim | System Allegro older than 5.2.11 | Build from source: `./scripts/build-allegro.sh`, then `lake clean && lake build` |
 | Exit code `-1073741515` (Windows) | Allegro DLLs not on PATH | `$env:PATH = "C:\msys64\mingw64\bin;" + $env:PATH` |
 
 The recommended approach for Fedora / Rocky / RHEL (where system packages are
@@ -193,19 +196,14 @@ cp .lake/packages/AllegroInLean/scripts/build-allegro.sh scripts/
 # 3. Build Allegro locally
 ./scripts/build-allegro.sh
 
-# 4. Build your project — pass the absolute path to allegro-local/
-lake build -K allegroPrefix=$PWD/allegro-local
+# 4. Build your project — allegro-local/ is auto-detected by the lakefile
+lake build
 ```
 
-> ⚠️ **The `-K allegroPrefix=…` flag is critical.** The library's C shim is
-> compiled as part of your build, and `allegroPrefix` controls which headers
-> it uses. Without it, stale system headers (e.g. Allegro 5.2.9 in
-> `/usr/local/include`) can silently shadow the local 5.2.11 headers, causing
-> the `al_init` macro to embed the wrong version — leading to `al_init`
-> returning `false` at runtime with no error message.
-
-Make sure your consumer `lakefile.lean` includes the proper `-L` and `-rpath`
-flags for `allegro-local/` — see the [lakefile template](../README.md#step-2--lakefilelean) in the README.
+> The consumer lakefile auto-detects `allegro-local/` when present.
+> If stale system headers (e.g. Allegro 5.2.9 in `/usr/local/include`)
+> cause issues, remove them or build Allegro locally with
+> `./scripts/build-allegro.sh`.
 
 ### Build configuration (library development)
 
@@ -313,12 +311,7 @@ different headers than the `.so` loaded at runtime, `al_init` will return
 **Common cause:** Stale Allegro headers in `/usr/local/include/allegro5/`
 (e.g. version 5.2.9) shadowing the `allegro-local/include/` headers (5.2.11).
 
-**Fix:** Pass the correct prefix explicitly:
-```bash
-lake build -K allegroPrefix=$PWD/allegro-local
-```
-
-Or remove the stale headers:
+**Fix:** Remove the stale headers and rebuild:
 ```bash
 sudo rm -rf /usr/local/include/allegro5 /usr/local/lib64/liballegro*
 ```
@@ -331,7 +324,7 @@ etc.) were added in later releases. Build Allegro 5.2.11 from source:
 
 ```bash
 ./scripts/build-allegro.sh
-lake build -K allegroPrefix=$PWD/allegro-local
+lake clean && lake build
 ```
 
 ### Windows exits with code `-1073741515` (`0xC0000135`)
@@ -363,11 +356,8 @@ sudo dnf install gtk3-devel
 ### Linker: "unable to find library -lallegro"
 
 Allegro is not installed, or is installed in a non-standard location.
-Either install system packages, build from source, or specify the prefix:
-
-```bash
-lake build -K allegroPrefix=/path/to/allegro
-```
+Either install system packages or build from source with
+`./scripts/build-allegro.sh` (the lakefile auto-detects `allegro-local/`).
 
 ### Runtime: "error while loading shared libraries: liballegro.so.5.2"
 
