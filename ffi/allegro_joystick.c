@@ -121,13 +121,24 @@ lean_object* allegro_al_get_joystick_event_source(void) {
 
 /* ── Joystick stick flags ── */
 
+/* al_get_joystick_stick_flags requires ALLEGRO_UNSTABLE on versions < 5.2.11 */
 lean_object* allegro_al_get_joystick_stick_flags(uint64_t joy, uint32_t stick) {
     if (joy == 0) return io_ok_uint32(0);
+#if ALLEGRO_VERSION_INT >= AL_ID(5, 2, 11, 0)
     return io_ok_uint32((uint32_t)al_get_joystick_stick_flags(
         (ALLEGRO_JOYSTICK *)u64_to_ptr(joy), (int)stick));
+#else
+    (void)stick;
+    return io_ok_uint32(0);
+#endif
 }
 
 /* ── Joystick 5.2.11 — GUID / type / mappings (UNSTABLE) ── */
+/* These functions only exist in Allegro >= 5.2.11.  On older versions,
+   we return safe stub values so the library compiles against system
+   packages on e.g. Ubuntu 24.04 (which ships 5.2.9). */
+
+#if ALLEGRO_VERSION_INT >= AL_ID(5, 2, 11, 0)
 
 lean_object* allegro_al_get_joystick_guid(uint64_t joy) {
     if (joy == 0) return io_ok_string("");
@@ -160,3 +171,27 @@ lean_object* allegro_al_set_joystick_mappings_f(uint64_t file) {
     return io_ok_uint32(al_set_joystick_mappings_f(
         (ALLEGRO_FILE *)u64_to_ptr(file)) ? 1u : 0u);
 }
+
+#else /* Allegro < 5.2.11 — stub implementations */
+
+lean_object* allegro_al_get_joystick_guid(uint64_t joy) {
+    (void)joy;
+    return io_ok_string("");
+}
+
+lean_object* allegro_al_get_joystick_type(uint64_t joy) {
+    (void)joy;
+    return io_ok_uint32(0);
+}
+
+lean_object* allegro_al_set_joystick_mappings(b_lean_obj_arg pathObj) {
+    (void)pathObj;
+    return io_ok_uint32(0);
+}
+
+lean_object* allegro_al_set_joystick_mappings_f(uint64_t file) {
+    (void)file;
+    return io_ok_uint32(0);
+}
+
+#endif /* ALLEGRO_VERSION_INT >= 5.2.11 */

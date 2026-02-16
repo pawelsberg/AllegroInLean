@@ -1,6 +1,6 @@
 # Allegro Lean Library
 
-This library provides low-level Lean bindings to Allegro 5 with a small C shim and a set of 31 Lean modules grouped by subsystem: core (system, display, bitmap, events, input, timer, config, blending, transforms, joystick, touch, path, ustr, thread, file, filesystem, haptic, shader) and addons (image, font, ttf, primitives, audio, color, native dialog, video, memfile), plus a compatibility layer and RAII resource wrappers.
+This library provides low-level Lean bindings to Allegro 5 with a small C shim and a set of 34 Lean modules grouped by subsystem: core (system, display, bitmap, events, input, timer, config, blending, transforms, joystick, touch, path, ustr, thread, file, filesystem, haptic, shader) and addons (image, font, ttf, primitives, audio, color, native dialog, video, memfile), plus a compatibility layer, RAII resource wrappers, and utility modules (Math, Vec2, GameLoop).
 
 ## Goals
 
@@ -10,6 +10,9 @@ This library provides low-level Lean bindings to Allegro 5 with a small C shim a
 - A focused, documented surface for building small games/tools in Lean
 - **Type safety**: all 42 handle types (Display, Bitmap, Timer, AllegroFile, Shader, Haptic, etc.) are opaque newtypes with `BEq`, `Inhabited`, `DecidableEq`, `OfNat 0`, `ToString`, and `Repr` instances — the compiler prevents mixing handle types
 - **Option-returning variants**: 56 `?`-suffixed wrappers (e.g. `createTimer?`, `loadBitmap?`, `loadFont?`) return `Option α` instead of raw `0` on failure, plus `getErrno`/`setErrno` for error context
+- **Utility modules**: `Math.lean` (clampF, lerpF, distF, etc.), `Vec2.lean` (2D vector type with operators), `GameLoop.lean` (high-level game loop combinator)
+- **In-memory sample creation**: `createSampleFromPCM` creates samples from `ByteArray` without disk I/O
+- **Better error handling**: `initOrFail` throws descriptive errors; `checkSetup` diagnoses common init issues
 
 ## Mission
 
@@ -184,8 +187,20 @@ def removeIndices {T : Type} [Inhabited T] (a : Array T) (idxs : Array Nat) : Ar
 
 ### Procedural audio generation
 
-You can generate sound effects and music programmatically by writing WAV
-files to disk, then loading them with `Allegro.loadSample`:
+You can generate sound effects and music programmatically. The preferred
+approach is `createSampleFromPCM`, which creates a sample directly from
+a `ByteArray` without writing to disk:
+
+```lean
+-- Generate raw PCM data (e.g. 16-bit signed, mono, 44100 Hz)
+let pcmData : ByteArray := generateMySound
+let some sample ← Allegro.createSampleFromPCM? pcmData
+    AudioDepth.int16 ChannelConf.conf1 44100
+  | do IO.eprintln "createSampleFromPCM failed"; return
+let _ ← Allegro.playOnce sample
+```
+
+Alternatively, you can write a WAV file to disk and load it:
 
 ```lean
 -- Generate PCM, write as .wav, load as Allegro Sample
@@ -195,8 +210,8 @@ IO.FS.writeBinFile "data/sfx.wav" wavFile
 let sample ← Allegro.loadSample "data/sfx.wav"
 ```
 
-This avoids needing to ship external audio assets and is useful for
-prototyping or procedural games.
+Both approaches avoid needing to ship external audio assets and are useful
+for prototyping or procedural games.
 
 ### Mouse input in the game loop
 
@@ -217,6 +232,9 @@ else if eType == Allegro.EventType.mouseButtonDown then
 ## Structure
 
 - `src/Allegro/*`: Low-level FFI bindings and resource wrappers
+- `src/Allegro/Math.lean`: Math helpers (clampF, lerpF, distF, toFloat, pi, etc.)
+- `src/Allegro/Vec2.lean`: 2D vector type with operators
+- `src/Allegro/GameLoop.lean`: High-level game loop combinator (runGameLoop)
 - `ffi/*`: C shim wrappers over Allegro C API
 - `examples/`: Executable demos
 - `tests/`: Smoke, functional, and error-path tests
@@ -257,3 +275,6 @@ Status key: implemented | partial | deferred
 | PhysFS addon | — | deferred | Requires external PhysFS library not typically installed |
 | Compat layer | Allegro.Compat | implemented | Dot-notation aliases for all handle types (Display, Bitmap, Timer, Font, etc.) |
 | Resource wrappers | Allegro.Resource | implemented | 22 `with*` RAII wrappers (display, timer, bitmap, events, config, transform, font, audio, input, mouse cursor, state) |
+| Math utilities | Allegro.Math | implemented | `toFloat`, `clampF`, `lerpF`, `distF`, `absF`, `minF`, `maxF`, `pi`, `tau`, `wrapAngle`, `degToRad`, `radToDeg`, `signF` |
+| Vec2 type | Allegro.Vec2 | implemented | 2D vector with `Add`/`Sub`/`Neg`/`HMul`/`ToString` instances and operations (`normalize`, `lerp`, `rotate`, `angle`, `perp`) |
+| Game loop | Allegro.GameLoop | implemented | `runGameLoop` combinator with `GameConfig`, `GameEvent` sum type, `AddonFlag` — eliminates boilerplate |

@@ -14,6 +14,35 @@ The original C-style names remain available — this module only adds aliases.
 namespace Allegro
 
 -- ════════════════════════════════════════════════════════════════════════════
+-- Setup diagnostics
+-- ════════════════════════════════════════════════════════════════════════════
+
+/-- Verify common setup preconditions and print diagnostic warnings to stderr.
+    Call this after your initialisation sequence to catch easy-to-miss mistakes:
+    - Allegro system not initialised
+    - Keyboard not installed
+    - Audio not installed or samples not reserved
+
+    Returns `true` if all checks pass. -/
+def checkSetup : IO Bool := do
+  let mut ok := true
+  let sysOk ← isSystemInstalled
+  if sysOk == 0 then
+    IO.eprintln "[AllegroInLean] WARNING: Allegro system not initialised — call Allegro.init first"
+    ok := false
+  let kbOk ← isKeyboardInstalled
+  if kbOk == 0 then
+    IO.eprintln "[AllegroInLean] WARNING: Keyboard not installed — call Allegro.installKeyboard"
+  let audioOk ← isAudioInstalled
+  if audioOk == 0 then
+    IO.eprintln "[AllegroInLean] WARNING: Audio not installed — call Allegro.installAudio + Allegro.initAcodecAddon"
+  else do
+    let mixer ← getDefaultMixer
+    if mixer == (0 : UInt64) then
+      IO.eprintln "[AllegroInLean] WARNING: No default mixer — did you call Allegro.reserveSamples?"
+  return ok
+
+-- ════════════════════════════════════════════════════════════════════════════
 -- Display
 -- ════════════════════════════════════════════════════════════════════════════
 
@@ -22,6 +51,8 @@ namespace Display
 @[inline] def destroy            (d : Display) := destroyDisplay d
 @[inline] def width              (d : Display) := getDisplayWidth d
 @[inline] def height             (d : Display) := getDisplayHeight d
+@[inline] def widthF             (d : Display) := getDisplayWidthF d
+@[inline] def heightF            (d : Display) := getDisplayHeightF d
 @[inline] def resize             (d : Display) (w h : UInt32) := resizeDisplay d w h
 @[inline] def ackResize          (d : Display) := acknowledgeResize d
 @[inline] def ackDrawingHalt     (d : Display) := acknowledgeDrawingHalt d
@@ -191,6 +222,12 @@ namespace Event
 @[inline] def mouseDw              (e : Event) := eventGetMouseDw e
 @[inline] def mousePressure        (e : Event) := eventGetMousePressure e
 @[inline] def mouseButton          (e : Event) := eventGetMouseButton e
+@[inline] def mouseXf              (e : Event) := eventGetMouseXf e
+@[inline] def mouseYf              (e : Event) := eventGetMouseYf e
+@[inline] def mouseZf              (e : Event) := eventGetMouseZf e
+@[inline] def mouseWf              (e : Event) := eventGetMouseWf e
+@[inline] def mouseDxf             (e : Event) := eventGetMouseDxf e
+@[inline] def mouseDyf             (e : Event) := eventGetMouseDyf e
 @[inline] def displayX             (e : Event) := eventGetDisplayX e
 @[inline] def displayY             (e : Event) := eventGetDisplayY e
 @[inline] def displayWidth         (e : Event) := eventGetDisplayWidth e
@@ -511,6 +548,9 @@ namespace Sample
 
 @[inline] def destroy   (s : Sample) := destroySample s
 @[inline] def play      (s : Sample) (gain pan speed : Float) (loop : Playmode) := playSample s gain pan speed loop
+@[inline] def playOnce  (s : Sample) := Allegro.playOnce s
+@[inline] def playLoop  (s : Sample) := Allegro.playLoop s
+@[inline] def playWith  (s : Sample) (params : PlayParams := {}) := Allegro.playWith s params
 @[inline] def frequency (s : Sample) := getSampleFrequency s
 @[inline] def length    (s : Sample) := getSampleLength s
 @[inline] def depth     (s : Sample) : IO AudioDepth := getSampleDepth s

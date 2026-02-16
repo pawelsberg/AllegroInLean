@@ -13,10 +13,6 @@ import Allegro
 
 open Allegro
 
-/-- Clamp a Float into [lo, hi]. -/
-def clampF (lo hi x : Float) : Float :=
-  if x < lo then lo else if x > hi then hi else x
-
 def main : IO Unit := do
   -- ── Initialisation ──
   let okInit ← Allegro.init

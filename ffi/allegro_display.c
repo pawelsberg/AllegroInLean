@@ -87,6 +87,18 @@ lean_object* allegro_al_get_display_height(uint64_t display) {
     return io_ok_uint32((uint32_t)al_get_display_height((ALLEGRO_DISPLAY *)u64_to_ptr(display)));
 }
 
+/* ── Float-returning display dimension accessors ── */
+
+lean_object* allegro_al_get_display_width_f(uint64_t display) {
+    if (display == 0) return lean_io_result_mk_ok(lean_box_float(0.0));
+    return lean_io_result_mk_ok(lean_box_float((double)al_get_display_width((ALLEGRO_DISPLAY *)u64_to_ptr(display))));
+}
+
+lean_object* allegro_al_get_display_height_f(uint64_t display) {
+    if (display == 0) return lean_io_result_mk_ok(lean_box_float(0.0));
+    return lean_io_result_mk_ok(lean_box_float((double)al_get_display_height((ALLEGRO_DISPLAY *)u64_to_ptr(display))));
+}
+
 lean_object* allegro_al_update_display_region(int32_t x, int32_t y, int32_t w, int32_t h) {
     al_update_display_region(x, y, w, h);
     return io_ok_unit();

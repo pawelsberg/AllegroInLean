@@ -179,6 +179,109 @@ lean_object* allegro_al_get_primitives_version(void) {
     return io_ok_uint32(al_get_allegro_primitives_version());
 }
 
+/* ════════════════════════════════════════════════════════════════════
+   RGBA variants — accept an alpha channel for transparency/blending.
+   Uses al_map_rgba instead of al_map_rgb.
+   ════════════════════════════════════════════════════════════════════ */
+
+lean_object* allegro_al_draw_line_rgba(
+    double x1, double y1, double x2, double y2,
+    uint32_t r, uint32_t g, uint32_t b, uint32_t a,
+    double thickness) {
+    ALLEGRO_COLOR color = al_map_rgba((unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a);
+    al_draw_line((float)x1, (float)y1, (float)x2, (float)y2, color, (float)thickness);
+    return io_ok_unit();
+}
+
+lean_object* allegro_al_draw_triangle_rgba(
+    double x1, double y1, double x2, double y2, double x3, double y3,
+    uint32_t r, uint32_t g, uint32_t b, uint32_t a,
+    double thickness) {
+    ALLEGRO_COLOR color = al_map_rgba((unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a);
+    al_draw_triangle((float)x1, (float)y1, (float)x2, (float)y2, (float)x3, (float)y3, color, (float)thickness);
+    return io_ok_unit();
+}
+
+lean_object* allegro_al_draw_filled_triangle_rgba(
+    double x1, double y1, double x2, double y2, double x3, double y3,
+    uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
+    ALLEGRO_COLOR color = al_map_rgba((unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a);
+    al_draw_filled_triangle((float)x1, (float)y1, (float)x2, (float)y2, (float)x3, (float)y3, color);
+    return io_ok_unit();
+}
+
+lean_object* allegro_al_draw_rectangle_rgba(
+    double x1, double y1, double x2, double y2,
+    uint32_t r, uint32_t g, uint32_t b, uint32_t a,
+    double thickness) {
+    ALLEGRO_COLOR color = al_map_rgba((unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a);
+    al_draw_rectangle((float)x1, (float)y1, (float)x2, (float)y2, color, (float)thickness);
+    return io_ok_unit();
+}
+
+lean_object* allegro_al_draw_filled_rectangle_rgba(
+    double x1, double y1, double x2, double y2,
+    uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
+    ALLEGRO_COLOR color = al_map_rgba((unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a);
+    al_draw_filled_rectangle((float)x1, (float)y1, (float)x2, (float)y2, color);
+    return io_ok_unit();
+}
+
+lean_object* allegro_al_draw_rounded_rectangle_rgba(
+    double x1, double y1, double x2, double y2,
+    double rx, double ry,
+    uint32_t r, uint32_t g, uint32_t b, uint32_t a,
+    double thickness) {
+    ALLEGRO_COLOR color = al_map_rgba((unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a);
+    al_draw_rounded_rectangle((float)x1, (float)y1, (float)x2, (float)y2,
+                              (float)rx, (float)ry, color, (float)thickness);
+    return io_ok_unit();
+}
+
+lean_object* allegro_al_draw_filled_rounded_rectangle_rgba(
+    double x1, double y1, double x2, double y2,
+    double rx, double ry,
+    uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
+    ALLEGRO_COLOR color = al_map_rgba((unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a);
+    al_draw_filled_rounded_rectangle((float)x1, (float)y1, (float)x2, (float)y2,
+                                     (float)rx, (float)ry, color);
+    return io_ok_unit();
+}
+
+lean_object* allegro_al_draw_circle_rgba(
+    double cx, double cy, double radius,
+    uint32_t r, uint32_t g, uint32_t b, uint32_t a,
+    double thickness) {
+    ALLEGRO_COLOR color = al_map_rgba((unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a);
+    al_draw_circle((float)cx, (float)cy, (float)radius, color, (float)thickness);
+    return io_ok_unit();
+}
+
+lean_object* allegro_al_draw_filled_circle_rgba(
+    double cx, double cy, double radius,
+    uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
+    ALLEGRO_COLOR color = al_map_rgba((unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a);
+    al_draw_filled_circle((float)cx, (float)cy, (float)radius, color);
+    return io_ok_unit();
+}
+
+lean_object* allegro_al_draw_ellipse_rgba(
+    double cx, double cy, double rx, double ry,
+    uint32_t r, uint32_t g, uint32_t b, uint32_t a,
+    double thickness) {
+    ALLEGRO_COLOR color = al_map_rgba((unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a);
+    al_draw_ellipse((float)cx, (float)cy, (float)rx, (float)ry, color, (float)thickness);
+    return io_ok_unit();
+}
+
+lean_object* allegro_al_draw_filled_ellipse_rgba(
+    double cx, double cy, double rx, double ry,
+    uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
+    ALLEGRO_COLOR color = al_map_rgba((unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a);
+    al_draw_filled_ellipse((float)cx, (float)cy, (float)rx, (float)ry, color);
+    return io_ok_unit();
+}
+
 /* ── Spline ── */
 
 lean_object* allegro_al_draw_spline_rgb(

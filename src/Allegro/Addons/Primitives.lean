@@ -588,4 +588,99 @@ def packPoints (pts : List (Float × Float)) : ByteArray :=
 /-- Draw a filled rounded rectangle with a Color. -/
 @[inline] def drawFilledRoundedRectangle (x1 y1 x2 y2 rx ry : Float) (c : Color) : IO Unit :=
   drawFilledRoundedRectangleRgb x1 y1 x2 y2 rx ry c.r c.g c.b
+
+-- ════════════════════════════════════════════════════════════════════
+-- RGBA variants — accept alpha for transparency/blending
+-- ════════════════════════════════════════════════════════════════════
+
+/-- Draw a line with an RGBA colour and thickness. -/
+@[extern "allegro_al_draw_line_rgba"]
+opaque drawLineRgba : Float → Float → Float → Float → UInt32 → UInt32 → UInt32 → UInt32 → Float → IO Unit
+
+/-- Draw an outlined triangle with an RGBA colour and thickness. -/
+@[extern "allegro_al_draw_triangle_rgba"]
+opaque drawTriangleRgba : Float → Float → Float → Float → Float → Float → UInt32 → UInt32 → UInt32 → UInt32 → Float → IO Unit
+
+/-- Draw a filled triangle with an RGBA colour. -/
+@[extern "allegro_al_draw_filled_triangle_rgba"]
+opaque drawFilledTriangleRgba : Float → Float → Float → Float → Float → Float → UInt32 → UInt32 → UInt32 → UInt32 → IO Unit
+
+/-- Draw an outlined rectangle with an RGBA colour and thickness. -/
+@[extern "allegro_al_draw_rectangle_rgba"]
+opaque drawRectangleRgba : Float → Float → Float → Float → UInt32 → UInt32 → UInt32 → UInt32 → Float → IO Unit
+
+/-- Draw a filled rectangle with an RGBA colour. -/
+@[extern "allegro_al_draw_filled_rectangle_rgba"]
+opaque drawFilledRectangleRgba : Float → Float → Float → Float → UInt32 → UInt32 → UInt32 → UInt32 → IO Unit
+
+/-- Draw an outlined rounded rectangle with an RGBA colour and thickness. -/
+@[extern "allegro_al_draw_rounded_rectangle_rgba"]
+opaque drawRoundedRectangleRgba : Float → Float → Float → Float → Float → Float → UInt32 → UInt32 → UInt32 → UInt32 → Float → IO Unit
+
+/-- Draw a filled rounded rectangle with an RGBA colour. -/
+@[extern "allegro_al_draw_filled_rounded_rectangle_rgba"]
+opaque drawFilledRoundedRectangleRgba : Float → Float → Float → Float → Float → Float → UInt32 → UInt32 → UInt32 → UInt32 → IO Unit
+
+/-- Draw an outlined circle with an RGBA colour and thickness. -/
+@[extern "allegro_al_draw_circle_rgba"]
+opaque drawCircleRgba : Float → Float → Float → UInt32 → UInt32 → UInt32 → UInt32 → Float → IO Unit
+
+/-- Draw a filled circle with an RGBA colour. -/
+@[extern "allegro_al_draw_filled_circle_rgba"]
+opaque drawFilledCircleRgba : Float → Float → Float → UInt32 → UInt32 → UInt32 → UInt32 → IO Unit
+
+/-- Draw an outlined ellipse with an RGBA colour and thickness. -/
+@[extern "allegro_al_draw_ellipse_rgba"]
+opaque drawEllipseRgba : Float → Float → Float → Float → UInt32 → UInt32 → UInt32 → UInt32 → Float → IO Unit
+
+/-- Draw a filled ellipse with an RGBA colour. -/
+@[extern "allegro_al_draw_filled_ellipse_rgba"]
+opaque drawFilledEllipseRgba : Float → Float → Float → Float → UInt32 → UInt32 → UInt32 → UInt32 → IO Unit
+
+-- ── Color-accepting RGBA overloads (using the Color's alpha component) ──
+
+/-- Draw a line with a Color (using its alpha). -/
+@[inline] def drawLineA (x1 y1 x2 y2 : Float) (c : Color) (thickness : Float) : IO Unit :=
+  drawLineRgba x1 y1 x2 y2 c.r c.g c.b c.a thickness
+
+/-- Draw an outlined rectangle with a Color (using its alpha). -/
+@[inline] def drawRectangleA (x1 y1 x2 y2 : Float) (c : Color) (thickness : Float) : IO Unit :=
+  drawRectangleRgba x1 y1 x2 y2 c.r c.g c.b c.a thickness
+
+/-- Draw a filled rectangle with a Color (using its alpha). -/
+@[inline] def drawFilledRectangleA (x1 y1 x2 y2 : Float) (c : Color) : IO Unit :=
+  drawFilledRectangleRgba x1 y1 x2 y2 c.r c.g c.b c.a
+
+/-- Draw an outlined circle with a Color (using its alpha). -/
+@[inline] def drawCircleA (cx cy radius : Float) (c : Color) (thickness : Float) : IO Unit :=
+  drawCircleRgba cx cy radius c.r c.g c.b c.a thickness
+
+/-- Draw a filled circle with a Color (using its alpha). -/
+@[inline] def drawFilledCircleA (cx cy radius : Float) (c : Color) : IO Unit :=
+  drawFilledCircleRgba cx cy radius c.r c.g c.b c.a
+
+/-- Draw an outlined triangle with a Color (using its alpha). -/
+@[inline] def drawTriangleA (x1 y1 x2 y2 x3 y3 : Float) (c : Color) (thickness : Float) : IO Unit :=
+  drawTriangleRgba x1 y1 x2 y2 x3 y3 c.r c.g c.b c.a thickness
+
+/-- Draw a filled triangle with a Color (using its alpha). -/
+@[inline] def drawFilledTriangleA (x1 y1 x2 y2 x3 y3 : Float) (c : Color) : IO Unit :=
+  drawFilledTriangleRgba x1 y1 x2 y2 x3 y3 c.r c.g c.b c.a
+
+/-- Draw an outlined ellipse with a Color (using its alpha). -/
+@[inline] def drawEllipseA (cx cy rx ry : Float) (c : Color) (thickness : Float) : IO Unit :=
+  drawEllipseRgba cx cy rx ry c.r c.g c.b c.a thickness
+
+/-- Draw a filled ellipse with a Color (using its alpha). -/
+@[inline] def drawFilledEllipseA (cx cy rx ry : Float) (c : Color) : IO Unit :=
+  drawFilledEllipseRgba cx cy rx ry c.r c.g c.b c.a
+
+/-- Draw an outlined rounded rectangle with a Color (using its alpha). -/
+@[inline] def drawRoundedRectangleA (x1 y1 x2 y2 rx ry : Float) (c : Color) (thickness : Float) : IO Unit :=
+  drawRoundedRectangleRgba x1 y1 x2 y2 rx ry c.r c.g c.b c.a thickness
+
+/-- Draw a filled rounded rectangle with a Color (using its alpha). -/
+@[inline] def drawFilledRoundedRectangleA (x1 y1 x2 y2 rx ry : Float) (c : Color) : IO Unit :=
+  drawFilledRoundedRectangleRgba x1 y1 x2 y2 rx ry c.r c.g c.b c.a
+
 end Allegro

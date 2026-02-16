@@ -177,6 +177,18 @@ opaque getSystemDriver : IO UInt64
   let v ← act
   pure (if v == (0 : α) then none else some v)
 
+-- ════════════════════════════════════════
+-- Error-checked initialization helpers
+-- ════════════════════════════════════════
+
+/-- Initialise Allegro, throwing a descriptive error on failure.
+    Prefer this over `init` for games — it provides a clear message
+    instead of silently returning 0. -/
+def initOrFail : IO Unit := do
+  let ok ← init
+  if ok == 0 then
+    throw (IO.userError "Allegro.init failed — is there a display server available? Check that X11/Wayland/Windows desktop is running.")
+
 
 -- ════════════════════════════════════════
 -- Color

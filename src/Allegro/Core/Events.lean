@@ -277,6 +277,34 @@ private opaque eventGetMouseButtonRaw : Event → IO UInt32
 @[inline] def eventGetMouseButton (ev : Event) : IO UInt32 := do
   eventGetMouseButtonRaw ev
 
+-- ── Float-returning mouse event accessors ──
+-- These return Float directly, avoiding the UInt32→Float conversion in game code.
+-- They also preserve sign information for negative coordinates (multi-monitor).
+
+/-- Get the mouse X position as Float (useful for drawing coordinates). -/
+@[extern "allegro_al_event_get_mouse_x_f"]
+opaque eventGetMouseXf : Event → IO Float
+
+/-- Get the mouse Y position as Float (useful for drawing coordinates). -/
+@[extern "allegro_al_event_get_mouse_y_f"]
+opaque eventGetMouseYf : Event → IO Float
+
+/-- Get the mouse Z axis (vertical scroll wheel) as Float. -/
+@[extern "allegro_al_event_get_mouse_z_f"]
+opaque eventGetMouseZf : Event → IO Float
+
+/-- Get the mouse W axis (horizontal scroll wheel) as Float. -/
+@[extern "allegro_al_event_get_mouse_w_f"]
+opaque eventGetMouseWf : Event → IO Float
+
+/-- Get the mouse X movement delta as Float. -/
+@[extern "allegro_al_event_get_mouse_dx_f"]
+opaque eventGetMouseDxf : Event → IO Float
+
+/-- Get the mouse Y movement delta as Float. -/
+@[extern "allegro_al_event_get_mouse_dy_f"]
+opaque eventGetMouseDyf : Event → IO Float
+
 -- ── Display event fields ──
 
 /-- Get the X position from a display event. -/

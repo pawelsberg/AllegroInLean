@@ -100,6 +100,42 @@ at build time or set it in a `lakefile.toml`:
 allegroPrefix = "/opt/allegro"
 ```
 
+## Idiomatic Lean: `Option`-returning API
+
+Every function that creates or loads a resource has a `?`-suffixed variant
+that returns `Option` instead of a raw handle (where `0` means failure).
+Prefer these in your own code — they compose naturally with `do`-notation
+and eliminate the C-style `if handle == 0` checks:
+
+```lean
+-- ✅ Preferred — uses pattern matching, clear control flow
+let some display ← Allegro.createDisplay? 640 480
+  | do IO.eprintln "createDisplay failed"; return
+let some font ← Allegro.loadTtfFont? "data/font.ttf" 24 0
+  | do IO.eprintln "loadTtfFont failed"; return
+let some sample ← Allegro.loadSample? "data/beep.wav"
+  | do IO.eprintln "loadSample failed"; return
+
+-- ❌ Avoid — C-style null checks
+let display ← Allegro.createDisplay 640 480
+if display == 0 then IO.eprintln "createDisplay failed"; return
+```
+
+Available `?` variants include:
+`createDisplay?`, `createBitmap?`, `cloneBitmap?`, `createTimer?`,
+`loadBitmap?`, `loadSample?`, `loadBitmapFont?`, `loadConfigFile?`,
+`createShader?`, `getDefaultMixer?`, `getDefaultVoice?`, `fopen?`,
+`getJoystick?`, `createFsEntry?`, and more.
+
+All `?` variants are built on `Allegro.liftOption`, which you can use to
+wrap any handle-returning call:
+
+```lean
+-- Wrap your own handle-returning calls
+let some myHandle ← Allegro.liftOption (someCustomCall args)
+  | do IO.eprintln "someCustomCall failed"; return
+```
+
 ## Demos
 
 | Target | Description |
@@ -157,6 +193,15 @@ lake build allegroSmoke allegroFuncTest allegroErrorTest && \
 ## Using as a dependency
 
 To use AllegroInLean in your own Lean 4 project you need three files.
+
+> **Quick scaffold:** If you already have the library checked out (or fetched
+> via `lake update`), you can generate all the files below automatically:
+> ```bash
+> mkdir my_game && cd my_game
+> /path/to/AllegroInLean/scripts/init-project.sh   # or:
+> # .lake/packages/AllegroInLean/scripts/init-project.sh
+> lake update && lake build
+> ```
 
 ### Step 1 — `lean-toolchain`
 
@@ -232,27 +277,34 @@ functions **including dot-notation** on handle types (e.g.
 `display.destroy`, `timer.start`) via the auto-imported `Allegro.Compat`
 module.
 
+The `?`-suffixed functions return `Option` so you can use `let some … ← …`
+pattern matching instead of C-style `if handle == 0` checks (see
+[Idiomatic Lean: Option-returning API](#idiomatic-lean-option-returning-api)
+above).
+
 ```lean
 import Allegro
 
 open Allegro
 
 def main : IO Unit := do
-  let ok ← Allegro.init
-  if ok == 0 then IO.eprintln "al_init failed"; return
+  -- initOrFail throws a descriptive error instead of silent failure
+  Allegro.initOrFail
 
   -- Initialise the addons your game needs
   let _ ← Allegro.initPrimitivesAddon
   Allegro.initFontAddon
   let _ ← Allegro.installKeyboard
 
-  let display ← Allegro.createDisplay 640 480
-  if display == 0 then IO.eprintln "createDisplay failed"; return
+  -- Use ?-suffixed variants for clear error handling
+  let some display ← Allegro.createDisplay? 640 480
+    | do IO.eprintln "createDisplay failed"; return
 
   -- Built-in font — no external files needed for quick prototyping
   let font ← Allegro.createBuiltinFont
 
-  let timer ← Allegro.createTimer (1.0 / 60.0)
+  let some timer ← Allegro.createTimer? (1.0 / 60.0)
+    | do IO.eprintln "createTimer failed"; return
   let queue ← Allegro.createEventQueue
   let evt   ← Allegro.createEvent
 
@@ -484,12 +536,15 @@ identically-named Allegro declarations. If you encounter unexpected
 
 | Path | Contents |
 |------|----------|
-| `src/Allegro/` | Lean binding modules (Core + Addons + Compat) |
+| `src/Allegro/` | Lean binding modules (Core + Addons + Compat + utilities) |
+| `src/Allegro/Math.lean` | Math helpers (`clampF`, `lerpF`, `distF`, `toFloat`, `pi`, etc.) |
+| `src/Allegro/Vec2.lean` | 2D vector type with operators (`+`, `-`, `*`, `normalize`, `rotate`) |
+| `src/Allegro/GameLoop.lean` | High-level game loop combinator (`runGameLoop`) |
 | `ffi/` | C shim wrappers (`allegro_*.c`, `allegro_ffi.h`) |
 | `examples/` | Demo programs (one per addon / feature) |
 | `tests/` | Smoke, functional, and error-path tests |
 | `data/` | Shared assets (fonts, sample video, licenses) |
-| `scripts/` | Cross-platform Allegro build helpers (`build-allegro.sh`, `build-allegro.ps1`) |
+| `scripts/` | Cross-platform Allegro build helpers (`build-allegro.sh`, `build-allegro.ps1`, `init-project.sh`) |
 | `docs/` | [Overview](docs/Overview.md) · [Build](docs/Build.md) · [FFI](docs/FFI.md) |
 
 ## Documentation

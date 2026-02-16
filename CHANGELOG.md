@@ -6,6 +6,29 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## Ergonomic improvements (utility modules, API polish, consumer tooling)
+
+### Added
+- **Math utilities** (`src/Allegro/Math.lean`): `toFloat`, `u32ToFloat`, `intToFloat`, `pi`, `tau`, `absF`, `clampF`, `lerpF`, `distF`, `distSqF`, `minF`, `maxF`, `wrapAngle`, `degToRad`, `radToDeg`, `signF`.
+- **Vec2 type** (`src/Allegro/Vec2.lean`): 2D vector with `Add`/`Sub`/`Neg`/`HMul`/`ToString` instances and operations (`normalize`, `lerp`, `rotate`, `angle`, `perp`, `clamp`).
+- **Game loop combinator** (`src/Allegro/GameLoop.lean`): `runGameLoop` with `GameConfig`, `GameEvent`, `AddonFlag` — eliminates ~30 lines of boilerplate per game.
+- **Float-returning accessors**: `eventGetMouseXf`/`Yf`/`Zf`/`Wf`/`Dxf`/`Dyf` (C shim + Lean) and `getDisplayWidthF`/`HeightF` for direct Float coordinates.
+- **RGBA primitive variants**: 10 C shim functions + Lean bindings (`drawLineRgba`, `drawFilledRectangleRgba`, etc.) + Color-accepting `A` overloads.
+- **In-memory sample creation**: `createSampleFromPCM` / `createSampleFromPCM?` — create samples from `ByteArray` without writing WAV to disk.
+- **Sound convenience layer**: `PlayParams` structure, `playOnce`/`playLoop`/`playWith` wrappers in `Audio.lean` + `Compat.lean`.
+- **Better error messages**: `initOrFail` (throws descriptive error), `checkSetup` diagnostic function.
+- **Starter kit script**: `scripts/init-project.sh` bootstraps a new game project with `lean-toolchain`, `lakefile.lean`, `Main.lean`, font, and build script.
+- **Joystick version guards**: `#if ALLEGRO_VERSION_INT >= AL_ID(5,2,11,0)` guards in `ffi/allegro_joystick.c` for graceful degradation on Allegro < 5.2.11.
+- **lakefile documentation**: Public API docs explaining `allegroLinkArgs` and `allegro_exe` macro for consumer packages.
+
+### Changed
+- Root `Allegro.lean` now imports `Math`, `Vec2`, and `GameLoop` modules.
+- README rewritten: leads with `Option`-returning API patterns; minimal example uses `initOrFail` and `createDisplay?`; added "Idiomatic Lean" section; layout table updated with new modules; `init-project.sh` documented.
+- `JoystickDemo` updated: removed local `clampF` (now uses `Allegro.clampF` from `Math.lean`).
+- Tests: 581 functional + 212 error-path = 793 total (all passing).
+
+---
+
 ## Post-Milestone (gap-fill, Compat migration, docs audit)
 
 ### Added

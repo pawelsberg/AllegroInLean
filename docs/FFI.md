@@ -152,3 +152,7 @@ When adding new bindings:
 2. Add the C shim entry in `ffi/` and export it (include `allegro_ffi.h`).
 3. Update `lakefile.lean` if a new `.c` file is introduced (add to `srcFiles` array).
 4. Add a minimal test or example to validate the binding.
+5. If the function was added in a specific Allegro version (e.g. 5.2.11),
+   wrap it in `#if ALLEGRO_VERSION_INT >= AL_ID(major,minor,revision,release)`
+   with a stub implementation in the `#else` branch. See `ffi/allegro_joystick.c`
+   for an example.

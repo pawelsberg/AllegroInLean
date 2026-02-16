@@ -197,6 +197,38 @@ lean_object* allegro_al_event_get_mouse_pressure(uint64_t eventPtr) {
     return lean_io_result_mk_ok(lean_box_float(((ALLEGRO_EVENT *)u64_to_ptr(eventPtr))->mouse.pressure));
 }
 
+/* ── Float-returning mouse accessors (for games that compute in Float) ── */
+
+lean_object* allegro_al_event_get_mouse_x_f(uint64_t eventPtr) {
+    if (eventPtr == 0) return lean_io_result_mk_ok(lean_box_float(0.0));
+    return lean_io_result_mk_ok(lean_box_float((double)((ALLEGRO_EVENT *)u64_to_ptr(eventPtr))->mouse.x));
+}
+
+lean_object* allegro_al_event_get_mouse_y_f(uint64_t eventPtr) {
+    if (eventPtr == 0) return lean_io_result_mk_ok(lean_box_float(0.0));
+    return lean_io_result_mk_ok(lean_box_float((double)((ALLEGRO_EVENT *)u64_to_ptr(eventPtr))->mouse.y));
+}
+
+lean_object* allegro_al_event_get_mouse_z_f(uint64_t eventPtr) {
+    if (eventPtr == 0) return lean_io_result_mk_ok(lean_box_float(0.0));
+    return lean_io_result_mk_ok(lean_box_float((double)((ALLEGRO_EVENT *)u64_to_ptr(eventPtr))->mouse.z));
+}
+
+lean_object* allegro_al_event_get_mouse_w_f(uint64_t eventPtr) {
+    if (eventPtr == 0) return lean_io_result_mk_ok(lean_box_float(0.0));
+    return lean_io_result_mk_ok(lean_box_float((double)((ALLEGRO_EVENT *)u64_to_ptr(eventPtr))->mouse.w));
+}
+
+lean_object* allegro_al_event_get_mouse_dx_f(uint64_t eventPtr) {
+    if (eventPtr == 0) return lean_io_result_mk_ok(lean_box_float(0.0));
+    return lean_io_result_mk_ok(lean_box_float((double)((ALLEGRO_EVENT *)u64_to_ptr(eventPtr))->mouse.dx));
+}
+
+lean_object* allegro_al_event_get_mouse_dy_f(uint64_t eventPtr) {
+    if (eventPtr == 0) return lean_io_result_mk_ok(lean_box_float(0.0));
+    return lean_io_result_mk_ok(lean_box_float((double)((ALLEGRO_EVENT *)u64_to_ptr(eventPtr))->mouse.dy));
+}
+
 lean_object* allegro_al_event_get_mouse_button(uint64_t eventPtr) {
     if (eventPtr == 0) return io_ok_uint32(0);
     return io_ok_uint32((uint32_t)((ALLEGRO_EVENT *)u64_to_ptr(eventPtr))->mouse.button);

@@ -840,6 +840,31 @@ private opaque createSampleRawRaw : UInt64 → UInt32 → UInt32 → UInt32 → 
 @[inline] def createSampleRaw (buf : UInt64) (samples freq : UInt32) (depth : AudioDepth) (chanConf : ChannelConf) (freeBuf : UInt32) : IO Sample :=
   createSampleRawRaw buf samples freq depth.val chanConf.val freeBuf
 
+-- ── Create sample from ByteArray (in-memory PCM) ──
+
+@[extern "allegro_al_create_sample_from_pcm"]
+private opaque createSampleFromPCMRaw : @&ByteArray → UInt32 → UInt32 → UInt32 → UInt32 → IO Sample
+
+/-- Create a sample from in-memory PCM data. The ByteArray is copied internally,
+    so it can be freed after this call. This eliminates the need to write a WAV
+    file to disk and load it back.
+
+    - `pcmData`: raw PCM audio bytes
+    - `numSamples`: number of sample frames
+    - `freq`: sample rate (e.g. 44100)
+    - `depth`: audio sample depth (e.g. `AudioDepth.int16`)
+    - `chanConf`: channel configuration (e.g. `ChannelConf.conf1` for mono)
+
+    Returns 0 on failure. -/
+@[inline] def createSampleFromPCM (pcmData : ByteArray) (numSamples freq : UInt32)
+    (depth : AudioDepth) (chanConf : ChannelConf) : IO Sample :=
+  createSampleFromPCMRaw pcmData numSamples freq depth.val chanConf.val
+
+/-- Create a sample from in-memory PCM data, returning `none` on failure. -/
+def createSampleFromPCM? (pcmData : ByteArray) (numSamples freq : UInt32)
+    (depth : AudioDepth) (chanConf : ChannelConf) : IO (Option Sample) :=
+  liftOption (createSampleFromPCM pcmData numSamples freq depth chanConf)
+
 -- ── Raw sample data access ──
 
 /-- Get a pointer to the raw sample data buffer (as UInt64). Returns 0 if null. -/
@@ -962,5 +987,37 @@ def loadAudioStreamF? (fp : UInt64) (ident : String) (bufCount samples : UInt32)
 
 def playAudioStreamF? (fp : UInt64) (ident : String) : IO (Option AudioStream) :=
   liftOption (playAudioStreamF fp ident)
+
+-- ════════════════════════════════════════════════════════════════════
+-- Sound convenience layer
+-- ════════════════════════════════════════════════════════════════════
+
+/-- Parameters for `Sample.playWith`. All fields have sensible defaults. -/
+structure PlayParams where
+  /-- Volume (0.0–1.0+). Default: 1.0. -/
+  gain  : Float    := 1.0
+  /-- Stereo pan (−1.0 = left, 0.0 = center, 1.0 = right). Default: 0.0. -/
+  pan   : Float    := 0.0
+  /-- Playback speed multiplier. Default: 1.0. -/
+  speed : Float    := 1.0
+  /-- Playmode. Default: `Playmode.once`. -/
+  mode  : Playmode := Playmode.once
+  deriving BEq, Repr
+
+/-- Play a sample once with default parameters (gain=1.0, pan=0.0, speed=1.0). -/
+@[inline] def playOnce (spl : Sample) : IO UInt32 :=
+  playSample spl 1.0 0.0 1.0 Playmode.once
+
+/-- Play a sample in a loop with default parameters. -/
+@[inline] def playLoop (spl : Sample) : IO UInt32 :=
+  playSample spl 1.0 0.0 1.0 Playmode.loop
+
+/-- Play a sample with named parameters via `PlayParams`.
+    ```
+    sample.playWith { gain := 0.5, speed := 1.2 }
+    sample.playWith {}  -- all defaults
+    ``` -/
+@[inline] def playWith (spl : Sample) (params : PlayParams := {}) : IO UInt32 :=
+  playSample spl params.gain params.pan params.speed params.mode
 
 end Allegro

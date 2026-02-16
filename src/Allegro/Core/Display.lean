@@ -239,6 +239,14 @@ opaque getDisplayWidth : Display → IO UInt32
 @[extern "allegro_al_get_display_height"]
 opaque getDisplayHeight : Display → IO UInt32
 
+/-- Get the width of the display as Float (useful for drawing coordinates). -/
+@[extern "allegro_al_get_display_width_f"]
+opaque getDisplayWidthF : Display → IO Float
+
+/-- Get the height of the display as Float (useful for drawing coordinates). -/
+@[extern "allegro_al_get_display_height_f"]
+opaque getDisplayHeightF : Display → IO Float
+
 /-- Resize the display. Returns non-zero on success. -/
 @[extern "allegro_al_resize_display"]
 opaque resizeDisplay : Display → UInt32 → UInt32 → IO UInt32

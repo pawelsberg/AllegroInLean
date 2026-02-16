@@ -148,6 +148,15 @@ If you are using AllegroInLean as a Lake dependency in your own project (see
 [README — Using as a dependency](../README.md#using-as-a-dependency)), you
 need Allegro installed on your system **or** built locally inside your project.
 
+> **Quick scaffold:** Use `scripts/init-project.sh` to generate all required
+> files (`lean-toolchain`, `lakefile.lean`, `Main.lean`, build script, font)
+> in one step:
+> ```bash
+> mkdir my_game && cd my_game
+> /path/to/AllegroInLean/scripts/init-project.sh
+> lake update && lake build
+> ```
+
 #### Quick-start checklist (consumer project)
 
 1. Create three files: `lean-toolchain`, `lakefile.lean`, `Main.lean`

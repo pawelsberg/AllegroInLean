@@ -755,6 +755,27 @@ lean_object* allegro_al_create_sample(uint64_t buf, uint32_t samples,
     return io_ok_uint64(ptr_to_u64(s));
 }
 
+/* ── Create sample from ByteArray (copies data, Allegro owns the copy) ── */
+
+lean_object* allegro_al_create_sample_from_pcm(b_lean_obj_arg pcmData,
+                                                uint32_t numSamples,
+                                                uint32_t freq,
+                                                uint32_t depth,
+                                                uint32_t chanConf) {
+    size_t byteLen = lean_sarray_byte_size(pcmData);
+    if (byteLen == 0) return io_ok_uint64(0);
+    /* Allegro takes ownership when freeBuf=true, so we must malloc. */
+    void *buf = malloc(byteLen);
+    if (!buf) return io_ok_uint64(0);
+    memcpy(buf, lean_sarray_cptr(pcmData), byteLen);
+    ALLEGRO_SAMPLE *s = al_create_sample(
+        buf, (unsigned int)numSamples, (unsigned int)freq,
+        (ALLEGRO_AUDIO_DEPTH)depth, (ALLEGRO_CHANNEL_CONF)chanConf,
+        true /* freeBuf — Allegro will free our malloc'd copy */);
+    if (!s) { free(buf); return io_ok_uint64(0); }
+    return io_ok_uint64(ptr_to_u64(s));
+}
+
 /* ── Raw sample data access ── */
 
 lean_object* allegro_al_get_sample_data(uint64_t sample) {

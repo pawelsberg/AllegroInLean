@@ -44,6 +44,31 @@ private opaque fileExistsBuildTime : System.FilePath → Bool
 
 -- ── Allegro prefix detection ──
 
+-- ════════════════════════════════════════════════════════════════════
+-- PUBLIC API FOR CONSUMER PACKAGES
+-- ════════════════════════════════════════════════════════════════════
+-- The following definitions are intentionally public so that downstream
+-- packages can reference them in their lakefiles:
+--
+--   require AllegroInLean from git "…"
+--
+--   lean_exe my_game where
+--     moreLinkArgs := allegroLinkArgs
+--     extraDepTargets := #[`allegroshim]
+--
+-- Or use the `allegro_exe` macro for even less boilerplate:
+--
+--   allegro_exe my_game where
+--     root := `Main
+--
+-- Available public definitions:
+--   • allegroPrefixCandidates : Array System.FilePath
+--   • allegroLibDirs          : Array System.FilePath
+--   • allegroIncludeDirs      : Array System.FilePath
+--   • allegroLinkArgs         : Array String
+--   • allegro_exe (macro)     — creates a lean_exe with link args pre-configured
+-- ════════════════════════════════════════════════════════════════════
+
 /-- Candidate pkg-config directories from a local Allegro build (produced by `scripts/build-allegro.sh`). -/
 private def localPkgConfigPath : String :=
   "allegro-local/lib64/pkgconfig:allegro-local/lib/pkgconfig"

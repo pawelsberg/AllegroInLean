@@ -32,6 +32,8 @@ conventions and process for adding new bindings or improving the library.
 |---|---|---|
 | Core (system, display, …) | `src/Allegro/Core/<Module>.lean` | `ffi/allegro_<module>.c` |
 | Addon (image, font, …) | `src/Allegro/Addons/<Module>.lean` | `ffi/allegro_<module>.c` |
+| Utilities (Math, Vec2, …) | `src/Allegro/<Module>.lean` | — (pure Lean) |
+| Game loop | `src/Allegro/GameLoop.lean` | — (pure Lean) |
 
 If the binding extends an existing module, add it there. If it's a new
 addon, create a new pair of files and register the C file in
