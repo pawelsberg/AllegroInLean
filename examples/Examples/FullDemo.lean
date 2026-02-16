@@ -3,116 +3,69 @@ import Allegro
 open Allegro
 
 def main : IO Unit := do
-  let okInit <- Allegro.init
-  if okInit == 0 then
-    IO.eprintln "al_init failed"
-    return
+  Allegro.initOrFail
 
   Allegro.initFontAddon
-  let okTtf <- Allegro.initTtfAddon
-  if okTtf == 0 then
-    IO.eprintln "al_init_ttf_addon failed"
-    return
+  let _ ← Allegro.initTtfAddon
+  let _ ← Allegro.initPrimitivesAddon
+  let _ ← Allegro.initImageAddon
+  let _ ← Allegro.installAudio
+  let _ ← Allegro.installKeyboard
+  let _ ← Allegro.installMouse
 
-  let okPrim <- Allegro.initPrimitivesAddon
-  if okPrim == 0 then
-    IO.eprintln "al_init_primitives_addon failed"
-    return
-
-  let okImage <- Allegro.initImageAddon
-  if okImage == 0 then
-    IO.eprintln "al_init_image_addon failed"
-    return
-
-  let okAudio <- Allegro.installAudio
-  if okAudio == 0 then
-    IO.eprintln "al_install_audio failed"
-
-  let okKb <- Allegro.installKeyboard
-  if okKb == 0 then
-    IO.eprintln "al_install_keyboard failed"
-
-  let okMouse <- Allegro.installMouse
-  if okMouse == 0 then
-    IO.eprintln "al_install_mouse failed"
-
-  let resPathKind <- Allegro.standardPathResources
-  let path <- Allegro.getStandardPath resPathKind
+  let resPathKind ← Allegro.standardPathResources
+  let path ← Allegro.getStandardPath resPathKind
   path.append "data"
-  let pathStr <- path.cstr (UInt32.ofNat '\\'.toNat)
-  let _ <- Allegro.changeDirectory pathStr
+  let pathStr ← path.cstr (UInt32.ofNat '\\'.toNat)
+  let _ ← Allegro.changeDirectory pathStr
   path.destroy
 
-  let flags := Allegro.DisplayFlags.fullscreenWindow
-  Allegro.setNewDisplayFlags flags
-  let _ <- Allegro.createDisplay 1024 768
+  Allegro.setNewDisplayFlags Allegro.DisplayFlags.fullscreenWindow
+  let some display ← Allegro.createDisplay? 1024 768
+    | do IO.eprintln "createDisplay failed"; return
 
-  let display : Display <- Allegro.getCurrentDisplay
-  let dw <- display.width
-  let dh <- display.height
+  let dw ← display.width
+  let dh ← display.height
   IO.println s!"DISPLAY_WIDTH:{dw}"
   IO.println s!"DISPLAY_HEIGHT:{dh}"
 
-  let timer <- Allegro.createTimer (1.0 / 60.0)
-  let eventQueue <- Allegro.createEventQueue
-  let displaySource <- display.eventSource
-  let keyboardSource <- Allegro.getKeyboardEventSource
-  let mouseSource <- Allegro.getMouseEventSource
-  let timerSource <- timer.eventSource
+  let some timer ← Allegro.createTimer? (1.0 / 60.0)
+    | do IO.eprintln "createTimer failed"; return
+  let eventQueue ← Allegro.createEventQueue
 
-  eventQueue.registerSource displaySource
-  eventQueue.registerSource keyboardSource
-  eventQueue.registerSource mouseSource
-  eventQueue.registerSource timerSource
+  eventQueue.registerSource (← display.eventSource)
+  eventQueue.registerSource (← Allegro.getKeyboardEventSource)
+  eventQueue.registerSource (← Allegro.getMouseEventSource)
+  eventQueue.registerSource (← timer.eventSource)
 
   timer.start
 
-  let evKeyDown := Allegro.EventType.keyDown
-  let evKeyUp := Allegro.EventType.keyUp
-  let evDisplayClose := Allegro.EventType.displayClose
-  let evMouseAxes := Allegro.EventType.mouseAxes
-  let evMouseButtonDown := Allegro.EventType.mouseButtonDown
-  let evMouseButtonUp := Allegro.EventType.mouseButtonUp
-  let evTimer := Allegro.EventType.timer
+  let event ← Allegro.createEvent
 
-  let event <- Allegro.createEvent
-
-  let loopBody : IO Bool := do
+  let mut running := true
+  while running do
     eventQueue.waitFor event
-    let evType <- event.type
-    if evType == evKeyDown then
-      let key <- event.keyboardKeycode
+    let evType ← event.type
+    if evType == EventType.keyDown then
+      let key ← event.keyboardKeycode
       IO.println s!"KEY_DOWN:{key.val}"
-      pure false
-    else if evType == evKeyUp then
-      let key <- event.keyboardKeycode
+    else if evType == EventType.keyUp then
+      let key ← event.keyboardKeycode
       IO.println s!"KEY_UP:{key.val}"
-      pure false
-    else if evType == evDisplayClose then
-      pure true
-    else if evType == evMouseAxes then
-      let mx <- event.mouseX
-      let my <- event.mouseY
+    else if evType == EventType.displayClose then
+      running := false
+    else if evType == EventType.mouseAxes then
+      let mx ← event.mouseX
+      let my ← event.mouseY
       IO.println s!"MOUSE_AXES:{mx},{my}"
-      pure false
-    else if evType == evMouseButtonDown then
-      let btn <- event.mouseButton
+    else if evType == EventType.mouseButtonDown then
+      let btn ← event.mouseButton
       IO.println s!"MOUSE_BUTTON_DOWN:{btn}"
-      pure false
-    else if evType == evMouseButtonUp then
-      let btn <- event.mouseButton
+    else if evType == EventType.mouseButtonUp then
+      let btn ← event.mouseButton
       IO.println s!"MOUSE_BUTTON_UP:{btn}"
-      pure false
-    else if evType == evTimer then
+    else if evType == EventType.timer then
       Allegro.flipDisplay
-      pure false
-    else
-      pure false
-
-  while true do
-    let shouldExit <- loopBody
-    if shouldExit then
-      break
 
   event.destroy
   eventQueue.destroy

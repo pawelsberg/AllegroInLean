@@ -81,6 +81,8 @@ fi
 write_if_missing "lean-toolchain" <<< "$LEAN_VERSION"
 
 # ── 2. lakefile.lean ───────────────────────────────────────────────
+# The library's lakefile exports `allegroLinkArgs` (with pkg-config
+# detection, rpath, platform flags).  Consumers just reference it.
 write_if_missing "lakefile.lean" <<'LAKEFILE'
 import Lake
 open Lake DSL
@@ -91,35 +93,6 @@ require AllegroInLean from git
 package my_game where
   moreLeanArgs := #["-DautoImplicit=false"]
 
--- Locate Allegro libraries on the current platform.
-def allegroLibDirs : Array String := Id.run do
-  let mut dirs : Array String := #[]
-  if System.Platform.isWindows then
-    dirs := dirs.push "-LC:/msys64/mingw64/lib"
-  else if System.Platform.isOSX then
-    dirs := dirs.push "-L/opt/homebrew/lib"
-  else
-    let candidates := #[
-      ("allegro-local/lib64", true),
-      ("allegro-local/lib", true)
-    ]
-    for (dir, needsRpath) in candidates do
-      dirs := dirs.push s!"-L{dir}"
-      if needsRpath then
-        dirs := dirs.push s!"-Wl,-rpath,{dir}"
-  return dirs
-
-def allegroLinkArgs : Array String := Id.run do
-  let mut args := allegroLibDirs
-  args := args ++ #["-lallegro", "-lallegro_image", "-lallegro_font",
-    "-lallegro_ttf", "-lallegro_primitives", "-lallegro_audio", "-lallegro_acodec",
-    "-lallegro_color", "-lallegro_dialog", "-lallegro_video",
-    "-lallegro_memfile"]
-  if !System.Platform.isWindows && !System.Platform.isOSX then
-    args := args.push "-lm"
-    args := args.push "-Wl,--allow-shlib-undefined"
-  return args
-
 @[default_target]
 lean_exe my_game where
   root := `Main
@@ -127,52 +100,30 @@ lean_exe my_game where
 LAKEFILE
 
 # ── 3. Main.lean ───────────────────────────────────────────────────
+# Uses `runGameLoop` to handle init, display, timer, event queue,
+# addon setup, and cleanup automatically.
 write_if_missing "Main.lean" <<'MAIN'
 import Allegro
 
 open Allegro
 
-def main : IO Unit := do
-  Allegro.initOrFail
-
-  let _ ← Allegro.initPrimitivesAddon
-  Allegro.initFontAddon
-  let _ ← Allegro.installKeyboard
-
-  let some display ← Allegro.createDisplay? 640 480
-    | do IO.eprintln "createDisplay failed"; return
-
-  let font ← Allegro.createBuiltinFont
-
-  let some timer ← Allegro.createTimer? (1.0 / 60.0)
-    | do IO.eprintln "createTimer failed"; return
-  let queue ← Allegro.createEventQueue
-  let evt   ← Allegro.createEvent
-
-  queue.registerSource (← display.eventSource)
-  queue.registerSource (← Allegro.getKeyboardEventSource)
-  queue.registerSource (← timer.eventSource)
-  timer.start
-
-  let mut running := true
-  while running do
-    queue.waitFor evt
-    let eType ← evt.type
-    if eType == EventType.displayClose then
-      running := false
-    else if eType == EventType.keyDown then
-      if (← evt.keyboardKeycode) == KeyCode.escape then running := false
-    else if eType == EventType.timer then
+def main : IO Unit :=
+  Allegro.runGameLoop
+    { initAddons := [.primitives, .font, .keyboard] }
+    (fun _display => do
+      pure (← Allegro.createBuiltinFont))
+    (fun font event => do
+      match event with
+      | .keyDown key =>
+        if key == KeyCode.escape then return none else return some font
+      | .quit => return none
+      | _ => return some font)
+    (fun font _display => do
       Allegro.clearToColorRgb 10 10 40
       Allegro.drawFilledRectangleRgb 200 150 440 330 60 180 255
-      Allegro.drawTextRgb font 255 255 255 320 340 TextAlign.centre "Hello from AllegroInLean!"
-      Allegro.flipDisplay
-
-  timer.stop; timer.destroy
-  evt.destroy; queue.destroy
-  font.destroy; display.destroy
-  Allegro.shutdownPrimitivesAddon
-  Allegro.shutdownFontAddon
+      Allegro.drawTextRgb font 255 255 255 320 340 TextAlign.centre
+        "Hello from AllegroInLean!"
+      Allegro.flipDisplay)
 MAIN
 
 # ── 4. Copy build-allegro.sh ──────────────────────────────────────

@@ -53,13 +53,12 @@ private opaque fileExistsBuildTime : System.FilePath → Bool
 --   require AllegroInLean from git "…"
 --
 --   lean_exe my_game where
---     moreLinkArgs := allegroLinkArgs
---     extraDepTargets := #[`allegroshim]
---
--- Or use the `allegro_exe` macro for even less boilerplate:
---
---   allegro_exe my_game where
 --     root := `Main
+--     moreLinkArgs := allegroLinkArgs
+--
+-- That's it — no need to duplicate platform detection or link flags.
+-- The `allegroshim` extern_lib is linked transitively via the `Allegro`
+-- lean_lib dependency.
 --
 -- Available public definitions:
 --   • allegroPrefixCandidates : Array System.FilePath

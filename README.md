@@ -192,27 +192,27 @@ lake build allegroSmoke allegroFuncTest allegroErrorTest && \
 
 ## Using as a dependency
 
-To use AllegroInLean in your own Lean 4 project you need three files.
+### Quick scaffold (recommended)
 
-> **Quick scaffold:** If you already have the library checked out (or fetched
-> via `lake update`), you can generate all the files below automatically:
-> ```bash
-> mkdir my_game && cd my_game
-> /path/to/AllegroInLean/scripts/init-project.sh   # or:
-> # .lake/packages/AllegroInLean/scripts/init-project.sh
-> lake update && lake build
-> ```
+```bash
+mkdir my_game && cd my_game
+/path/to/AllegroInLean/scripts/init-project.sh   # generates all files below
+lake update && lake build && .lake/build/bin/my_game
+```
 
-### Step 1 — `lean-toolchain`
+After `lake update` you can also run the script from the cached package:
+`.lake/packages/AllegroInLean/scripts/init-project.sh`
 
-Create a `lean-toolchain` file matching the version used by AllegroInLean
-(currently `leanprover/lean4:4.27.0`):
+### Manual setup — 3 files
+
+**`lean-toolchain`**
 
 ```
 leanprover/lean4:4.27.0
 ```
 
-### Step 2 — `lakefile.lean`
+**`lakefile.lean`** — the library exports `allegroLinkArgs` (platform
+detection, `-L`, `-rpath`, all `-l` flags), so your lakefile is just:
 
 ```lean
 import Lake
@@ -224,281 +224,95 @@ require AllegroInLean from git
 package my_game where
   moreLeanArgs := #["-DautoImplicit=false"]
 
--- Locate Allegro libraries on the current platform.
--- IMPORTANT: Only add directories where Allegro is actually installed.
--- Adding broad system paths (e.g. /usr/lib64) can shadow the Lean
--- toolchain's bundled glibc and cause link failures on glibc ≥ 2.34.
--- NOTE: If MSYS2 is installed outside C:\msys64, update the path below.
-def allegroLibDirs : Array String := Id.run do
-  let mut dirs : Array String := #[]
-  if System.Platform.isWindows then
-    dirs := dirs.push "-LC:/msys64/mingw64/lib"
-  else if System.Platform.isOSX then
-    dirs := dirs.push "-L/opt/homebrew/lib"
-  else
-    -- Linux: allegro-local/ is produced by scripts/build-allegro.sh.
-    -- System-installed Allegro (e.g. /usr/lib64) is found by the
-    -- default linker search path — no explicit -L needed.
-    let candidates := #[
-      ("allegro-local/lib64", true),
-      ("allegro-local/lib", true)
-    ]
-    for (dir, needsRpath) in candidates do
-      dirs := dirs.push s!"-L{dir}"
-      if needsRpath then
-        dirs := dirs.push s!"-Wl,-rpath,{dir}"
-  return dirs
-
-def allegroLinkArgs : Array String := Id.run do
-  let mut args := allegroLibDirs
-  args := args ++ #["-lallegro", "-lallegro_image", "-lallegro_font",
-    "-lallegro_ttf", "-lallegro_primitives", "-lallegro_audio", "-lallegro_acodec",
-    "-lallegro_color", "-lallegro_dialog", "-lallegro_video",
-    "-lallegro_memfile"]
-  -- macOS bundles math in libSystem; -Wl,--allow-shlib-undefined is
-  -- Linux-only (ld64 on macOS does not recognise it).
-  if !System.Platform.isWindows && !System.Platform.isOSX then
-    args := args.push "-lm"
-    args := args.push "-Wl,--allow-shlib-undefined"
-  return args
-
 @[default_target]
 lean_exe my_game where
   root := `Main
   moreLinkArgs := allegroLinkArgs
 ```
 
-### Step 3 — `Main.lean` (minimal working example)
-
-This opens a window and draws a rectangle — enough to verify that
-everything is wired up correctly. `import Allegro` brings in the full
-library, and `open Allegro` enables unqualified access to all API
-functions **including dot-notation** on handle types (e.g.
-`display.destroy`, `timer.start`) via the auto-imported `Allegro.Compat`
-module.
-
-The `?`-suffixed functions return `Option` so you can use `let some … ← …`
-pattern matching instead of C-style `if handle == 0` checks (see
-[Idiomatic Lean: Option-returning API](#idiomatic-lean-option-returning-api)
-above).
+**`Main.lean`** — `runGameLoop` handles init, display, timer, event queue,
+addon setup, and cleanup automatically:
 
 ```lean
 import Allegro
 
 open Allegro
 
-def main : IO Unit := do
-  -- initOrFail throws a descriptive error instead of silent failure
-  Allegro.initOrFail
-
-  -- Initialise the addons your game needs
-  let _ ← Allegro.initPrimitivesAddon
-  Allegro.initFontAddon
-  let _ ← Allegro.installKeyboard
-
-  -- Use ?-suffixed variants for clear error handling
-  let some display ← Allegro.createDisplay? 640 480
-    | do IO.eprintln "createDisplay failed"; return
-
-  -- Built-in font — no external files needed for quick prototyping
-  let font ← Allegro.createBuiltinFont
-
-  let some timer ← Allegro.createTimer? (1.0 / 60.0)
-    | do IO.eprintln "createTimer failed"; return
-  let queue ← Allegro.createEventQueue
-  let evt   ← Allegro.createEvent
-
-  queue.registerSource (← display.eventSource)
-  queue.registerSource (← Allegro.getKeyboardEventSource)
-  queue.registerSource (← timer.eventSource)
-  timer.start
-
-  let mut running := true
-  while running do
-    queue.waitFor evt
-    let eType ← evt.type
-    if eType == EventType.displayClose then
-      running := false
-    else if eType == EventType.keyDown then
-      if (← evt.keyboardKeycode) == KeyCode.escape then running := false
-    else if eType == EventType.timer then
+def main : IO Unit :=
+  Allegro.runGameLoop
+    { initAddons := [.primitives, .font, .keyboard] }
+    (fun _display => do
+      pure (← Allegro.createBuiltinFont))
+    (fun font event => do
+      match event with
+      | .keyDown key =>
+        if key == KeyCode.escape then return none else return some font
+      | .quit => return none
+      | _ => return some font)
+    (fun font _display => do
       Allegro.clearToColorRgb 10 10 40
       Allegro.drawFilledRectangleRgb 200 150 440 330 60 180 255
-      Allegro.drawTextRgb font 255 255 255 320 340 TextAlign.centre "Hello from AllegroInLean!"
-      Allegro.flipDisplay
-
-  timer.stop; timer.destroy
-  evt.destroy; queue.destroy
-  font.destroy; display.destroy
-  Allegro.shutdownPrimitivesAddon
-  Allegro.shutdownFontAddon
+      Allegro.drawTextRgb font 255 255 255 320 340 TextAlign.centre
+        "Hello from AllegroInLean!"
+      Allegro.flipDisplay)
 ```
 
-### Step 4 — Build and run
+**Build and run:**
 
-**If Allegro ≥ 5.2.11 is installed system-wide** (macOS Homebrew, or distros
-with a recent enough package):
 ```bash
-lake update                               # fetch dependencies
-lake build                                # compile
-.lake/build/bin/my_game                   # run (from project root)
+lake update && lake build && .lake/build/bin/my_game
 ```
 
-**If you built Allegro locally** into `allegro-local/`
-(Fedora/Rocky/RHEL, **or Debian/Ubuntu when the system version is < 5.2.11**):
+If you built Allegro locally (`scripts/build-allegro.sh`), pass the prefix:
 ```bash
-lake update
 lake build -K allegroPrefix=$PWD/allegro-local
-.lake/build/bin/my_game
 ```
-
-**Windows (PowerShell):**
-```powershell
-$env:PATH = "C:\msys64\mingw64\bin;" + $env:PATH
-lake update
-lake build
-.lake\build\bin\my_game.exe
-```
-
-> ⚠️ **The `-K allegroPrefix=…` flag is required** when using a local Allegro
-> build. It ensures the C shim is compiled against the correct headers.
-> Without it, stale system headers (e.g. an older Allegro in `/usr/local/include`)
-> may cause `al_init` to silently fail at runtime due to a version mismatch
-> baked into the `al_init` macro.
-
-### Step 5 — First game checklist (recommended)
-
-When starting a real game (not just a rectangle demo), this order avoids most setup mistakes:
-
-1. `Allegro.init`
-2. Addons/subsystems you actually use (`initPrimitivesAddon`, `initFontAddon`, `installKeyboard`, `installMouse`, `installAudio`, `initAcodecAddon`, `reserveSamples`)
-3. `createDisplay`, `createTimer`, `createEventQueue`, `createEvent`
-4. Register event sources (display, keyboard, mouse, timer)
-5. Start timer, run event loop, update on timer events, draw only when queue is empty
-6. Destroy in reverse order (timer/event/queue/assets/display, then shutdown addons)
-
-**Mouse-driven games**: Don't forget `installMouse` and `getMouseEventSource` —
-without registering the mouse event source, `mouseAxes` and `mouseButtonDown`
-events will never arrive:
-
-```lean
-let _ ← Allegro.installMouse
-let mouseSrc ← Allegro.getMouseEventSource
-queue.registerSource mouseSrc
-```
-
-**Audio**: Call `reserveSamples n` (e.g. 4–8) before loading/playing any sample.
-For looping background music, use `sample.play gain pan speed Playmode.loop`.
-Allegro's `Sample.play` fires-and-forgets — no stream management needed for
-simple sound effects.
-
-**Pure game state**: Keep game logic in a pure `structure GameState` updated
-by pure functions. Only rendering and event dispatch should use `IO`.
-See [Overview — Functional game loop pattern](docs/Overview.md#functional-game-loop-pattern)
-for a full example.
-
-This is the same lifecycle used by the demos and is suitable for side-scrollers,
-arcade games, and interactive tools.
 
 ### Platform notes
 
-**Linux — Building Allegro locally for your project:**
-On Fedora, Rocky Linux, RHEL, and other distributions that do not ship Allegro 5
-packages, you need to build Allegro from source. The simplest approach is to copy
-the build script from the AllegroInLean dependency and run it inside your project:
+**Linux — building Allegro locally:**
+Fedora, Rocky, RHEL, and Debian/Ubuntu < 5.2.11 need a source build:
 
 ```bash
-# After `lake update` (which fetches the dependency):
+# After lake update:
 mkdir -p scripts
 cp .lake/packages/AllegroInLean/scripts/build-allegro.sh ./scripts/
 ./scripts/build-allegro.sh
 ```
 
-This creates an `allegro-local/` directory in your project root. The template
-`lakefile.lean` above already includes `-L` and `-rpath` flags for this location.
-
-**Linux — `LD_LIBRARY_PATH`:**
-If Allegro is installed in a non-standard location (e.g. `/usr/local/lib` or
-`allegro-local/lib64`) and you did **not** use `-rpath` in your link flags, set
-`LD_LIBRARY_PATH` before running your executable:
-
-```bash
-LD_LIBRARY_PATH=allegro-local/lib64 .lake/build/bin/my_game
-```
-
-The template above already embeds `-rpath` for the local build, so this is only
-needed if you customise the link flags.
-
-**Windows:**
-Make sure the Allegro DLLs are on your `PATH` (e.g. `C:\msys64\mingw64\bin`).
+**Windows:** Ensure `C:\msys64\mingw64\bin` is on `PATH`, or run from the
+MSYS2 MINGW64 shell.
 
 ### Troubleshooting
 
-**`al_init failed` at runtime (silent, no error details):**
-This almost always means the C shim was compiled against different Allegro headers
-than the libraries loaded at runtime. The `al_init` macro embeds a version check.
-Fix: pass the correct prefix — `lake build -K allegroPrefix=$PWD/allegro-local`.
-Also check for stale Allegro headers in `/usr/local/include/allegro5/` that may
-be picked up over the `allegro-local/` headers.
+**`al_init failed` at runtime:** The C shim was compiled against different
+headers than the runtime libraries. Pass the correct prefix:
+`lake build -K allegroPrefix=$PWD/allegro-local`.
 
-**Build fails with "implicit declaration of function" in C shim files:**
-This indicates the Allegro version installed on your system is older than what
-the bindings expect (5.2.11). Either update Allegro or build from source via
-`scripts/build-allegro.sh`.
+**"implicit declaration of function" build error:** Allegro version is
+too old (< 5.2.11). Build from source via `scripts/build-allegro.sh`.
 
-**Windows process exits with `-1073741515` (`0xC0000135`) before showing a window:**
-This usually means Allegro DLLs are not on `PATH` at runtime. In PowerShell:
-```powershell
-$env:PATH = "C:\msys64\mingw64\bin;" + $env:PATH
-.lake\build\bin\my_game.exe
-```
-Or run from the MSYS2 `MINGW64` shell where the path is preconfigured.
+**Windows exits with `-1073741515`:** Allegro DLLs not on `PATH`. Add
+`C:\msys64\mingw64\bin` to `PATH` or run from MSYS2.
 
-**`LD_LIBRARY_PATH` needed despite `allegro-local/` existing:**
-The template `lakefile.lean` embeds `-rpath` for `allegro-local/lib64` and
-`allegro-local/lib`. If you changed the link flags, you may need:
-```bash
-LD_LIBRARY_PATH=allegro-local/lib64 .lake/build/bin/my_game
-```
+### Data files
 
-### Data files (fonts, sounds, images)
-
-AllegroInLean does **not** ship game assets for consumer projects. You must
-provide your own fonts, sounds, and images. Place them in a `data/` directory
-(or wherever you prefer) and load them using relative paths from your working
-directory:
-
-```lean
-let font ← Allegro.loadTtfFont "data/MyFont.ttf" 24 0
-let sample ← Allegro.loadSample "data/beep.wav"
-```
-
-> **Quick prototyping:** If you don't have font files yet, use
-> `Allegro.createBuiltinFont` for a zero-dependency 8×8 bitmap font.
-> It requires no addon initialisation beyond `Allegro.initFontAddon`.
-
-> **Font from the dependency:** After `lake update`, a ready-to-use
-> DejaVu Sans font (SIL Open Font License) is available at
-> `.lake/packages/AllegroInLean/data/DejaVuSans.ttf`. Copy it into your
-> project's `data/` directory:
-> ```bash
-> mkdir -p data
-> cp .lake/packages/AllegroInLean/data/DejaVuSans.ttf data/
-> cp .lake/packages/AllegroInLean/data/DejaVuSans.LICENSE data/
-> ```
-
-> **Examples:** The fetched dependency also contains 35+ demo programs
-> in `.lake/packages/AllegroInLean/examples/Examples/` covering every
-> addon (audio, input, primitives, fonts, etc.). They are an excellent
-> reference for learning the API.
-
-Run your executable from the project root so that relative paths resolve
-correctly:
+Use `Allegro.createBuiltinFont` for zero-dependency prototyping. For custom
+fonts, copy from the dependency after `lake update`:
 
 ```bash
-# From the project root:
-.lake/build/bin/my_game
+mkdir -p data
+cp .lake/packages/AllegroInLean/data/DejaVuSans.ttf data/
 ```
+
+35+ demo programs are available in
+`.lake/packages/AllegroInLean/examples/Examples/`.
+
+### Advanced: manual event loop
+
+For full control over init, event dispatch, and cleanup (bypassing
+`runGameLoop`), see the manual loop pattern in
+[docs/Overview.md](docs/Overview.md) and examples like `FullDemo.lean`.
 
 ### `open Allegro` namespace note
 

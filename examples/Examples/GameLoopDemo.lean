@@ -3,12 +3,9 @@ import Allegro
 /-!
 # GameLoopDemo — "Catch the Stars" mini-game
 
-An end-to-end sample combining:
-- Fixed-timestep game loop (60 FPS timer)
-- Keyboard input (arrow keys to move, ESC to quit)
-- Primitives drawing (player paddle, falling stars, background)
-- Font rendering (score display, title, game-over text)
-- Audio playback (beep on star catch)
+Uses `Allegro.runGameLoop` to eliminate event-loop boilerplate.
+Demonstrates: keyboard input, primitives drawing, font rendering,
+audio playback, and the functional game-state update pattern.
 
 Run: `lake build allegroGameLoopDemo && .lake/build/bin/allegroGameLoopDemo`
 -/
@@ -60,6 +57,19 @@ def initState : GameState :=
   , leftHeld  := false
   , rightHeld := false
   }
+
+-- ── Resources loaded once at startup ──
+
+structure Resources where
+  font : Font
+  beep : Sample
+
+-- ── Full state threaded through runGameLoop ──
+
+structure FullState where
+  game : GameState
+  res  : Resources
+  seed : UInt64
 
 -- ── Pseudo-random via LCG ──
 
@@ -137,135 +147,56 @@ def drawStars (stars : Array Star) : IO Unit := do
     Allegro.drawFilledTriangleRgb (cx - s) cy cx (cy + s/2) (cx + s) cy star.r star.g star.b
 
 def drawScene (gs : GameState) (font : Allegro.Font) : IO Unit := do
-  -- Background
   Allegro.clearToColorRgb 10 10 30
-
-  -- Stars
   drawStars gs.stars
-
-  -- Paddle
   let paddleY := screenH - 40
   Allegro.drawFilledRoundedRectangleRgb gs.paddleX paddleY (gs.paddleX + paddleW) (paddleY + paddleH) 4 4 100 200 255
-
-  -- Score
   let centre := Allegro.TextAlign.centre
   Allegro.drawTextRgb font 255 255 100 (screenW / 2) 10 centre s!"Score: {gs.score}"
-
-  -- Game over overlay
   if gs.gameOver then
     Allegro.drawTextRgb font 255 80 80 (screenW / 2) (screenH / 2 - 20) centre "GAME OVER"
     Allegro.drawTextRgb font 200 200 200 (screenW / 2) (screenH / 2 + 20) centre "Press ESC to exit"
-
   Allegro.flipDisplay
 
--- ── Main ──
+-- ── Main — all boilerplate handled by runGameLoop ──
 
-def main : IO Unit := do
-  let ok ← Allegro.init
-  if ok == 0 then
-    IO.eprintln "Failed to initialise Allegro"
-    return
-
-  let _ ← Allegro.initImageAddon
-  Allegro.initFontAddon
-  let _ ← Allegro.initTtfAddon
-  let _ ← Allegro.initPrimitivesAddon
-  let _ ← Allegro.installAudio
-  let _ ← Allegro.initAcodecAddon
-  let _ ← Allegro.installKeyboard
-
-  Allegro.setNewDisplayFlags ⟨0⟩
-  let display ← Allegro.createDisplay screenW.toUInt32 screenH.toUInt32
-  if display == 0 then
-    IO.eprintln "Failed to create display"
-    return
-
-  -- Load font
-  let font : Font ← Allegro.loadTtfFont "data/DejaVuSans.ttf" 20 0
-  let font : Font ← if font == 0 then Allegro.createBuiltinFont else pure font
-
-  -- Reserve samples and load beep
-  let _ ← Allegro.reserveSamples 4
-  let beep : Sample ← Allegro.loadSample "data/beep.wav"
-
-  -- Timer at 60 FPS
-  let timer ← Allegro.createTimer (1.0 / 60.0)
-
-  -- Event queue and pre-allocated event struct
-  let queue ← Allegro.createEventQueue
-  let evt ← Allegro.createEvent
-  let dispSrc ← display.eventSource
-  queue.registerSource dispSrc
-  let kbSrc ← Allegro.getKeyboardEventSource
-  queue.registerSource kbSrc
-  let timerSrc ← timer.eventSource
-  queue.registerSource timerSrc
-
-  timer.start
-
-  -- Key constants
-  let keyLeft  := Allegro.KeyCode.left
-  let keyRight := Allegro.KeyCode.right
-  let keyEsc   := Allegro.KeyCode.escape
-
-  -- Event type constants
-  let evtKeyDown      := Allegro.EventType.keyDown
-  let evtKeyUp        := Allegro.EventType.keyUp
-  let evtDisplayClose := Allegro.EventType.displayClose
-  let evtTimer        := Allegro.EventType.timer
-
-  let mut gs := initState
-  let mut seed : UInt64 := 123456789
-  let mut redraw := false
-  let mut running := true
-
-  while running do
-    queue.waitFor evt
-    let eType ← evt.type
-
-    if eType == evtDisplayClose then
-      running := false
-    else if eType == evtKeyDown then
-      let kc ← evt.keyboardKeycode
-      if kc == keyEsc then
-        running := false
-      else if kc == keyLeft then
-        gs := { gs with leftHeld := true }
-      else if kc == keyRight then
-        gs := { gs with rightHeld := true }
-    else if eType == evtKeyUp then
-      let kc ← evt.keyboardKeycode
-      if kc == keyLeft then
-        gs := { gs with leftHeld := false }
-      else if kc == keyRight then
-        gs := { gs with rightHeld := false }
-    else if eType == evtTimer then
-      -- Update game
-      let oldScore := gs.score
-      let (gs', seed') := updateTick gs seed
-      gs := gs'
-      seed := seed'
-      -- Play beep on catch
-      if gs.score > oldScore && beep != 0 then
-        let _ ← beep.play 1.0 0.0 1.0 Playmode.once
-        pure ()
-      redraw := true
-
-    -- Draw at most once per iteration when caught up on events
-    if redraw && (← queue.isEmpty) == 1 then
-      drawScene gs font
-      redraw := false
-
-  -- Cleanup
-  timer.stop
-  timer.destroy
-  evt.destroy
-  queue.destroy
-  if beep != 0 then beep.destroy
-  font.destroy
-  display.destroy
-  Allegro.uninstallAudio
-  Allegro.shutdownPrimitivesAddon
-  Allegro.shutdownTtfAddon
-  Allegro.shutdownFontAddon
-  Allegro.shutdownImageAddon
+def main : IO Unit :=
+  Allegro.runGameLoop
+    { width := screenW.toUInt32
+    , height := screenH.toUInt32
+    , fps := 60.0
+    , initAddons := [.primitives, .font, .ttf, .image, .audio, .keyboard]
+    , windowTitle := "Catch the Stars" }
+    (fun _display => do
+      let font ← Allegro.loadTtfFont "data/DejaVuSans.ttf" 20 0
+      let font ← if font == 0 then Allegro.createBuiltinFont else pure font
+      let _ ← Allegro.reserveSamples 4
+      let beep ← Allegro.loadSample "data/beep.wav"
+      pure { game := initState, res := { font := font, beep := beep }, seed := 123456789 : FullState })
+    (fun state event => do
+      let gs := state.game
+      match event with
+      | .keyDown key =>
+        if key == KeyCode.escape then return none
+        else if key == KeyCode.left then
+          return some { state with game := { gs with leftHeld := true } }
+        else if key == KeyCode.right then
+          return some { state with game := { gs with rightHeld := true } }
+        else return some state
+      | .keyUp key =>
+        if key == KeyCode.left then
+          return some { state with game := { gs with leftHeld := false } }
+        else if key == KeyCode.right then
+          return some { state with game := { gs with rightHeld := false } }
+        else return some state
+      | .tick =>
+        let oldScore := gs.score
+        let (gs', seed') := updateTick gs state.seed
+        if gs'.score > oldScore && state.res.beep != 0 then
+          let _ ← state.res.beep.play 1.0 0.0 1.0 Playmode.once
+          pure ()
+        return some { state with game := gs', seed := seed' }
+      | .quit => return none
+      | _ => return some state)
+    (fun state _display => do
+      drawScene state.game state.res.font)
