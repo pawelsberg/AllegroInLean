@@ -1,4 +1,4 @@
-# AllegroInLean
+# AllegroInLean - VibeCoded
 
 Lean 4 FFI bindings for [Allegro 5](https://liballeg.org/), providing
 type-safe, idiomatic Lean wrappers around Allegro's C API via a thin C shim
